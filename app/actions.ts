@@ -14,18 +14,20 @@ export async function YTPM(formDataJSON: string) {
 
     const name = formDataObject.name;
     const date = formDataObject.date;
-    const pay_status = formDataObject.pay_status;
+    const status_pay = formDataObject.pay_status;
 
-    console.log("naem:",name, "dd",date, "ss",pay_status);
+    console.log("naem:", name, "dd", date, "ss", status_pay);
 
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
-    /*
+
     const { data, error } = await supabase
       .from("youtubepremium")
       .insert([
         {
-          ...formDataObject,
+          name,
+          date,
+          status_pay,
         },
       ])
       .select();
@@ -35,10 +37,7 @@ export async function YTPM(formDataJSON: string) {
     }
 
     console.log("Ok");
-     */
   } catch (error) {
     console.error("Error in YTPM:", error);
-   
   }
-
 }

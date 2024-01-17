@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Layout, theme } from "antd";
 import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
-import { Table } from "antd";
+import { Table, Badge, Space, Button, Tooltip } from "antd";
+import { DeleteOutlined, EditFilled, DeleteFilled } from "@ant-design/icons";
 
 export default function TBYoutubePremium() {
   const supabase = createClient();
@@ -74,7 +75,35 @@ export default function TBYoutubePremium() {
                   title: "Status Pay",
                   dataIndex: "status_pay",
                   key: "status_pay",
-                  render: (status_pay: any) => (status_pay ? "Paid" : "Unpaid"),
+                  render: (status_pay: any) => (
+                    <Badge
+                      status={status_pay ? "success" : "error"}
+                      text={status_pay ? "Paid" : "UnPaid"}
+                    />
+                  ),
+                },
+                {
+                  title: "Action",
+                  key: "action",
+                  render: (_, record) => (
+                    <Space size="middle">
+                      <Tooltip title="Edit">
+                        <Button
+                          shape="circle"
+                          icon={<EditFilled />}
+                          size={"small"}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <Button
+                          danger
+                          shape="circle"
+                          icon={<DeleteFilled />}
+                          size={"small"}
+                        />
+                      </Tooltip>
+                    </Space>
+                  ),
                 },
               ]}
             />
