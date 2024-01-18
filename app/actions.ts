@@ -14,9 +14,10 @@ export async function YTPM(formDataJSON: string) {
 
     const name = formDataObject.name;
     const date = formDataObject.date;
+    const date_end = formDataObject.dateend;
     const status_pay = formDataObject.pay_status;
 
-    console.log("naem:", name, "dd", date, "ss", status_pay);
+    console.log("naem:", name, "dd", date, "de",date_end,"ss", status_pay);
 
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
@@ -27,6 +28,7 @@ export async function YTPM(formDataJSON: string) {
         {
           name,
           date,
+          date_end,
           status_pay,
         },
       ])
@@ -36,8 +38,37 @@ export async function YTPM(formDataJSON: string) {
       console.log("Error Insert YTPM!!", error);
     }
 
-    console.log("Ok");
+    console.log("Ok Insert");
   } catch (error) {
-    console.error("Error in YTPM:", error);
+    console.error("Error All Insert in YTPM:", error);
+  }
+}
+
+export async function DELYTPM(id: string) {
+  try {
+    const dataID = id;
+
+    if (!dataID) {
+      console.error("Error: ID is not defined");
+      return;
+    }
+
+    console.log("data", dataID);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { error } = await supabase
+      .from("youtubepremium")
+      .delete()
+      .eq("id", dataID);
+
+    if (error) {
+      console.log("Error Delete YTPM!!", error);
+    }
+
+    console.log("Ok Del");
+  } catch (error) {
+    console.error("Error All Delete in YTPM:", error);
   }
 }

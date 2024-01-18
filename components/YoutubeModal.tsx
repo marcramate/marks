@@ -128,6 +128,18 @@ export default function MDYoutubePremium() {
             />
           </Form.Item>
 
+          <Form.Item
+            label="DateEnd"
+            name="dateend"
+            rules={[{ required: true, message: "Please input Month!" }]}
+          >
+            <DatePicker
+              onChange={onChange}
+              style={{ width: 250 }}
+              name="dateend"
+            />
+          </Form.Item>
+
           <Form.Item label="Pay_Status" name="pay_status">
             <Switch
               checkedChildren={<CheckOutlined />}
