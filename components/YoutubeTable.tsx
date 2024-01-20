@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Layout, theme } from "antd";
 import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
@@ -12,14 +12,29 @@ import {
   Button,
   Tooltip,
   message,
+  Modal,
+  Form,
+  Input,
+  DatePicker,
+  Switch,
 } from "antd";
-import { EditFilled, DeleteFilled } from "@ant-design/icons";
+import {
+  EditFilled,
+  DeleteFilled,
+  CheckOutlined,
+  CloseOutlined,
+  YoutubeFilled,
+} from "@ant-design/icons";
 import { DELYTPM } from "@/app/actions";
+import dayjs from "dayjs";
+import type { DatePickerProps } from "antd";
 
 interface DataType {
   key: React.Key;
+  id: number;
   name: string;
   date: Date;
+  date_end: Date;
   status_pay: boolean;
 }
 
@@ -27,19 +42,37 @@ export default function TBYoutubePremium() {
   const supabase = createClient();
 
   const [YTPremium, setYTPremium] = useState<any>([]);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editedData, setEditedData] = useState<any>(null);
+  const [form] = Form.useForm(); // เพิ่ม form instance
 
   useEffect(() => {
     const fetchYTPM = async () => {
       let { data, error } = await supabase.from("youtubepremium").select("*");
 
+      if (data) {
+        setYTPremium(data);
+      }
+
       if (!data || error) {
         console.log("error:", error);
       }
-      setYTPremium(data);
     };
     fetchYTPM();
   }, []);
-  const [messageApi, contextHolder] = message.useMessage();
+
+  useEffect(() => {
+    if (editedData) {
+      form.setFieldsValue({
+        id: editedData.id,
+        name: editedData.name,
+        date: dayjs(editedData.date),
+        dateend: dayjs(editedData.date_end),
+        pay_status: editedData.status_pay,
+      });
+    }
+  }, [editedData, form]);
 
   const handleDel = async (record: any) => {
     try {
@@ -57,6 +90,46 @@ export default function TBYoutubePremium() {
       messageApi.error("Error Delete!!!");
     }
   };
+
+  const showModal = (record: SetStateAction<null>) => {
+    setEditedData(null);
+    setEditedData(record);
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    if (editedData) {
+      // ทำการปรับปรุงข้อมูลใน state หรือส่งไปยังฟังก์ชั่นที่ทำการแก้ไขข้อมูลใน backend
+
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditedData(null);
+    setIsModalOpen(false);
+  };
+
+  const onChange: TableProps<DataType>["onChange"] = (
+    pagination,
+    filters,
+    sorter,
+    extra
+  ) => {
+    console.log("params", pagination, filters, sorter, extra);
+  };
+
+  const onDate: DatePickerProps["onChange"] = (date, dateString) => {
+    console.log(date, dateString);
+  };
+
+  const fName: string[] = Array.from(
+    new Set(YTPremium.map((dataname1: any) => dataname1.name))
+  );
+
+  const statpay: boolean[] = Array.from(
+    new Set(YTPremium.map((datastat: any) => datastat.status_pay))
+  );
 
   const columns = [
     {
@@ -86,23 +159,6 @@ export default function TBYoutubePremium() {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-
-  const onChange: TableProps<DataType>["onChange"] = (
-    pagination,
-    filters,
-    sorter,
-    extra
-  ) => {
-    console.log("params", pagination, filters, sorter, extra);
-  };
-
-  const fName: string[] = Array.from(
-    new Set(YTPremium.map((dataname1: any) => dataname1.name))
-  );
-
-  const statpay: boolean[] = Array.from(
-    new Set(YTPremium.map((datastat: any) => datastat.status_pay))
-  );
 
   return (
     <Layout>
@@ -139,20 +195,20 @@ export default function TBYoutubePremium() {
                     nam.name.indexOf(dataname) === 0,
                 },
                 {
-                  title: "Date",
+                  title: "Month",
                   dataIndex: "date",
                   key: "date",
-                  render: (DB: any) => {
-                    const dateStart = new Date(DB.date);
+                  render: (text: string, DB: any) => {
+                    const datenew = new Date(DB.date);
                     const dateEnd = new Date(DB.date_end);
-                    const formattedDate = `${dateStart.toLocaleDateString(
+                    const formattedDate = `Start Month:${datenew.toLocaleDateString(
                       "en-US",
                       { year: "numeric", month: "2-digit" }
-                    )} - ${dateEnd.toLocaleDateString("en-US", {
+                    )} - End Month:${dateEnd.toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "2-digit",
                     })}`;
-                    return <span className="">{formattedDate}</span>;
+                    return <span>{formattedDate}</span>;
                   },
                 },
                 {
@@ -185,6 +241,7 @@ export default function TBYoutubePremium() {
                           shape="circle"
                           icon={<EditFilled />}
                           size={"small"}
+                          onClick={() => showModal(record)}
                         />
                       </Tooltip>
                       <Tooltip title="Delete">
@@ -204,6 +261,80 @@ export default function TBYoutubePremium() {
             />
           </Card>
         </div>
+
+        <Modal
+          title={
+            <div className="flex items-center space-x-1">
+              <EditFilled className="mr-2 text-teal-600" />
+              Edit Youtube Premium
+              <YoutubeFilled className="mr-2 text-red-500" />
+            </div>
+          }
+          open={isModalOpen}
+          //onOk={handleOk}
+          onCancel={handleCancel}
+          footer={[
+            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
+              Save
+            </Button>,
+            <Tooltip title="Cancle">
+              <Button
+                type="primary"
+                danger
+                icon={<CloseOutlined />}
+                onClick={handleCancel}
+                shape="circle"
+              ></Button>
+            </Tooltip>,
+          ]}
+        >
+          <Form
+            style={{ maxWidth: 450 }}
+            autoComplete="off"
+            form={form}
+            labelCol={{ span: 4 }}
+            //wrapperCol={{ span: 9 }}
+          >
+            {editedData && (
+              <>
+                <div id="id">
+                  <p>ID: {editedData?.id}</p>
+                </div>
+                <Form.Item label="Name" name="name" className="mb-4">
+                  <Input name="name" className="w-full" />
+                </Form.Item>
+
+                <Form.Item label="Date" name="date" className="mb-4">
+                  <DatePicker
+                    onChange={onDate}
+                    style={{ width: "100%" }}
+                    name="date"
+                  />
+                </Form.Item>
+
+                <Form.Item label="DateEnd" name="dateend" className="mb-4">
+                  <DatePicker
+                    onChange={onDate}
+                    style={{ width: "100%" }}
+                    name="dateend"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Pay_Status"
+                  name="pay_status"
+                  className="mb-4"
+                >
+                  <Switch
+                    checkedChildren={<CheckOutlined />}
+                    unCheckedChildren={<CloseOutlined />}
+                    className="bg-red-500"
+                  />
+                </Form.Item>
+              </>
+            )}
+          </Form>
+        </Modal>
       </Content>
     </Layout>
   );

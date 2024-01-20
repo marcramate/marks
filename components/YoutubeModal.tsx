@@ -103,7 +103,6 @@ export default function MDYoutubePremium() {
       >
         <Form
           form={form}
-          name="basic"
           style={{ maxWidth: 300 }}
           initialValues={{ pay_status: false }} // กำหนดค่าเริ่มต้นของ pay_status เป็น false
           autoComplete="off"
