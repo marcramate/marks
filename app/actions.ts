@@ -17,7 +17,7 @@ export async function YTPM(formDataJSON: string) {
     const date_end = formDataObject.dateend;
     const status_pay = formDataObject.pay_status;
 
-    console.log("naem:", name, "dd", date, "de",date_end,"ss", status_pay);
+    console.log("naem:", name, "dd", date, "de", date_end, "ss", status_pay);
 
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
@@ -41,6 +41,52 @@ export async function YTPM(formDataJSON: string) {
     console.log("Ok Insert");
   } catch (error) {
     console.error("Error All Insert in YTPM:", error);
+  }
+}
+
+export async function UPDYTPM(EditDataJSON: string) {
+  try {
+    const EditDataYTPM = JSON.parse(EditDataJSON);
+    if (!EditDataYTPM) {
+      console.error("Error: EditDataYTPM is not defined");
+      return;
+    }
+
+    const name = EditDataYTPM.name;
+    const date = EditDataYTPM.date;
+    const date_end = EditDataYTPM.dateend;
+    const status_pay = EditDataYTPM.pay_status;
+    const id = EditDataYTPM.id;
+
+    console.log(
+      "En:",
+      name,
+      "Ed:",
+      date,
+      "Ede:",
+      date_end,
+      "Ess:",
+      status_pay,
+      "EID:",
+      id
+    );
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("youtubepremium")
+      .update({ name, date, date_end, status_pay })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.log("Error Update YTPM!!", error);
+    }
+
+    console.log("Ok Update");
+  } catch (error) {
+    console.error("Error All Update in YTPM:", error);
   }
 }
 

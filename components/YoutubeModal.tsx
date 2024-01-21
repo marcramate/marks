@@ -6,6 +6,7 @@ import {
   PlusCircleFilled,
   CloseOutlined,
   CheckOutlined,
+  YoutubeFilled,
 } from "@ant-design/icons";
 import {
   FloatButton,
@@ -76,9 +77,10 @@ export default function MDYoutubePremium() {
       <Modal
         open={open}
         title={
-          <div className="flex items-center">
+          <div className="flex items-center space-x-1">
             <PlusCircleFilled className="mr-2 text-teal-600" />
             Add Youtube Premium
+            <YoutubeFilled className="mr-2 text-red-500" />
           </div>
         }
         //onOk={handleOk}
@@ -103,26 +105,29 @@ export default function MDYoutubePremium() {
       >
         <Form
           form={form}
-          style={{ maxWidth: 300 }}
+          style={{ maxWidth: 450 }}
           initialValues={{ pay_status: false }} // กำหนดค่าเริ่มต้นของ pay_status เป็น false
           autoComplete="off"
+          labelCol={{ span: 4 }}
         >
           <Form.Item
             label="Name"
             name="name"
             rules={[{ required: true, message: "Please input your Name!" }]}
+            className="mb-4"
           >
-            <Input name="name" />
+            <Input name="name" className="w-full" />
           </Form.Item>
 
           <Form.Item
             label="Date"
             name="date"
             rules={[{ required: true, message: "Please input Month!" }]}
+            className="mb-4"
           >
             <DatePicker
               onChange={onChange}
-              style={{ width: 250 }}
+              style={{ width: "100%" }}
               name="date"
             />
           </Form.Item>
@@ -131,10 +136,11 @@ export default function MDYoutubePremium() {
             label="DateEnd"
             name="dateend"
             rules={[{ required: true, message: "Please input Month!" }]}
+            className="mb-4"
           >
             <DatePicker
               onChange={onChange}
-              style={{ width: 250 }}
+              style={{ width: "100%" }}
               name="dateend"
             />
           </Form.Item>

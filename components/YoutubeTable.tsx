@@ -17,6 +17,9 @@ import {
   Input,
   DatePicker,
   Switch,
+  Spin,
+  Row,
+  Col,
 } from "antd";
 import {
   EditFilled,
@@ -24,10 +27,12 @@ import {
   CheckOutlined,
   CloseOutlined,
   YoutubeFilled,
+  LoadingOutlined,
 } from "@ant-design/icons";
-import { DELYTPM } from "@/app/actions";
+import { DELYTPM, UPDYTPM } from "@/app/actions";
 import dayjs from "dayjs";
 import type { DatePickerProps } from "antd";
+import CardYoutubePremium from "./YoutubeCard";
 
 interface DataType {
   key: React.Key;
@@ -45,7 +50,8 @@ export default function TBYoutubePremium() {
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editedData, setEditedData] = useState<any>(null);
-  const [form] = Form.useForm(); // เพิ่ม form instance
+  const [form] = Form.useForm();
+  const [spinning, setSpinning] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchYTPM = async () => {
@@ -78,18 +84,36 @@ export default function TBYoutubePremium() {
     try {
       const { id } = record;
 
+      setSpinning(true);
+
       console.log("id:", id);
       await DELYTPM(id);
 
       messageApi.success("Success Delete !!");
-      setTimeout(() => {
-        window.location.reload();
-      }, 1800);
     } catch (error) {
       console.error("ErrorDel:", error);
       messageApi.error("Error Delete!!!");
+    } finally {
+      setTimeout(() => {
+        setSpinning(false);
+        window.location.reload();
+      }, 1800);
     }
   };
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      setSpinning(true);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      setTimeout(() => {
+        setSpinning(false);
+      }, 1800);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   const showModal = (record: SetStateAction<null>) => {
     setEditedData(null);
@@ -97,11 +121,24 @@ export default function TBYoutubePremium() {
     setIsModalOpen(true);
   };
 
-  const handleOk = () => {
-    if (editedData) {
-      // ทำการปรับปรุงข้อมูลใน state หรือส่งไปยังฟังก์ชั่นที่ทำการแก้ไขข้อมูลใน backend
+  const handleOk = async () => {
+    try {
+      if (editedData) {
+        const EditData = form.getFieldsValue();
+        const EditDataJSON = JSON.stringify(EditData);
 
-      setIsModalOpen(false);
+        console.log(EditDataJSON);
+        await UPDYTPM(EditDataJSON);
+
+        handleCancel(); // หลังจากส่งข้อมูลเสร็จ ปิด Modal
+        messageApi.success("Success Update!!");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1800);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      messageApi.error("Error Update!!!");
     }
   };
 
@@ -171,170 +208,189 @@ export default function TBYoutubePremium() {
             borderRadius: borderRadiusLG,
           }}
         >
-          <Card decoration="top" decorationColor="indigo" key="unique-key">
-            <Table
-              dataSource={YTPremium}
-              columns={[
-                {
-                  title: "ID",
-                  dataIndex: "id",
-                  key: "id",
-                  sorter: (id1: { id: number }, id2: { id: number }) =>
-                    id1.id - id2.id,
-                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-                },
-                {
-                  title: "Name",
-                  dataIndex: "name",
-                  key: "name",
-                  filters: fName.map((name) => ({
-                    text: name,
-                    value: name,
-                  })),
-                  onFilter: (dataname: string, nam: { name: string }) =>
-                    nam.name.indexOf(dataname) === 0,
-                },
-                {
-                  title: "Month",
-                  dataIndex: "date",
-                  key: "date",
-                  render: (text: string, DB: any) => {
-                    const datenew = new Date(DB.date);
-                    const dateEnd = new Date(DB.date_end);
-                    const formattedDate = `Start Month:${datenew.toLocaleDateString(
-                      "en-US",
-                      { year: "numeric", month: "2-digit" }
-                    )} - End Month:${dateEnd.toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "2-digit",
-                    })}`;
-                    return <span>{formattedDate}</span>;
+          <Spin
+            spinning={spinning}
+            indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+          >
+            <div className="mb-4"></div>
+            <Card decoration="top" decorationColor="indigo" key="unique-key">
+              <Table
+                dataSource={YTPremium}
+                columns={[
+                  {
+                    title: "ID",
+                    dataIndex: "id",
+                    key: "id",
+                    sorter: (id1: { id: number }, id2: { id: number }) =>
+                      id1.id - id2.id,
+                    defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
                   },
-                },
-                {
-                  title: "Status Pay",
-                  dataIndex: "status_pay",
-                  key: "status_pay",
-                  render: (status_pay: any) => (
-                    <Badge
-                      status={status_pay ? "success" : "error"}
-                      text={status_pay ? "Paid" : "UnPaid"}
-                    />
-                  ),
-                  filters: statpay.map((status_pay) => ({
-                    text: status_pay ? "Paid" : "UnPaid",
-                    value: status_pay,
-                  })),
-                  onFilter: (
-                    datastatus: string,
-                    sta: { status_pay: boolean }
-                  ) => (datastatus ? sta.status_pay : !sta.status_pay),
-                },
-                {
-                  title: "",
-                  key: "action",
-                  render: (_, record) => (
-                    <Space size="middle">
-                      {contextHolder}
-                      <Tooltip title="Edit">
-                        <Button
-                          shape="circle"
-                          icon={<EditFilled />}
-                          size={"small"}
-                          onClick={() => showModal(record)}
-                        />
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <Button
-                          danger
-                          shape="circle"
-                          icon={<DeleteFilled />}
-                          size={"small"}
-                          onClick={() => handleDel(record)}
-                        />
-                      </Tooltip>
-                    </Space>
-                  ),
-                },
-              ]}
-              onChange={onChange}
-            />
-          </Card>
+                  {
+                    title: "Name",
+                    dataIndex: "name",
+                    key: "name",
+                    filters: fName.map((name) => ({
+                      text: name,
+                      value: name,
+                    })),
+                    onFilter: (dataname: string, nam: { name: string }) =>
+                      nam.name.indexOf(dataname) === 0,
+                  },
+                  {
+                    title: "Month",
+                    dataIndex: "date",
+                    key: "date",
+                    render: (text: string, DB: any) => {
+                      const datenew = new Date(DB.date);
+                      const dateEnd = new Date(DB.date_end);
+                      const formattedDate = `Start Month:${datenew.toLocaleDateString(
+                        "en-US",
+                        { year: "numeric", month: "2-digit" }
+                      )} - End Month:${dateEnd.toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                      })}`;
+                      return <span>{formattedDate}</span>;
+                    },
+                  },
+                  {
+                    title: "Status Pay",
+                    dataIndex: "status_pay",
+                    key: "status_pay",
+                    render: (status_pay: any) => (
+                      <Badge
+                        status={status_pay ? "success" : "error"}
+                        text={status_pay ? "Paid" : "UnPaid"}
+                      />
+                    ),
+                    filters: statpay.map((status_pay) => ({
+                      text: status_pay ? "Paid" : "UnPaid",
+                      value: status_pay,
+                    })),
+                    onFilter: (
+                      datastatus: string,
+                      sta: { status_pay: boolean }
+                    ) => (datastatus ? sta.status_pay : !sta.status_pay),
+                  },
+                  {
+                    title: "",
+                    key: "action",
+                    render: (_, record) => (
+                      <Space size="middle">
+                        {contextHolder}
+                        <Tooltip title="Edit">
+                          <Button
+                            shape="circle"
+                            icon={<EditFilled />}
+                            size={"small"}
+                            onClick={() => showModal(record)}
+                          />
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <Button
+                            danger
+                            shape="circle"
+                            icon={<DeleteFilled />}
+                            size={"small"}
+                            onClick={() => handleDel(record)}
+                          />
+                        </Tooltip>
+                      </Space>
+                    ),
+                  },
+                ]}
+                onChange={onChange}
+              />
+            </Card>
+          </Spin>
         </div>
 
-        <Modal
-          title={
-            <div className="flex items-center space-x-1">
-              <EditFilled className="mr-2 text-teal-600" />
-              Edit Youtube Premium
-              <YoutubeFilled className="mr-2 text-red-500" />
-            </div>
-          }
-          open={isModalOpen}
-          //onOk={handleOk}
-          onCancel={handleCancel}
-          footer={[
-            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
-              Save
-            </Button>,
-            <Tooltip title="Cancle">
-              <Button
-                type="primary"
-                danger
-                icon={<CloseOutlined />}
-                onClick={handleCancel}
-                shape="circle"
-              ></Button>
-            </Tooltip>,
-          ]}
-        >
-          <Form
-            style={{ maxWidth: 450 }}
-            autoComplete="off"
-            form={form}
-            labelCol={{ span: 4 }}
-            //wrapperCol={{ span: 9 }}
+        <div>
+          <Spin
+            spinning={spinning}
+            indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
           >
-            {editedData && (
-              <>
-                <div id="id">
-                  <p>ID: {editedData?.id}</p>
+            <Modal
+              title={
+                <div className="flex items-center space-x-1">
+                  <EditFilled className="mr-2 text-teal-600" />
+                  Edit Youtube Premium
+                  <YoutubeFilled className="mr-2 text-red-500" />
                 </div>
-                <Form.Item label="Name" name="name" className="mb-4">
-                  <Input name="name" className="w-full" />
-                </Form.Item>
-
-                <Form.Item label="Date" name="date" className="mb-4">
-                  <DatePicker
-                    onChange={onDate}
-                    style={{ width: "100%" }}
-                    name="date"
-                  />
-                </Form.Item>
-
-                <Form.Item label="DateEnd" name="dateend" className="mb-4">
-                  <DatePicker
-                    onChange={onDate}
-                    style={{ width: "100%" }}
-                    name="dateend"
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label="Pay_Status"
-                  name="pay_status"
-                  className="mb-4"
+              }
+              open={isModalOpen}
+              //onOk={handleOk}
+              onCancel={handleCancel}
+              footer={[
+                <Button
+                  shape="round"
+                  icon={<CheckOutlined />}
+                  onClick={handleOk}
                 >
-                  <Switch
-                    checkedChildren={<CheckOutlined />}
-                    unCheckedChildren={<CloseOutlined />}
-                    className="bg-red-500"
-                  />
-                </Form.Item>
-              </>
-            )}
-          </Form>
-        </Modal>
+                  Save
+                </Button>,
+                <Tooltip title="Cancle">
+                  <Button
+                    type="primary"
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={handleCancel}
+                    shape="circle"
+                  ></Button>
+                </Tooltip>,
+              ]}
+            >
+              <Form
+                style={{ maxWidth: 450 }}
+                autoComplete="off"
+                form={form}
+                labelCol={{ span: 4 }}
+                //wrapperCol={{ span: 9 }}
+              >
+                {editedData && (
+                  <>
+                    <Form.Item label="ID" name="id" className="mb-4" hidden>
+                      <p>{editedData?.id}</p>
+                    </Form.Item>
+
+                    <div className="mb-4"></div>
+                    <Form.Item label="Name" name="name" className="mb-4">
+                      <Input name="name" className="w-full" />
+                    </Form.Item>
+
+                    <Form.Item label="Date" name="date" className="mb-4">
+                      <DatePicker
+                        onChange={onDate}
+                        style={{ width: "100%" }}
+                        name="date"
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="DateEnd" name="dateend" className="mb-4">
+                      <DatePicker
+                        onChange={onDate}
+                        style={{ width: "100%" }}
+                        name="dateend"
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Pay_Status"
+                      name="pay_status"
+                      className="mb-4"
+                    >
+                      <Switch
+                        checkedChildren={<CheckOutlined />}
+                        unCheckedChildren={<CloseOutlined />}
+                        className="bg-red-500"
+                      />
+                    </Form.Item>
+                  </>
+                )}
+              </Form>
+            </Modal>
+          </Spin>
+        </div>
       </Content>
     </Layout>
   );
