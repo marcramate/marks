@@ -32,7 +32,7 @@ import {
 import { DELYTPM, UPDYTPM } from "@/app/actions";
 import dayjs from "dayjs";
 import type { DatePickerProps } from "antd";
-import CardYoutubePremium from "./YoutubeCard";
+import TabsYoutube from "../components/YoutubeTabs";
 
 interface DataType {
   key: React.Key;
@@ -97,7 +97,7 @@ export default function TBYoutubePremium() {
       setTimeout(() => {
         setSpinning(false);
         window.location.reload();
-      }, 1800);
+      }, 1000);
     }
   };
   useEffect(() => {
@@ -303,6 +303,10 @@ export default function TBYoutubePremium() {
               />
             </Card>
           </Spin>
+          <div className="mb-4"></div>
+          <div>
+            <TabsYoutube />
+          </div>
         </div>
 
         <div>
