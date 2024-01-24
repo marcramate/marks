@@ -18,8 +18,7 @@ import {
   DatePicker,
   Switch,
   Spin,
-  Row,
-  Col,
+  Flex,
 } from "antd";
 import {
   EditFilled,
@@ -28,6 +27,7 @@ import {
   CloseOutlined,
   YoutubeFilled,
   LoadingOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { DELYTPM, UPDYTPM } from "@/app/actions";
 import dayjs from "dayjs";
@@ -213,7 +213,16 @@ export default function TBYoutubePremium() {
             indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
           >
             <div className="mb-4"></div>
+
             <Card decoration="top" decorationColor="indigo" key="unique-key">
+              <Flex justify="flex-end">
+                <Button shape="round" icon={<SearchOutlined />} className="buttonYTPm1">
+                  Search
+                </Button>
+              </Flex>
+
+              <div className="mb-4"></div>
+
               <Table
                 dataSource={YTPremium}
                 columns={[
@@ -302,14 +311,13 @@ export default function TBYoutubePremium() {
                 onChange={onChange}
               />
             </Card>
+            <div className="mb-4"></div>
+            <Card decoration="top" decorationColor="indigo">
+              <div>
+                <TabsYoutube />
+              </div>
+            </Card>
           </Spin>
-          <div className="mb-4"></div>
-          <div>
-            <TabsYoutube />
-          </div>
-        </div>
-
-        <div>
           <Spin
             spinning={spinning}
             indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}

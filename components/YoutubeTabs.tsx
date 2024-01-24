@@ -5,6 +5,7 @@ import type { TabsProps } from "antd";
 import { Card, Metric, Text } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 
+
 export default function TabsYoutube() {
   const supabase = createClient();
   const [tabItems, setTabItems] = useState<TabsProps["items"]>([]);
@@ -50,7 +51,7 @@ export default function TabsYoutube() {
                       decorationColor="indigo"
                     >
                       <Text>{item.status_pay ? "จ่ายแล้ว" : "เหลือ"}</Text>
-                      <Metric>{monthdiff} เดือน</Metric>
+                      <Metric className={item.status_pay ? "Paid" : "Unpaid"}>{monthdiff} เดือน</Metric>
                     </Card>
                   </Col>
                 </Row>

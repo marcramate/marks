@@ -40,3 +40,15 @@
     transform: translateY(0);
   }
 }
+
+.Unpaid {
+  @apply text-red-500;
+}
+
+.Paid {
+  @apply text-green-500;
+}
+.buttonYTPm1 {
+  background-color: #fcfcfc;
+  border-color: #30d889;
+}
