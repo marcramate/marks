@@ -28,8 +28,9 @@ import {
   YoutubeFilled,
   LoadingOutlined,
   SearchOutlined,
+  ClockCircleFilled,
 } from "@ant-design/icons";
-import { DELYTPM, UPDYTPM } from "@/app/actions";
+import { DELYTPM, UPDYTPM, UpdateEnd } from "@/app/actions";
 import dayjs from "dayjs";
 import type { DatePickerProps } from "antd";
 import TabsYoutube from "../components/YoutubeTabs";
@@ -134,11 +135,28 @@ export default function TBYoutubePremium() {
         messageApi.success("Success Update!!");
         setTimeout(() => {
           window.location.reload();
-        }, 1800);
+        }, 1000);
       }
     } catch (error) {
       console.error("Error:", error);
       messageApi.error("Error Update!!!");
+    }
+  };
+
+  const updateend = async () => {
+    try {
+      const newDate = new Date();
+      await UpdateEnd(newDate);
+
+      console.log(newDate);
+
+      messageApi.success("Success Update_End!!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error:", error);
+      messageApi.error("Error Update_End!!!");
     }
   };
 
@@ -216,8 +234,13 @@ export default function TBYoutubePremium() {
 
             <Card decoration="top" decorationColor="indigo" key="unique-key">
               <Flex justify="flex-end">
-                <Button shape="round" icon={<SearchOutlined />} className="buttonYTPm1">
-                  Search
+                <Button
+                  shape="round"
+                  icon={<ClockCircleFilled />}
+                  className="buttonYTPm1"
+                  onClick={updateend}
+                >
+                  Update DateEnd
                 </Button>
               </Flex>
 
@@ -252,10 +275,10 @@ export default function TBYoutubePremium() {
                     render: (text: string, DB: any) => {
                       const datenew = new Date(DB.date);
                       const dateEnd = new Date(DB.date_end);
-                      const formattedDate = `Start Month:${datenew.toLocaleDateString(
+                      const formattedDate = `Start Month: ${datenew.toLocaleDateString(
                         "en-US",
                         { year: "numeric", month: "2-digit" }
-                      )} - End Month:${dateEnd.toLocaleDateString("en-US", {
+                      )} - End Month: ${dateEnd.toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "2-digit",
                       })}`;
