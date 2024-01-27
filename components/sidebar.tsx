@@ -24,12 +24,18 @@ const items = [
     icon: <HeartFilled style={{ color: "hotpink" }} />,
     label: "Marc Space",
     subItems: [
-      { key: "2-1", label: "MilesOil", link: "/BkPm/BkAllresult" },
-      { key: "2-2", label: "Youtube Premium", link: "/MarcSpace/YoutubePremium" },
+      {
+        key: "2-1",
+        label: "Cost",
+        link: "/MarcSpace/Cost",
+      },
+      {
+        key: "2-2",
+        label: "Youtube Premium",
+        link: "/MarcSpace/YoutubePremium",
+      },
     ],
   },
-
-
 ];
 
 const Sidebar: React.FC = () => {

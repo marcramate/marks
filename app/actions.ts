@@ -120,26 +120,3 @@ export async function DELYTPM(id: string) {
   }
 }
 
-export async function UpdateEnd(newDate: Date) {
-  try {
-    const dateend = newDate;
-
-    console.log("date : ", dateend);
-
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
-
-    const { data, error } = await supabase
-      .from("youtubepremium") 
-      .update({ date_end: newDate });
-
-    if (error) {
-      console.log("Error updating data YTPM!!", error);
-    }
-
-    console.log("Ok Update_end");
-  } catch (error : any) {
-    console.error(error.message);
-    throw new Error("Failed to update data");
-  }
-}

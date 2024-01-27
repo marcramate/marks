@@ -30,7 +30,7 @@ import {
   SearchOutlined,
   ClockCircleFilled,
 } from "@ant-design/icons";
-import { DELYTPM, UPDYTPM, UpdateEnd } from "@/app/actions";
+import { DELYTPM, UPDYTPM } from "@/app/actions";
 import dayjs from "dayjs";
 import type { DatePickerProps } from "antd";
 import TabsYoutube from "../components/YoutubeTabs";
@@ -143,23 +143,6 @@ export default function TBYoutubePremium() {
     }
   };
 
-  const updateend = async () => {
-    try {
-      const newDate = new Date();
-      await UpdateEnd(newDate);
-
-      console.log(newDate);
-
-      messageApi.success("Success Update_End!!");
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } catch (error) {
-      console.error("Error:", error);
-      messageApi.error("Error Update_End!!!");
-    }
-  };
-
   const handleCancel = () => {
     setEditedData(null);
     setIsModalOpen(false);
@@ -233,19 +216,6 @@ export default function TBYoutubePremium() {
             <div className="mb-4"></div>
 
             <Card decoration="top" decorationColor="indigo" key="unique-key">
-              <Flex justify="flex-end">
-                <Button
-                  shape="round"
-                  icon={<ClockCircleFilled />}
-                  className="buttonYTPm1"
-                  onClick={updateend}
-                >
-                  Update DateEnd
-                </Button>
-              </Flex>
-
-              <div className="mb-4"></div>
-
               <Table
                 dataSource={YTPremium}
                 columns={[

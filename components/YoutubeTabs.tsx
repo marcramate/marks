@@ -5,7 +5,6 @@ import type { TabsProps } from "antd";
 import { Card, Metric, Text } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 
-
 export default function TabsYoutube() {
   const supabase = createClient();
   const [tabItems, setTabItems] = useState<TabsProps["items"]>([]);
@@ -29,8 +28,15 @@ export default function TabsYoutube() {
           data?.map((item, index) => {
             const startMonth = new Date(item.date).getMonth() + 1;
             const endMonth = new Date(item.date_end).getMonth() + 1;
-            const monthdiff = endMonth - startMonth;
-            const progrmonth = Math.floor(monthdiff * (100 / 12));
+
+            // ปรับแต่ง monthdiff ให้ถ้าเป็นเดือนที่ 12 และ status_pay เป็น "จ่ายแล้ว" ให้เป็น 12 เดือน
+            const monthdiff =
+              item.status_pay && endMonth === 12 ? 12 : endMonth - startMonth;
+            // ปรับแต่ง progrmonth ให้ถ้าเป็นเดือนที่ 12 และ status_pay เป็น "จ่ายแล้ว" ให้เป็น 100%
+            const progrmonth =
+              item.status_pay && endMonth === 12
+                ? 100
+                : Math.floor(monthdiff * (100 / 12));
 
             return {
               key: (index + 1).toString(),
@@ -51,7 +57,9 @@ export default function TabsYoutube() {
                       decorationColor="indigo"
                     >
                       <Text>{item.status_pay ? "จ่ายแล้ว" : "เหลือ"}</Text>
-                      <Metric className={item.status_pay ? "Paid" : "Unpaid"}>{monthdiff} เดือน</Metric>
+                      <Metric className={item.status_pay ? "Paid" : "Unpaid"}>
+                        {monthdiff} เดือน
+                      </Metric>
                     </Card>
                   </Col>
                 </Row>

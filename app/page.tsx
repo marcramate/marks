@@ -11,19 +11,6 @@ const Main: React.FC = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-
-  //const [data, setData] = useState<any[]>([]);
-  /*
-  useEffect(() => {
-    const ApiDataAllsumAPI = async () => {
-      const apiData = await ApiData();
-      setData(apiData || []);
-    };
-
-    ApiDataAllsumAPI(); 
-  }, []);
-  */
-
   return (
     <Layout>
       <Content style={{ margin: "10px 16px 0" }}>
