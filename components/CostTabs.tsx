@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Tabs, Layout, theme } from "antd";
+import { Tabs } from "antd";
 import type { TabsProps } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import Monthlyexpenses from "./CostTable";
@@ -9,6 +9,7 @@ import Monthlyexpenses from "./CostTable";
 export default function TBCost() {
   const supabase = createClient();
   const [tabItems, setTabItems] = useState<TabsProps["items"]>([]);
+  const [activeKey, setActiveKey] = useState<string>("1");
 
   useEffect(() => {
     async function fetchData() {
@@ -48,49 +49,34 @@ export default function TBCost() {
     fetchData();
   }, []);
 
-  const { Content } = Layout;
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-
   const onChange = (key: string) => {
     console.log(key);
+    setActiveKey(key);
   };
 
   return (
-    <Layout>
-      <Content style={{ margin: "10px 16px 0" }}>
-        <div
-          style={{
-            padding: 24,
-            minHeight: 887,
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
-          }}
-        >
-          <Tabs defaultActiveKey="1" onChange={onChange}>
-            {tabItems?.map((item) => (
-              <Tabs.TabPane key={item.key} tab={item.label}>
-                {item.children}
-              </Tabs.TabPane>
-            ))}
+    <div>
+      <Tabs activeKey={activeKey} onChange={onChange}>
+        {tabItems?.map((item) => (
+          <Tabs.TabPane key={item.key} tab={item.label}>
+            {item.children}
+          </Tabs.TabPane>
+        ))}
 
-            <Tabs.TabPane key="3" tab="GraceMarc">
-              Content of Locked Tab 3
-            </Tabs.TabPane>
+        <Tabs.TabPane key="3" tab="GraceMarc">
+          Content of Locked Tab 3
+        </Tabs.TabPane>
 
-            <Tabs.TabPane key="4" tab="Miles">
-              Content of Locked Tab 4
-            </Tabs.TabPane>
-            <Tabs.TabPane key="5" tab="Miles">
-              Content of Locked Tab 5
-            </Tabs.TabPane>
-            <Tabs.TabPane key="6" tab="Cars">
-              Content of Locked Tab 6
-            </Tabs.TabPane>
-          </Tabs>
-        </div>
-      </Content>
-    </Layout>
+        <Tabs.TabPane key="4" tab="Miles">
+          Content of Locked Tab 4
+        </Tabs.TabPane>
+        <Tabs.TabPane key="5" tab="Miles">
+          Content of Locked Tab 5
+        </Tabs.TabPane>
+        <Tabs.TabPane key="6" tab="Cars">
+          Content of Locked Tab 6
+        </Tabs.TabPane>
+      </Tabs>
+    </div>
   );
 }

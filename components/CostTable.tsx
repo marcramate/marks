@@ -1,9 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Table } from "antd";
-import type { TableColumnsType, TableProps } from "antd";
+import { Table, Badge, Col, Row, Statistic, Card as Cardantd } from "antd";
 import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
+
+import MDexpesescost from "./CostModal";
 
 interface DataType {
   key: React.Key;
@@ -11,6 +12,7 @@ interface DataType {
   text: string;
   company: string;
   cost: number;
+  status: boolean;
 }
 
 export default function Monthlyexpenses() {
@@ -33,59 +35,69 @@ export default function Monthlyexpenses() {
     fetchPM();
   }, []);
 
-  const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
+  const totalCost = Monye.reduce(
+    (accumulator: any, currentExpense: { cost: any }) => {
+      return accumulator + currentExpense.cost;
     },
-    {
-      title: "List",
-      dataIndex: "text",
-      key: "text",
-    },
-    {
-      title: "Company",
-      dataIndex: "company",
-      key: "company",
-    },
-    {
-      title: "Cost",
-      dataIndex: "cost",
-      key: "cost",
-    },
-  ];
+    0
+  );
 
-  const data = [
-    {
-      key: "1",
-      name: "John Brown",
-      age: 32,
-      address: "New York No. 1 Lake Park",
-    },
-    {
-      key: "2",
-      name: "Jim Green",
-      age: 42,
-      address: "London No. 1 Lake Park",
-    },
-    {
-      key: "3",
-      name: "Joe Black",
-      age: 32,
-      address: "Sydney No. 1 Lake Park",
-    },
-    {
-      key: "4",
-      name: "Jim Red",
-      age: 32,
-      address: "London No. 2 Lake Park",
-    },
-  ];
+  //true
+  const PaidCost = Monye.filter(
+    (expense: { status: any }) => expense.status
+  ).reduce((accumulator: any, currentExpense: { cost: any }) => {
+    return accumulator + currentExpense.cost;
+  }, 0);
+
+  //false
+  const UnPaidCost = Monye.filter(
+    (expense: { status: any }) => !expense.status
+  ).reduce((accumulator: any, currentExpense: { cost: any }) => {
+    return accumulator + currentExpense.cost;
+  }, 0);
 
   return (
     <div>
-      <Card decoration="top" decorationColor="indigo" key="unique-key">
+      <Row gutter={16}>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+          <Cardantd bordered={true}>
+            <Statistic
+              title="All Expenses"
+              value={totalCost}
+              precision={2}
+              valueStyle={{ color: "#3f8600" }}
+              suffix="THB"
+            />
+          </Cardantd>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+          <Cardantd bordered={true}>
+            <Statistic
+              title="Paid"
+              value={PaidCost}
+              precision={2}
+              valueStyle={{ color: "#cf1322" }}
+              suffix="THB"
+            />
+          </Cardantd>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+          <Cardantd bordered={true}>
+            <Statistic
+              title="Remain"
+              value={UnPaidCost}
+              precision={2}
+              valueStyle={{ color: "#cf1322" }}
+              suffix="THB"
+            />
+          </Cardantd>
+        </Col>
+      </Row>
+
+      <div className="mb-4"></div>
+
+      <Card decoration="left" decorationColor="indigo" key="unique-key">
+        <MDexpesescost />
         <Table
           dataSource={Monye}
           columns={[
@@ -93,6 +105,9 @@ export default function Monthlyexpenses() {
               title: "ID",
               dataIndex: "id",
               key: "id",
+              sorter: (id1: { id: number }, id2: { id: number }) =>
+                id1.id - id2.id,
+              defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
             },
             {
               title: "List",
@@ -108,6 +123,27 @@ export default function Monthlyexpenses() {
               title: "Cost",
               dataIndex: "cost",
               key: "cost",
+              render: (cost: number) => (
+                <span>
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "THB",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(cost)}
+                </span>
+              ),
+            },
+            {
+              title: "Status",
+              dataIndex: "status",
+              key: "status",
+              render: (status: any) => (
+                <Badge
+                  status={status ? "success" : "error"}
+                  text={status ? "Paid" : "UnPaid"}
+                />
+              ),
             },
           ]}
         />

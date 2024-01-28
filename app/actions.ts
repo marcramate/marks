@@ -120,3 +120,52 @@ export async function DELYTPM(id: string) {
   }
 }
 
+export async function PMEX(DataPmJSON: string) {
+  try {
+    const DataPMOb = JSON.parse(DataPmJSON);
+
+    if (!DataPMOb) {
+      console.error("Error: DataPMOb is not defined");
+      return;
+    }
+
+    const text = DataPMOb.text;
+    const company = DataPMOb.company;
+    const cost = DataPMOb.cost;
+    const status = DataPMOb.status;
+
+    console.log(
+      "text:",
+      text,
+      "company",
+      company,
+      "cost",
+      cost,
+      "status",
+      status
+    );
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .insert([
+        {
+          text,
+          company,
+          cost,
+          status,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.log("Error Insert PMEX!!", error);
+    }
+
+    console.log("Ok Insert PMEX");
+  } catch (error) {
+    console.error("Error All Insert in PMEX:", error);
+  }
+}

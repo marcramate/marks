@@ -88,7 +88,7 @@ export default function MDYoutubePremium() {
         footer={(_, { OkBtn, CancelBtn }) => (
           <>
             {contextHolder}
-            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
+            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk} className="ml-2">
               Save
             </Button>
             <Tooltip title="Cancle">
@@ -98,6 +98,7 @@ export default function MDYoutubePremium() {
                 icon={<CloseOutlined />}
                 onClick={handleCancel}
                 shape="circle"
+                className="ml-2"
               ></Button>
             </Tooltip>
           </>

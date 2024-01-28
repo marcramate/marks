@@ -42,15 +42,15 @@ export default function TabsYoutube() {
               key: (index + 1).toString(),
               label: item.name,
               children: (
-                <Row gutter={16}>
-                  <Col span={3}>
+                <Row gutter={[16, 16]} justify="center">
+                  <Col xs={24} md={8} lg={6} xl={4}>
                     <Progress
                       type="circle"
                       percent={item.status_pay ? progrmonth : 0}
                     />
                   </Col>
 
-                  <Col span={8}>
+                  <Col xs={24} md={16} lg={18} xl={20}>
                     <Card
                       className="max-w-xs"
                       decoration="left"
