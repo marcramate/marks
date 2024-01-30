@@ -169,3 +169,78 @@ export async function PMEX(DataPmJSON: string) {
     console.error("Error All Insert in PMEX:", error);
   }
 }
+
+export async function UPDEXPM(EditJSONPm: string) {
+  try {
+    const EditDataEXPM = JSON.parse(EditJSONPm);
+    if (!EditDataEXPM) {
+      console.error("Error: EditDataYTPM is not defined");
+      return;
+    }
+
+    const text = EditDataEXPM.text;
+    const company = EditDataEXPM.company;
+    const cost = EditDataEXPM.cost;
+    const status = EditDataEXPM.status;
+    const id = EditDataEXPM.id;
+
+    console.log(
+      "Te:",
+      text,
+      "Co:",
+      company,
+      "ST:",
+      cost,
+      "Ess:",
+      status,
+      "EID:",
+      id
+    );
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .update({ text, company, cost, status })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.log("Error Update EXPM!!", error);
+    }
+
+    console.log("Ok Update EXPM");
+  } catch (error) {
+    console.error("Error All Update in EXPM:", error);
+  }
+}
+
+export async function DELEXPM(id: string) {
+  try {
+    const dataIDPm = id;
+
+    if (!dataIDPm) {
+      console.error("Error: ID is not defined");
+      return;
+    }
+
+    console.log("data", dataIDPm);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { error } = await supabase
+      .from("expenses")
+      .delete()
+      .eq("id", dataIDPm);
+
+    if (error) {
+      console.log("Error Delete EXPM!!", error);
+    }
+
+    console.log("Ok Del");
+  } catch (error) {
+    console.error("Error All Delete in EXPM:", error);
+  }
+}

@@ -83,7 +83,9 @@ export default function MDexpesescost() {
 
   return (
     <>
-      <div className="flex justify-end">
+      <div className="flex justify-end mr-2">
+        <Button className="mr-2" danger>Update Status</Button>
+
         <Tooltip title="Add">
           <Button
             size="middle"

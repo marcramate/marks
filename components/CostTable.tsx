@@ -28,6 +28,7 @@ import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 
 import MDexpesescost from "./CostModal";
+import { UPDEXPM, DELEXPM } from "@/app/actions";
 
 interface DataType {
   key: React.Key;
@@ -80,25 +81,25 @@ export default function Monthlyexpenses() {
   }, 0);
 
   const [messageApi, contextHolder] = message.useMessage();
-  const [editedData, setEditedData] = useState<any>(null);
+  const [editedDataPm, setEditedDataPm] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (editedData) {
+    if (editedDataPm) {
       form.setFieldsValue({
-        id: editedData.id,
-        text: editedData.text,
-        cost: editedData.cost,
-        company: editedData.company,
-        status: editedData.status,
+        id: editedDataPm.id,
+        text: editedDataPm.text,
+        cost: editedDataPm.cost,
+        company: editedDataPm.company,
+        status: editedDataPm.status,
       });
     }
-  }, [editedData, form]);
+  }, [editedDataPm, form]);
 
   const showModal = (record: SetStateAction<null>) => {
-    setEditedData(null);
-    setEditedData(record);
+    setEditedDataPm(null);
+    setEditedDataPm(record);
     setIsModalOpen(true);
   };
 
@@ -107,33 +108,35 @@ export default function Monthlyexpenses() {
       const { id } = record;
 
       console.log("id:", id);
-
+      await DELEXPM(id);
+      
       messageApi.success("Success Delete !!");
     } catch (error) {
       console.error("ErrorDel:", error);
       messageApi.error("Error Delete!!!");
     } finally {
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      //setTimeout(() => {
+      //  window.location.reload();
+      //}, 1000);
     }
   };
 
   const handleCancel = () => {
-    setEditedData(null);
+    setEditedDataPm(null);
     setIsModalOpen(false);
   };
 
   const handleOk = async () => {
     try {
-      if (editedData) {
-        const EditData = form.getFieldsValue();
-        const EditDataJSON = JSON.stringify(EditData);
+      if (editedDataPm) {
+        const EditPm = form.getFieldsValue();
+        const EditJSONPm = JSON.stringify(EditPm);
 
-        console.log(EditDataJSON);
+        console.log(EditJSONPm);
+        await UPDEXPM(EditJSONPm);
 
         handleCancel(); // หลังจากส่งข้อมูลเสร็จ ปิด Modal
-        messageApi.success("Success Update!!");
+        messageApi.success("Success Update EXPM!!");
         setTimeout(() => {
           window.location.reload();
         }, 1000);
@@ -267,7 +270,7 @@ export default function Monthlyexpenses() {
         title={
           <div className="flex items-center space-x-1">
             <EditFilled className="mr-2 text-teal-600" />
-            Edit Youtube Premium
+            EditExpenses Premier Gold
           </div>
         }
         open={isModalOpen}
@@ -295,10 +298,10 @@ export default function Monthlyexpenses() {
           labelCol={{ span: 4 }}
           //wrapperCol={{ span: 9 }}
         >
-          {editedData && (
+          {editedDataPm && (
             <>
               <Form.Item label="ID" name="id" className="mb-4" hidden>
-                <p>{editedData?.id}</p>
+                <p>{editedDataPm?.id}</p>
               </Form.Item>
 
               <div className="mb-4"></div>
@@ -310,6 +313,7 @@ export default function Monthlyexpenses() {
                 <Select
                   placeholder="Search to Select"
                   optionFilterProp="children"
+                  disabled
                 />
               </Form.Item>
 
@@ -320,7 +324,6 @@ export default function Monthlyexpenses() {
                 initialValue={0}
                 rules={[
                   {
-                    required: true,
                     type: "number",
                     message: "Please input a valid number",
                   },
