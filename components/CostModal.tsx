@@ -19,9 +19,17 @@ import {
   CloseOutlined,
 } from "@ant-design/icons";
 import { createClient } from "@/utils/supabase/client";
-import { PMEX } from "@/app/actions";
+import { PMEX, UPDSTALPM } from "@/app/actions";
 
-export default function MDexpesescost() {
+interface MonthlyexpensesProps {
+  company: string;
+  isTab1: boolean;
+}
+
+export default function MDexpesescost({
+  company,
+  isTab1,
+}: MonthlyexpensesProps) {
   const [open, setOpen] = useState(false);
   const [Comselec, setComselec] = useState<any>([]);
   const [SelcCom, setSelccom] = useState<any>([]);
@@ -35,7 +43,7 @@ export default function MDexpesescost() {
       let { data: selection, error } = await supabase
         .from("selection")
         .select("company")
-        .like("company ", "%Premier Gold%");
+        .like("company ", `%${company}%`);
 
       if (selection) {
         setComselec(selection);
@@ -45,13 +53,14 @@ export default function MDexpesescost() {
           label: company,
         }));
         setSelccom(seleccom);
+        console.log(seleccom);
       }
       if (!selection || error) {
         console.log("SELCompany :", error);
       }
     };
     fetchSelcom();
-  }, []);
+  }, [company, isTab1]);
 
   const showModal = () => {
     setOpen(true);
@@ -66,13 +75,13 @@ export default function MDexpesescost() {
       await PMEX(DataPmJSON);
 
       handleCancel();
-      messageApi.success("Success Insert Premier Gold!!");
+      messageApi.success("Success Insert Expenses!!");
       setTimeout(() => {
         window.location.reload();
-      }, 1100);
+      }, 1000);
     } catch (error) {
       console.error("Error:", error);
-      messageApi.error("Error Insert Premier Gold!!!");
+      messageApi.error("Error Insert Expenses!!!");
     }
   };
 
@@ -81,10 +90,25 @@ export default function MDexpesescost() {
     setOpen(false);
   };
 
+  const handleUpdStatus = async () => {
+    try {
+      await UPDSTALPM();
+      messageApi.success("Success Update All Status ==> False");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error:", error);
+      messageApi.error("Error Update Status");
+    }
+  };
+
   return (
     <>
       <div className="flex justify-end mr-2">
-        <Button className="mr-2" danger>Update Status</Button>
+        <Button className="mr-2" danger onClick={handleUpdStatus}>
+          Update Status False
+        </Button>
 
         <Tooltip title="Add">
           <Button
@@ -101,7 +125,7 @@ export default function MDexpesescost() {
         title={
           <div className="flex items-center space-x-1">
             <PlusCircleFilled className="mr-2 text-teal-600" />
-            Add Expenses Premier Gold
+            Add Expenses
           </div>
         }
         onCancel={handleCancel}
@@ -175,7 +199,7 @@ export default function MDexpesescost() {
               prefix="THB"
               className="w-full"
               name="cost"
-              formatter={(value) => (value ? `${parseFloat(value)}` : "0")}
+              formatter={(value) => (value ? `${value}` : "0")}
               parser={(value) => (value ? parseFloat(value) : 0)}
             />
           </Form.Item>

@@ -219,8 +219,13 @@ export default function TBYoutubePremium() {
                   text: name,
                   value: name,
                 })),
-                onFilter: (dataname: string, nam: { name: string }) =>
-                  nam.name.indexOf(dataname) === 0,
+                onFilter: (
+                  dataname: string | number | boolean,
+                  nam: { name: string }
+                ) =>
+                  typeof dataname === "string"
+                    ? nam.name.indexOf(String(dataname)) === 0
+                    : true,
               },
               {
                 title: "Month",
@@ -253,8 +258,10 @@ export default function TBYoutubePremium() {
                   text: status_pay ? "Paid" : "UnPaid",
                   value: status_pay,
                 })),
-                onFilter: (datastatus: string, sta: { status_pay: boolean }) =>
-                  datastatus ? sta.status_pay : !sta.status_pay,
+                onFilter: (
+                  datastatus: string | boolean | number,
+                  sta: { status_pay: boolean }
+                ) => (datastatus ? sta.status_pay : !sta.status_pay),
               },
               {
                 title: "",
@@ -292,11 +299,7 @@ export default function TBYoutubePremium() {
             <TabsYoutube />
           </div>
         </Card>
-      </Spin>
-      <Spin
-        spinning={spinning}
-        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-      >
+
         <Modal
           title={
             <div className="flex items-center space-x-1">

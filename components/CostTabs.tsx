@@ -10,6 +10,8 @@ export default function TBCost() {
   const supabase = createClient();
   const [tabItems, setTabItems] = useState<TabsProps["items"]>([]);
   const [activeKey, setActiveKey] = useState<string>("1");
+  const [company, setCompany] = useState<string>(""); // เพิ่มตัวแปร company
+  const [isTab1, setIsTab1] = useState<boolean>(true); // เพิ่มตัวแปร isTab1
 
   useEffect(() => {
     async function fetchData() {
@@ -34,7 +36,7 @@ export default function TBCost() {
               label: item.company,
               children: (
                 <div>
-                  <Monthlyexpenses />
+                  <Monthlyexpenses company={item.company} isTab1={isTab1} />
                 </div>
               ), // เพิ่มข้อมูลเนื้อหาของแท็บตามต้องการ
             };
@@ -52,6 +54,8 @@ export default function TBCost() {
   const onChange = (key: string) => {
     console.log(key);
     setActiveKey(key);
+    setCompany("");  // เมื่อเปลี่ยนแท็บให้ reset ค่า company
+    setIsTab1(!isTab1);  // เมื่อเปลี่ยนแท็บให้สลับค่า isTab1
   };
 
   return (
@@ -70,11 +74,8 @@ export default function TBCost() {
         <Tabs.TabPane key="4" tab="Miles">
           Content of Locked Tab 4
         </Tabs.TabPane>
-        <Tabs.TabPane key="5" tab="Miles">
+        <Tabs.TabPane key="5" tab="Cars">
           Content of Locked Tab 5
-        </Tabs.TabPane>
-        <Tabs.TabPane key="6" tab="Cars">
-          Content of Locked Tab 6
         </Tabs.TabPane>
       </Tabs>
     </div>

@@ -39,7 +39,7 @@ export async function YTPM(formDataJSON: string) {
       console.log("Error Insert YTPM!!", error);
     }
 
-    console.log("Ok Insert");
+    console.log("Ok Insert",data);
   } catch (error) {
     console.error("Error All Insert in YTPM:", error);
   }
@@ -85,7 +85,7 @@ export async function UPDYTPM(EditDataJSON: string) {
       console.log("Error Update YTPM!!", error);
     }
 
-    console.log("Ok Update");
+    console.log("Ok Update",data);
   } catch (error) {
     console.error("Error All Update in YTPM:", error);
   }
@@ -164,7 +164,7 @@ export async function PMEX(DataPmJSON: string) {
       console.log("Error Insert PMEX!!", error);
     }
 
-    console.log("Ok Insert PMEX");
+    console.log("Ok Insert PMEX",data);
   } catch (error) {
     console.error("Error All Insert in PMEX:", error);
   }
@@ -207,12 +207,12 @@ export async function UPDEXPM(EditJSONPm: string) {
       .select();
 
     if (error) {
-      console.log("Error Update EXPM!!", error);
+      console.log("Error Update EX!!", error);
     }
 
-    console.log("Ok Update EXPM");
+    console.log("Ok Update EX",data);
   } catch (error) {
-    console.error("Error All Update in EXPM:", error);
+    console.error("Error All Update in EX:", error);
   }
 }
 
@@ -236,11 +236,58 @@ export async function DELEXPM(id: string) {
       .eq("id", dataIDPm);
 
     if (error) {
-      console.log("Error Delete EXPM!!", error);
+      console.log("Error Delete EX!!", error);
     }
 
-    console.log("Ok Del");
+    console.log("Ok Delete Ex");
   } catch (error) {
-    console.error("Error All Delete in EXPM:", error);
+    console.error("Error All Delete in EX:", error);
+  }
+}
+
+export async function UPDSTALPM() {
+  try {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .update({ status: false })
+      .eq("status", true)
+      .select();
+
+    if (error) {
+      console.log("Error Update Status => False", error);
+    }
+    console.log("Update Ok Status EX",data);
+  } catch (error) {
+    console.error("Error Update Status EX", error);
+  }
+}
+
+export async function STATUPIDPM(id: string, status: boolean) {
+  try {
+    const IDPm = id;
+    const STAPm = status;
+    const newstat = !status;
+
+    console.log("ID", id, "Sta:", status, "new", newstat);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .update({ status: newstat })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.log("Error Update Status EX", error);
+    }
+
+    console.log("OK Update Status", data);
+  } catch (error) {
+    console.error("Error Update Status Ex", error);
   }
 }

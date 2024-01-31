@@ -17,18 +17,20 @@ import {
   Select,
   InputNumber,
   message,
+  Spin,
 } from "antd";
 import {
   EditFilled,
   DeleteFilled,
   CheckOutlined,
   CloseOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
 import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 
 import MDexpesescost from "./CostModal";
-import { UPDEXPM, DELEXPM } from "@/app/actions";
+import { UPDEXPM, DELEXPM, STATUPIDPM } from "@/app/actions";
 
 interface DataType {
   key: React.Key;
@@ -39,16 +41,25 @@ interface DataType {
   status: boolean;
 }
 
-export default function Monthlyexpenses() {
+interface MonthlyexpensesProps {
+  company: string;
+  isTab1: boolean;
+}
+export default function Monthlyexpenses({
+  company,
+  isTab1,
+}: MonthlyexpensesProps) {
   const supabase = createClient();
   const [Monye, setMoye] = useState<any>([]);
+  const [spinning, setSpinning] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchPM = async () => {
       let { data: expenses, error } = await supabase
         .from("expenses")
         .select("*")
-        .like("company ", "%Premier Gold%");
+        .like("company ", `%${company}%`);
+
       if (expenses) {
         setMoye(expenses);
       }
@@ -56,8 +67,9 @@ export default function Monthlyexpenses() {
         console.log("PM :", error);
       }
     };
+
     fetchPM();
-  }, []);
+  }, [company, isTab1]);
 
   const totalCost = Monye.reduce(
     (accumulator: any, currentExpense: { cost: any }) => {
@@ -97,7 +109,7 @@ export default function Monthlyexpenses() {
     }
   }, [editedDataPm, form]);
 
-  const showModal = (record: SetStateAction<null>) => {
+  const showModal = (record: SetStateAction<null> | { id: number }) => {
     setEditedDataPm(null);
     setEditedDataPm(record);
     setIsModalOpen(true);
@@ -108,16 +120,41 @@ export default function Monthlyexpenses() {
       const { id } = record;
 
       console.log("id:", id);
+      setSpinning(true);
       await DELEXPM(id);
-      
+
       messageApi.success("Success Delete !!");
     } catch (error) {
       console.error("ErrorDel:", error);
+      setSpinning(false);
       messageApi.error("Error Delete!!!");
     } finally {
-      //setTimeout(() => {
-      //  window.location.reload();
-      //}, 1000);
+      setTimeout(() => {
+        setSpinning(false);
+        window.location.reload();
+      }, 1000);
+    }
+  };
+
+  const handleStatus = async (record: any) => {
+    try {
+      const { id, status } = record;
+
+      console.log("ID:", id, "Status:", status);
+
+      setSpinning(true);
+      await STATUPIDPM(id, status);
+
+      messageApi.success("Success Update Status");
+    } catch (error) {
+      console.log("ErrorStatus:", error);
+      setSpinning(false);
+      messageApi.error("Error UpdateStatus!!!");
+    } finally {
+      setSpinning(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
 
@@ -133,16 +170,19 @@ export default function Monthlyexpenses() {
         const EditJSONPm = JSON.stringify(EditPm);
 
         console.log(EditJSONPm);
+        setSpinning(true);
         await UPDEXPM(EditJSONPm);
 
         handleCancel(); // หลังจากส่งข้อมูลเสร็จ ปิด Modal
         messageApi.success("Success Update EXPM!!");
         setTimeout(() => {
+          setSpinning(false);
           window.location.reload();
         }, 1000);
       }
     } catch (error) {
       console.error("Error:", error);
+      setSpinning(false);
       messageApi.error("Error Update!!!");
     }
   };
@@ -186,169 +226,184 @@ export default function Monthlyexpenses() {
       </Row>
 
       <div className="mb-4"></div>
-
-      <Card decoration="left" decorationColor="indigo" key="unique-key">
-        <MDexpesescost />
-        <Table
-          dataSource={Monye}
-          columns={[
-            {
-              title: "ID",
-              dataIndex: "id",
-              key: "id",
-              sorter: (id1: { id: number }, id2: { id: number }) =>
-                id1.id - id2.id,
-              defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-            },
-            {
-              title: "List",
-              dataIndex: "text",
-              key: "text",
-            },
-            {
-              title: "Company",
-              dataIndex: "company",
-              key: "company",
-            },
-            {
-              title: "Cost",
-              dataIndex: "cost",
-              key: "cost",
-              render: (cost: number) => (
-                <span>
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "THB",
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }).format(cost)}
-                </span>
-              ),
-            },
-            {
-              title: "Status",
-              dataIndex: "status",
-              key: "status",
-              render: (status: any) => (
-                <Badge
-                  status={status ? "success" : "error"}
-                  text={status ? "Paid" : "UnPaid"}
-                />
-              ),
-            },
-            {
-              title: "",
-              key: "action",
-              render: (_, record) => (
-                <Space size="middle">
-                  {contextHolder}
-                  <Tooltip title="Edit">
-                    <Button
-                      shape="circle"
-                      icon={<EditFilled />}
-                      size={"small"}
-                      onClick={() => showModal(record)}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <Button
-                      danger
-                      shape="circle"
-                      icon={<DeleteFilled />}
-                      size={"small"}
-                      onClick={() => handleDel(record)}
-                    />
-                  </Tooltip>
-                </Space>
-              ),
-            },
-          ]}
-        />
-      </Card>
-
-      <Modal
-        title={
-          <div className="flex items-center space-x-1">
-            <EditFilled className="mr-2 text-teal-600" />
-            EditExpenses Premier Gold
-          </div>
-        }
-        open={isModalOpen}
-        //onOk={handleOk}
-        onCancel={handleCancel}
-        footer={[
-          <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
-            Save
-          </Button>,
-          <Tooltip title="Cancle">
-            <Button
-              type="primary"
-              danger
-              icon={<CloseOutlined />}
-              onClick={handleCancel}
-              shape="circle"
-            ></Button>
-          </Tooltip>,
-        ]}
+      <Spin
+        spinning={spinning}
+        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
-        <Form
-          style={{ maxWidth: 450 }}
-          autoComplete="off"
-          form={form}
-          labelCol={{ span: 4 }}
-          //wrapperCol={{ span: 9 }}
+        <Card decoration="left" decorationColor="indigo" key="unique-key">
+          <MDexpesescost company={company} isTab1={isTab1} />
+          <Table
+            dataSource={Monye}
+            columns={[
+              {
+                title: "ID",
+                dataIndex: "id",
+                key: "id",
+                sorter: (id1: { id: number }, id2: { id: number }) =>
+                  id1.id - id2.id,
+                defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+              },
+              {
+                title: "List",
+                dataIndex: "text",
+                key: "text",
+              },
+              {
+                title: "Company",
+                dataIndex: "company",
+                key: "company",
+              },
+              {
+                title: "Cost",
+                dataIndex: "cost",
+                key: "cost",
+                render: (cost: number) => (
+                  <span>
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(cost)}
+                  </span>
+                ),
+              },
+              {
+                title: "Status",
+                dataIndex: "status",
+                key: "status",
+                render: (status: any) => (
+                  <Badge
+                    status={status ? "success" : "error"}
+                    text={status ? "Paid" : "UnPaid"}
+                  />
+                ),
+              },
+              {
+                title: "",
+                key: "action",
+                render: (_, record) => (
+                  <Space size="middle">
+                    {contextHolder}
+                    <Tooltip title="UpdateStatus">
+                      <Button
+                        className="buttonUpStatus"
+                        shape="round"
+                        icon={<CheckOutlined className="text-green-700" />}
+                        size={"small"}
+                        onClick={() => handleStatus(record)}
+                      >
+                        UpdateStatus
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="Edit">
+                      <Button
+                        shape="circle"
+                        icon={<EditFilled />}
+                        size={"small"}
+                        onClick={() => showModal(record)}
+                      />
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <Button
+                        danger
+                        shape="circle"
+                        icon={<DeleteFilled />}
+                        size={"small"}
+                        onClick={() => handleDel(record)}
+                      />
+                    </Tooltip>
+                  </Space>
+                ),
+              },
+            ]}
+          />
+        </Card>
+
+        <Modal
+          title={
+            <div className="flex items-center space-x-1">
+              <EditFilled className="mr-2 text-teal-600" />
+              Edit Expenses
+            </div>
+          }
+          open={isModalOpen}
+          //onOk={handleOk}
+          onCancel={handleCancel}
+          footer={[
+            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
+              Save
+            </Button>,
+            <Tooltip title="Cancle">
+              <Button
+                type="primary"
+                danger
+                icon={<CloseOutlined />}
+                onClick={handleCancel}
+                shape="circle"
+              ></Button>
+            </Tooltip>,
+          ]}
         >
-          {editedDataPm && (
-            <>
-              <Form.Item label="ID" name="id" className="mb-4" hidden>
-                <p>{editedDataPm?.id}</p>
-              </Form.Item>
+          <Form
+            style={{ maxWidth: 450 }}
+            autoComplete="off"
+            form={form}
+            labelCol={{ span: 4 }}
+            //wrapperCol={{ span: 9 }}
+          >
+            {editedDataPm && (
+              <>
+                <Form.Item label="ID" name="id" className="mb-4" hidden>
+                  <p>{editedDataPm?.id}</p>
+                </Form.Item>
 
-              <div className="mb-4"></div>
-              <Form.Item label="List" name="text">
-                <Input name="text" className="w-full" />
-              </Form.Item>
+                <div className="mb-4"></div>
+                <Form.Item label="List" name="text">
+                  <Input name="text" className="w-full" />
+                </Form.Item>
 
-              <Form.Item label="Company" name="company" className="mb-4">
-                <Select
-                  placeholder="Search to Select"
-                  optionFilterProp="children"
-                  disabled
-                />
-              </Form.Item>
+                <Form.Item label="Company" name="company" className="mb-4">
+                  <Select
+                    placeholder="Search to Select"
+                    optionFilterProp="children"
+                    disabled
+                  />
+                </Form.Item>
 
-              <Form.Item
-                label="Cost"
-                name="cost"
-                className="mb-4"
-                initialValue={0}
-                rules={[
-                  {
-                    type: "number",
-                    message: "Please input a valid number",
-                  },
-                ]}
-              >
-                <InputNumber
-                  prefix="THB"
-                  className="w-full"
+                <Form.Item
+                  label="Cost"
                   name="cost"
-                  formatter={(value) => (value ? `${parseFloat(value)}` : "0")}
-                  parser={(value) => (value ? parseFloat(value) : 0)}
-                />
-              </Form.Item>
+                  className="mb-4"
+                  initialValue={0}
+                  rules={[
+                    {
+                      type: "number",
+                      message: "Please input a valid number",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    prefix="THB"
+                    className="w-full"
+                    name="cost"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
+                </Form.Item>
 
-              <Form.Item label="Status" name="status">
-                <Switch
-                  checkedChildren={<CheckOutlined />}
-                  unCheckedChildren={<CloseOutlined />}
-                  className="bg-red-500"
-                />
-              </Form.Item>
-            </>
-          )}
-        </Form>
-      </Modal>
+                <Form.Item label="Status" name="status">
+                  <Switch
+                    checkedChildren={<CheckOutlined />}
+                    unCheckedChildren={<CloseOutlined />}
+                    className="bg-red-500"
+                  />
+                </Form.Item>
+              </>
+            )}
+          </Form>
+        </Modal>
+      </Spin>
     </div>
   );
 }
