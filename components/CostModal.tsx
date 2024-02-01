@@ -38,27 +38,28 @@ export default function MDexpesescost({
   const [form] = Form.useForm(); // เพิ่ม form instance
   const supabase = createClient();
 
+  const fetchSelcom = async () => {
+    let { data: selection, error } = await supabase
+      .from("selection")
+      .select("company")
+      .like("company ", `%${company}%`);
+
+    if (selection) {
+      setComselec(selection);
+      const seleccom = selection.map(({ company }) => ({
+        value: company,
+        label: company,
+      }));
+      setSelccom(seleccom);
+      console.log(seleccom);
+    }
+
+    if (!selection || error) {
+      console.log("SELCompany :", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchSelcom = async () => {
-      let { data: selection, error } = await supabase
-        .from("selection")
-        .select("company")
-        .like("company ", `%${company}%`);
-
-      if (selection) {
-        setComselec(selection);
-
-        const seleccom = selection.map(({ company }) => ({
-          value: company,
-          label: company,
-        }));
-        setSelccom(seleccom);
-        console.log(seleccom);
-      }
-      if (!selection || error) {
-        console.log("SELCompany :", error);
-      }
-    };
     fetchSelcom();
   }, [company, isTab1]);
 
@@ -75,6 +76,7 @@ export default function MDexpesescost({
       await PMEX(DataPmJSON);
 
       handleCancel();
+
       messageApi.success("Success Insert Expenses!!");
       setTimeout(() => {
         window.location.reload();

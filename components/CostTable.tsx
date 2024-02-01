@@ -53,21 +53,22 @@ export default function Monthlyexpenses({
   const [Monye, setMoye] = useState<any>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
 
+  const fetchPM = async () => {
+    let { data: expenses, error } = await supabase
+      .from("expenses")
+      .select("*")
+      .like("company ", `%${company}%`);
+
+    if (expenses) {
+      setMoye(expenses);
+    }
+
+    if (!expenses || error) {
+      console.log("PM :", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchPM = async () => {
-      let { data: expenses, error } = await supabase
-        .from("expenses")
-        .select("*")
-        .like("company ", `%${company}%`);
-
-      if (expenses) {
-        setMoye(expenses);
-      }
-      if (!expenses || error) {
-        console.log("PM :", error);
-      }
-    };
-
     fetchPM();
   }, [company, isTab1]);
 
@@ -123,16 +124,16 @@ export default function Monthlyexpenses({
       setSpinning(true);
       await DELEXPM(id);
 
+      setTimeout(() => {
+        fetchPM();
+        setSpinning(false);
+      }, 1000);
+
       messageApi.success("Success Delete !!");
     } catch (error) {
       console.error("ErrorDel:", error);
       setSpinning(false);
       messageApi.error("Error Delete!!!");
-    } finally {
-      setTimeout(() => {
-        setSpinning(false);
-        window.location.reload();
-      }, 1000);
     }
   };
 
@@ -145,16 +146,16 @@ export default function Monthlyexpenses({
       setSpinning(true);
       await STATUPIDPM(id, status);
 
+      setTimeout(() => {
+        fetchPM();
+        setSpinning(false);
+      }, 1000);
+
       messageApi.success("Success Update Status");
     } catch (error) {
       console.log("ErrorStatus:", error);
       setSpinning(false);
       messageApi.error("Error UpdateStatus!!!");
-    } finally {
-      setSpinning(false);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
     }
   };
 
@@ -174,11 +175,12 @@ export default function Monthlyexpenses({
         await UPDEXPM(EditJSONPm);
 
         handleCancel(); // หลังจากส่งข้อมูลเสร็จ ปิด Modal
-        messageApi.success("Success Update EXPM!!");
+
         setTimeout(() => {
+          fetchPM();
           setSpinning(false);
-          window.location.reload();
         }, 1000);
+        messageApi.success("Success Update EXPM!!");
       }
     } catch (error) {
       console.error("Error:", error);
