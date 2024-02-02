@@ -39,7 +39,7 @@ export async function YTPM(formDataJSON: string) {
       console.log("Error Insert YTPM!!", error);
     }
 
-    console.log("Ok Insert",data);
+    console.log("Ok Insert", data);
   } catch (error) {
     console.error("Error All Insert in YTPM:", error);
   }
@@ -85,7 +85,7 @@ export async function UPDYTPM(EditDataJSON: string) {
       console.log("Error Update YTPM!!", error);
     }
 
-    console.log("Ok Update",data);
+    console.log("Ok Update", data);
   } catch (error) {
     console.error("Error All Update in YTPM:", error);
   }
@@ -164,7 +164,7 @@ export async function PMEX(DataPmJSON: string) {
       console.log("Error Insert PMEX!!", error);
     }
 
-    console.log("Ok Insert PMEX",data);
+    console.log("Ok Insert PMEX", data);
   } catch (error) {
     console.error("Error All Insert in PMEX:", error);
   }
@@ -210,7 +210,7 @@ export async function UPDEXPM(EditJSONPm: string) {
       console.log("Error Update EX!!", error);
     }
 
-    console.log("Ok Update EX",data);
+    console.log("Ok Update EX", data);
   } catch (error) {
     console.error("Error All Update in EX:", error);
   }
@@ -259,7 +259,7 @@ export async function UPDSTALPM() {
     if (error) {
       console.log("Error Update Status => False", error);
     }
-    console.log("Update Ok Status EX",data);
+    console.log("Update Ok Status EX", data);
   } catch (error) {
     console.error("Error Update Status EX", error);
   }
@@ -291,3 +291,158 @@ export async function STATUPIDPM(id: string, status: boolean) {
     console.error("Error Update Status Ex", error);
   }
 }
+
+export async function GMEX(DataGmeJson: string) {
+  try {
+    const DataGmob = JSON.parse(DataGmeJson);
+
+    if (!DataGmeJson) {
+      console.log("Error: DataGmeJson is not defined");
+      return;
+    }
+
+    const text = DataGmob.text;
+    const company = DataGmob.company;
+    const cost = DataGmob.cost;
+    const status = DataGmob.status;
+
+    console.log(
+      "text:",
+      text,
+      "company",
+      company,
+      "cost",
+      cost,
+      "status",
+      status
+    );
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .insert([
+        {
+          text,
+          company,
+          cost,
+          status,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.log("Error Insert GMEX!!", error);
+    }
+
+    console.log("Ok Insert GMEX", data);
+  } catch (error) {
+    console.error("Error All Insert in GMEX:", error);
+  }
+}
+
+export async function UPDXGM(EditJSONGm: string) {
+  try {
+    const EditDataGXPM = JSON.parse(EditJSONGm);
+    if (!EditDataGXPM) {
+      console.error("Error: EditDataGXPM is not defined");
+      return;
+    }
+
+    const text = EditDataGXPM.text;
+    const company = EditDataGXPM.company;
+    const cost = EditDataGXPM.cost;
+    const status = EditDataGXPM.status;
+    const id = EditDataGXPM.id;
+
+    console.log(
+      "Te:",
+      text,
+      "Co:",
+      company,
+      "ST:",
+      cost,
+      "Ess:",
+      status,
+      "EID:",
+      id
+    );
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .update({ text, company, cost, status })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.log("Error Update UPDXGM!!", error);
+    }
+
+    console.log("Ok Update UPDXGM", data);
+  } catch (error) {
+    console.error("Error All Update in UPDXGM:", error);
+  }
+}
+
+export async function DELEXGM(id: string) {
+  try {
+    const dataIDGm = id;
+
+    if (!dataIDGm) {
+      console.error("Error: ID is not defined");
+      return;
+    }
+
+    console.log("data", dataIDGm);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { error } = await supabase
+      .from("expenses")
+      .delete()
+      .eq("id", dataIDGm);
+
+    if (error) {
+      console.log("Error Delete DELEXGM!!", error);
+    }
+
+    console.log("Ok Delete DELEXGM");
+  } catch (error) {
+    console.error("Error All Delete in DELEXGM:", error);
+  }
+}
+/*
+export async function DELEXPM(id: string) {
+  try {
+    const dataIDPm = id;
+
+    if (!dataIDPm) {
+      console.error("Error: ID is not defined");
+      return;
+    }
+
+    console.log("data", dataIDPm);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { error } = await supabase
+      .from("expenses")
+      .delete()
+      .eq("id", dataIDPm);
+
+    if (error) {
+      console.log("Error Delete EX!!", error);
+    }
+
+    console.log("Ok Delete Ex");
+  } catch (error) {
+    console.error("Error All Delete in EX:", error);
+  }
+}
+*/

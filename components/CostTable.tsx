@@ -18,6 +18,7 @@ import {
   InputNumber,
   message,
   Spin,
+  Tag,
 } from "antd";
 import {
   EditFilled,
@@ -26,11 +27,12 @@ import {
   CloseOutlined,
   LoadingOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 
 import MDexpesescost from "./CostModal";
-import { UPDEXPM, DELEXPM, STATUPIDPM } from "@/app/actions";
+import { UPDEXPM, DELEXPM, STATUPIDPM, UPDXGM, DELEXGM } from "@/app/actions";
 import { Gmmodal } from "./CostModal";
 
 interface DataType {
@@ -414,6 +416,11 @@ export default function Monthlyexpenses({
 export function Gmcost() {
   const supabase = createClient();
   const [Gmexp, setGmxp] = useState<any>([]);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
+  const [spinning, setSpinning] = useState<boolean>(false);
+  const [editedDataGm, setEditedDataGm] = useState<any>(null);
   const Gme = async () => {
     try {
       let { data: expenses, error } = await supabase
@@ -435,36 +442,103 @@ export function Gmcost() {
   useEffect(() => {
     Gme();
   }, []);
+
+  useEffect(() => {
+    if (editedDataGm) {
+      form.setFieldsValue({
+        id: editedDataGm.id,
+        text: editedDataGm.text,
+        cost: editedDataGm.cost,
+        company: editedDataGm.company,
+        status: editedDataGm.status,
+      });
+    }
+  }, [editedDataGm, form]);
+
+  const showModal = (record: SetStateAction<null> | { id: number }) => {
+    setEditedDataGm(null);
+    setEditedDataGm(record);
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setEditedDataGm(null);
+    setIsModalOpen(false);
+  };
+
+  const handleOk = async () => {
+    try {
+      if (editedDataGm) {
+        const EditGm = form.getFieldsValue();
+        const EditJSONGm = JSON.stringify(EditGm);
+
+        console.log(EditJSONGm);
+        setSpinning(true);
+        await UPDXGM(EditJSONGm);
+
+        handleCancel(); // หลังจากส่งข้อมูลเสร็จ ปิด Modal
+
+        setTimeout(() => {
+          Gme();
+          setSpinning(false);
+        }, 1000);
+        messageApi.success("Success Update EXPM!!");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setSpinning(false);
+      messageApi.error("Error Update!!!");
+    }
+  };
+
+  const handleDel = async (record: any) => {
+    try {
+      const { id } = record;
+
+      console.log("id:", id);
+      setSpinning(true);
+      await DELEXGM(id);
+
+      setTimeout(() => {
+        Gme();
+        setSpinning(false);
+      }, 1000);
+
+      messageApi.success("Success Delete !!");
+    } catch (error) {
+      console.error("ErrorDel:", error);
+      setSpinning(false);
+      messageApi.error("Error Delete!!!");
+    }
+  };
+  const totalGm = Gmexp.reduce((accumulator: any, current: { cost: any }) => {
+    return accumulator + current.cost;
+  }, 0);
+
+  const totalGmSh =
+    Gmexp.reduce((accumulator: any, current: { cost: any }) => {
+      return accumulator + current.cost;
+    }, 0) / 2;
+
   return (
     <div>
       <Row gutter={16}>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
           <Cardantd bordered={true}>
             <Statistic
               title="All Expenses"
-              value="67"
+              value={totalGm}
               precision={2}
               valueStyle={{ color: "#3f8600" }}
               suffix="THB"
             />
           </Cardantd>
         </Col>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
           <Cardantd bordered={true}>
             <Statistic
-              title="Paid"
-              value="45"
-              precision={2}
-              valueStyle={{ color: "#cf1322" }}
-              suffix="THB"
-            />
-          </Cardantd>
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-          <Cardantd bordered={true}>
-            <Statistic
-              title="Remain"
-              value="21"
+              title="Share"
+              value={totalGmSh}
               precision={2}
               valueStyle={{ color: "#cf1322" }}
               suffix="THB"
@@ -473,74 +547,186 @@ export function Gmcost() {
         </Col>
       </Row>
 
-      <div className="mb-4"></div>
-      <Card decoration="top" decorationColor="indigo" key="unique-key">
-        <Gmmodal />
-        <Table
-          dataSource={Gmexp}
-          columns={[
-            {
-              title: "ID",
-              dataIndex: "id",
-              key: "id",
-              sorter: (id1: { id: number }, id2: { id: number }) =>
-                id1.id - id2.id,
-              defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-            },
-            {
-              title: "List",
-              dataIndex: "text",
-              key: "text",
-            },
-            {
-              title: "Choice",
-              dataIndex: "company",
-              key: "company",
-            },
-            {
-              title: "Cost",
-              dataIndex: "cost",
-              key: "cost",
-              render: (cost: number) => (
-                <span>
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "THB",
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }).format(cost)}
-                </span>
-              ),
-            },
+      <div className="mb-4" />
+      <Spin
+        spinning={spinning}
+        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+      >
+        <Card decoration="top" decorationColor="indigo" key="unique-key">
+          <Gmmodal />
+          <Table
+            dataSource={Gmexp}
+            columns={[
+              {
+                title: "ID",
+                dataIndex: "id",
+                key: "id",
+                sorter: (id1: { id: number }, id2: { id: number }) =>
+                  id1.id - id2.id,
+                defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+              },
+              {
+                title: "List",
+                dataIndex: "text",
+                key: "text",
+              },
+              {
+                title: "Choice",
+                dataIndex: "company",
+                key: "company",
+              },
+              {
+                title: "Cost",
+                dataIndex: "cost",
+                key: "cost",
+                render: (cost: number) => (
+                  <span>
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(cost)}
+                  </span>
+                ),
+              },
+              {
+                title: "Share",
+                key: "Share",
+                render: (record: { cost: number }) => (
+                  <span>
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(record.cost / 2)}
+                  </span>
+                ),
+              },
+              {
+                title: "Date",
+                key: "date",
+                render: () => {
+                  const nowDate = dayjs();
+                  const fomatD = nowDate.format("MM/YYYY");
+                  return <Tag color="geekblue">{fomatD}</Tag>;
+                },
+              },
 
-            {
-              title: "",
-              key: "action",
-              render: (_, record) => (
-                <Space size="middle">
-                  <Tooltip title="Edit">
-                    <Button
-                      shape="circle"
-                      icon={<EditFilled />}
-                      size={"small"}
-                      //onClick={() => showModal(record)}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <Button
-                      danger
-                      shape="circle"
-                      icon={<DeleteFilled />}
-                      size={"small"}
-                      //onClick={() => handleDel(record)}
-                    />
-                  </Tooltip>
-                </Space>
-              ),
-            },
+              {
+                title: "",
+                key: "action",
+                render: (_, record) => (
+                  <Space size="middle">
+                    <Tooltip title="Edit">
+                      <Button
+                        shape="circle"
+                        icon={<EditFilled />}
+                        size={"small"}
+                        onClick={() => showModal(record)}
+                      />
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <Button
+                        danger
+                        shape="circle"
+                        icon={<DeleteFilled />}
+                        size={"small"}
+                        onClick={() => handleDel(record)}
+                      />
+                    </Tooltip>
+                  </Space>
+                ),
+              },
+            ]}
+          />
+        </Card>
+
+        <Modal
+          title={
+            <div className="flex items-center space-x-1">
+              <EditFilled className="mr-2 text-teal-600" />
+              Edit Expenses GraceMarc
+            </div>
+          }
+          open={isModalOpen}
+          onCancel={handleCancel}
+          footer={[
+            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
+              Save
+            </Button>,
+            <Tooltip title="Cancle">
+              <Button
+                type="primary"
+                danger
+                icon={<CloseOutlined />}
+                onClick={handleCancel}
+                shape="circle"
+              ></Button>
+            </Tooltip>,
           ]}
-        />
-      </Card>
+        >
+          <Form
+            style={{ maxWidth: 450 }}
+            autoComplete="off"
+            form={form}
+            labelCol={{ span: 4 }}
+            //wrapperCol={{ span: 9 }}
+          >
+            {editedDataGm && (
+              <>
+                <Form.Item label="ID" name="id" className="mb-4" hidden>
+                  <p>{editedDataGm?.id}</p>
+                </Form.Item>
+
+                <div className="mb-4"></div>
+                <Form.Item label="List" name="text">
+                  <Input name="text" className="w-full" />
+                </Form.Item>
+
+                <Form.Item label="Company" name="company" className="mb-4">
+                  <Select
+                    placeholder="Search to Select"
+                    optionFilterProp="children"
+                    disabled
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Cost"
+                  name="cost"
+                  className="mb-4"
+                  initialValue={0}
+                  rules={[
+                    {
+                      type: "number",
+                      message: "Please input a valid number",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    prefix="THB"
+                    className="w-full"
+                    name="cost"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
+                </Form.Item>
+                <div className="hidden">
+                  <Form.Item label="Status" name="status">
+                    <Switch
+                      checkedChildren={<CheckOutlined />}
+                      unCheckedChildren={<CloseOutlined />}
+                      className="bg-red-500"
+                    />
+                  </Form.Item>
+                </div>
+              </>
+            )}
+          </Form>
+        </Modal>
+      </Spin>
     </div>
   );
 }

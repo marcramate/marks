@@ -19,7 +19,7 @@ import {
   CloseOutlined,
 } from "@ant-design/icons";
 import { createClient } from "@/utils/supabase/client";
-import { PMEX, UPDSTALPM } from "@/app/actions";
+import { PMEX, UPDSTALPM, GMEX } from "@/app/actions";
 
 interface MonthlyexpensesProps {
   company: string;
@@ -240,12 +240,13 @@ export function Gmmodal() {
       const DataGmeJson = JSON.stringify(DataGme);
 
       console.log("Data:", DataGmeJson);
+      await GMEX(DataGmeJson);
       messageApi.success("Success Insert GM!!");
+
+      handleCancel();
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-
-      handleCancel();
     } catch (error) {
       console.error("Error GM:", error);
       messageApi.error("Error Insert GM!!!");
@@ -302,7 +303,7 @@ export function Gmmodal() {
         <Form
           form={form}
           style={{ maxWidth: 450 }}
-          initialValues={{ status: false, company: "GraceMarc"}}
+          initialValues={{ status: false, company: "GraceMarc" }}
           autoComplete="off"
           labelCol={{ span: 4 }}
         >
