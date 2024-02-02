@@ -5,6 +5,7 @@ import { Tabs } from "antd";
 import type { TabsProps } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import Monthlyexpenses from "./CostTable";
+import { Gmcost } from "./CostTable";
 
 export default function TBCost() {
   const supabase = createClient();
@@ -54,8 +55,8 @@ export default function TBCost() {
   const onChange = (key: string) => {
     console.log(key);
     setActiveKey(key);
-    setCompany("");  // เมื่อเปลี่ยนแท็บให้ reset ค่า company
-    setIsTab1(!isTab1);  // เมื่อเปลี่ยนแท็บให้สลับค่า isTab1
+    setCompany(""); // เมื่อเปลี่ยนแท็บให้ reset ค่า company
+    setIsTab1(!isTab1); // เมื่อเปลี่ยนแท็บให้สลับค่า isTab1
   };
 
   return (
@@ -68,7 +69,7 @@ export default function TBCost() {
         ))}
 
         <Tabs.TabPane key="3" tab="GraceMarc">
-          Content of Locked Tab 3
+          <Gmcost />
         </Tabs.TabPane>
 
         <Tabs.TabPane key="4" tab="Miles">

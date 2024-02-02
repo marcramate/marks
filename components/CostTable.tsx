@@ -31,6 +31,7 @@ import { createClient } from "@/utils/supabase/client";
 
 import MDexpesescost from "./CostModal";
 import { UPDEXPM, DELEXPM, STATUPIDPM } from "@/app/actions";
+import { Gmmodal } from "./CostModal";
 
 interface DataType {
   key: React.Key;
@@ -406,6 +407,140 @@ export default function Monthlyexpenses({
           </Form>
         </Modal>
       </Spin>
+    </div>
+  );
+}
+
+export function Gmcost() {
+  const supabase = createClient();
+  const [Gmexp, setGmxp] = useState<any>([]);
+  const Gme = async () => {
+    try {
+      let { data: expenses, error } = await supabase
+        .from("expenses")
+        .select("*")
+        .like("company", "%GraceMarc%");
+
+      if (expenses) {
+        setGmxp(expenses);
+      }
+      if (!expenses || error) {
+        console.log("GM:", error);
+      }
+    } catch (error) {
+      console.error("Error GM:", error);
+    }
+  };
+
+  useEffect(() => {
+    Gme();
+  }, []);
+  return (
+    <div>
+      <Row gutter={16}>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+          <Cardantd bordered={true}>
+            <Statistic
+              title="All Expenses"
+              value="67"
+              precision={2}
+              valueStyle={{ color: "#3f8600" }}
+              suffix="THB"
+            />
+          </Cardantd>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+          <Cardantd bordered={true}>
+            <Statistic
+              title="Paid"
+              value="45"
+              precision={2}
+              valueStyle={{ color: "#cf1322" }}
+              suffix="THB"
+            />
+          </Cardantd>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+          <Cardantd bordered={true}>
+            <Statistic
+              title="Remain"
+              value="21"
+              precision={2}
+              valueStyle={{ color: "#cf1322" }}
+              suffix="THB"
+            />
+          </Cardantd>
+        </Col>
+      </Row>
+
+      <div className="mb-4"></div>
+      <Card decoration="top" decorationColor="indigo" key="unique-key">
+        <Gmmodal />
+        <Table
+          dataSource={Gmexp}
+          columns={[
+            {
+              title: "ID",
+              dataIndex: "id",
+              key: "id",
+              sorter: (id1: { id: number }, id2: { id: number }) =>
+                id1.id - id2.id,
+              defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+            },
+            {
+              title: "List",
+              dataIndex: "text",
+              key: "text",
+            },
+            {
+              title: "Choice",
+              dataIndex: "company",
+              key: "company",
+            },
+            {
+              title: "Cost",
+              dataIndex: "cost",
+              key: "cost",
+              render: (cost: number) => (
+                <span>
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "THB",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(cost)}
+                </span>
+              ),
+            },
+
+            {
+              title: "",
+              key: "action",
+              render: (_, record) => (
+                <Space size="middle">
+                  <Tooltip title="Edit">
+                    <Button
+                      shape="circle"
+                      icon={<EditFilled />}
+                      size={"small"}
+                      //onClick={() => showModal(record)}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <Button
+                      danger
+                      shape="circle"
+                      icon={<DeleteFilled />}
+                      size={"small"}
+                      //onClick={() => handleDel(record)}
+                    />
+                  </Tooltip>
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </Card>
     </div>
   );
 }

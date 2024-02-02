@@ -218,3 +218,149 @@ export default function MDexpesescost({
     </>
   );
 }
+
+export function Gmmodal() {
+  const [open, setOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [form] = Form.useForm(); // เพิ่ม form instance
+  const supabase = createClient();
+
+  const showModal = () => {
+    setOpen(true);
+  };
+
+  const handleCancel = () => {
+    form.resetFields(); // ล้างข้อมูลฟอร์มเมื่อ Modal ถูกปิด
+    setOpen(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      const DataGme = form.getFieldsValue();
+      const DataGmeJson = JSON.stringify(DataGme);
+
+      console.log("Data:", DataGmeJson);
+      messageApi.success("Success Insert GM!!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+
+      handleCancel();
+    } catch (error) {
+      console.error("Error GM:", error);
+      messageApi.error("Error Insert GM!!!");
+    }
+  };
+  return (
+    <div>
+      <div className="flex justify-end mr-2">
+        <Tooltip title="Add">
+          <Button
+            size="middle"
+            icon={<PlusOutlined />}
+            onClick={showModal}
+            className="buttonYTPm1"
+          />
+        </Tooltip>
+      </div>
+
+      <div className="mb-2" />
+
+      <Modal
+        open={open}
+        title={
+          <div className="flex items-center space-x-1">
+            <PlusCircleFilled className="mr-2 text-teal-600" />
+            Add Expenses GraceMarc
+          </div>
+        }
+        onCancel={handleCancel}
+        footer={[
+          <div>
+            {contextHolder}
+            <Button
+              shape="round"
+              icon={<CheckOutlined />}
+              onClick={handleSave}
+              className="ml-2"
+            >
+              Save
+            </Button>
+            <Tooltip title="Cancle">
+              <Button
+                type="primary"
+                danger
+                icon={<CloseOutlined />}
+                onClick={handleCancel}
+                shape="circle"
+                className="ml-2"
+              ></Button>
+            </Tooltip>
+          </div>,
+        ]}
+      >
+        <Form
+          form={form}
+          style={{ maxWidth: 450 }}
+          initialValues={{ status: false, company: "GraceMarc"}}
+          autoComplete="off"
+          labelCol={{ span: 4 }}
+        >
+          <Form.Item
+            label="List"
+            name="text"
+            rules={[{ required: true, message: "Please input your Name!" }]}
+            className="mb-4"
+          >
+            <Input name="text" className="w-full" />
+          </Form.Item>
+
+          <Form.Item
+            label="Choice"
+            name="company"
+            rules={[{ required: true, message: "Please Select Your Company!" }]}
+            className="mb-4"
+          >
+            <Select
+              placeholder="Search to Select"
+              optionFilterProp="children"
+              options={[{ value: "GraceMarc", label: "GraceMarc" }]}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Cost"
+            name="cost"
+            className="mb-4"
+            initialValue={0}
+            rules={[
+              {
+                required: true,
+                type: "number",
+                message: "Please input a valid number",
+              },
+            ]}
+          >
+            <InputNumber
+              prefix="THB"
+              className="w-full"
+              name="cost"
+              formatter={(value) => (value ? `${value}` : "0")}
+              parser={(value) => (value ? parseFloat(value) : 0)}
+            />
+          </Form.Item>
+
+          <div className="hidden">
+            <Form.Item label="Status" name="status">
+              <Switch
+                checkedChildren={<CheckOutlined />}
+                unCheckedChildren={<CloseOutlined />}
+                className="bg-red-500"
+              />
+            </Form.Item>
+          </div>
+        </Form>
+      </Modal>
+    </div>
+  );
+}
