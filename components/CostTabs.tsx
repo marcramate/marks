@@ -5,7 +5,7 @@ import { Tabs } from "antd";
 import type { TabsProps } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import Monthlyexpenses from "./CostTable";
-import { Gmcost } from "./CostTable";
+import { Gmcost, CarTag } from "./CostTable";
 
 export default function TBCost() {
   const supabase = createClient();
@@ -21,7 +21,8 @@ export default function TBCost() {
 
         let { data: selection, error } = await supabase
           .from("selection")
-          .select("*");
+          .select("company")
+          .not("company", "is", null);
 
         if (error) {
           throw new Error(
@@ -76,7 +77,7 @@ export default function TBCost() {
           Content of Locked Tab 4
         </Tabs.TabPane>
         <Tabs.TabPane key="5" tab="Cars">
-          Content of Locked Tab 5
+          <CarTag />
         </Tabs.TabPane>
       </Tabs>
     </div>

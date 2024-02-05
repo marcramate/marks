@@ -416,33 +416,138 @@ export async function DELEXGM(id: string) {
     console.error("Error All Delete in DELEXGM:", error);
   }
 }
-/*
-export async function DELEXPM(id: string) {
-  try {
-    const dataIDPm = id;
 
-    if (!dataIDPm) {
-      console.error("Error: ID is not defined");
+export async function CartagIn(DatacartagJson: string) {
+  try {
+    const DataCarTag = JSON.parse(DatacartagJson);
+
+    if (!DataCarTag) {
+      console.log("Error: DataCarTag is not defined");
       return;
     }
 
-    console.log("data", dataIDPm);
+    const c_name = DataCarTag.c_name;
+    const c_price = DataCarTag.c_price;
+    const c_startdate = DataCarTag.c_startdate;
+    const c_enddate = DataCarTag.c_enddate;
+    const c_tag = DataCarTag.c_tag;
+
+    console.log(
+      "c_name:",
+      c_name,
+      "c_price",
+      c_price,
+      "c_startdate",
+      c_startdate,
+      "c_enddate",
+      c_enddate,
+      "c_tag",
+      c_tag
+    );
 
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const { error } = await supabase
-      .from("expenses")
-      .delete()
-      .eq("id", dataIDPm);
+    const { data, error } = await supabase
+      .from("car")
+      .insert([
+        {
+          c_name,
+          c_price,
+          c_startdate,
+          c_enddate,
+          c_tag,
+        },
+      ])
+      .select();
 
     if (error) {
-      console.log("Error Delete EX!!", error);
+      console.log("Error Insert CartagIn!!", error);
     }
 
-    console.log("Ok Delete Ex");
+    console.log("Ok Insert CartagIn", data);
   } catch (error) {
-    console.error("Error All Delete in EX:", error);
+    console.error("Error All Insert in CartagIn:", error);
+  }
+}
+
+export async function UPDCartag(EditJSONcartag: string) {
+  try {
+    const EditDataUPDCartag = JSON.parse(EditJSONcartag);
+
+    if (!EditDataUPDCartag) {
+      console.error("Error: EditDataUPDCartag is not defined");
+      return;
+    }
+    const id = EditDataUPDCartag.id;
+    const c_name = EditDataUPDCartag.c_name;
+    const c_price = EditDataUPDCartag.c_price;
+    const c_startdate = EditDataUPDCartag.c_startdate;
+    const c_enddate = EditDataUPDCartag.c_enddate;
+    const c_tag = EditDataUPDCartag.c_tag;
+
+    console.log(
+      "Te:",
+      c_name,
+      "Co:",
+      c_price,
+      "ST:",
+      c_startdate,
+      "Ess:",
+      c_enddate,
+      "Tag:",
+      c_tag,
+      "EID:",
+      id
+    );
+  } catch (error) {
+    console.error("Error All Update in UPDCartag:", error);
+  }
+}
+/*
+export async function UPDXGM(EditJSONGm: string) {
+  try {
+    const EditDataGXPM = JSON.parse(EditJSONGm);
+    if (!EditDataGXPM) {
+      console.error("Error: EditDataGXPM is not defined");
+      return;
+    }
+
+    const text = EditDataGXPM.text;
+    const company = EditDataGXPM.company;
+    const cost = EditDataGXPM.cost;
+    const status = EditDataGXPM.status;
+    const id = EditDataGXPM.id;
+
+    console.log(
+      "Te:",
+      text,
+      "Co:",
+      company,
+      "ST:",
+      cost,
+      "Ess:",
+      status,
+      "EID:",
+      id
+    );
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .update({ text, company, cost, status })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.log("Error Update UPDXGM!!", error);
+    }
+
+    console.log("Ok Update UPDXGM", data);
+  } catch (error) {
+    console.error("Error All Update in UPDXGM:", error);
   }
 }
 */

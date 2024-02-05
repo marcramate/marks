@@ -11,6 +11,8 @@ import {
   Select,
   InputNumber,
   message,
+  DatePicker,
+  DatePickerProps,
 } from "antd";
 import {
   PlusOutlined,
@@ -19,7 +21,8 @@ import {
   CloseOutlined,
 } from "@ant-design/icons";
 import { createClient } from "@/utils/supabase/client";
-import { PMEX, UPDSTALPM, GMEX } from "@/app/actions";
+import { PMEX, UPDSTALPM, GMEX, CartagIn } from "@/app/actions";
+import dayjs from "dayjs";
 
 interface MonthlyexpensesProps {
   company: string;
@@ -360,6 +363,237 @@ export function Gmmodal() {
               />
             </Form.Item>
           </div>
+        </Form>
+      </Modal>
+    </div>
+  );
+}
+
+export function Cartagmodal() {
+  const [open, setOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [Scta, setScta] = useState<any>([]);
+  const [Carname, setcarname] = useState<any>([]);
+  const [form] = Form.useForm(); // เพิ่ม form instance
+  const supabase = createClient();
+
+  const carname = async () => {
+    let { data: selectcar, error } = await supabase
+      .from("selection")
+      .select("car")
+      .not("car", "is", null);
+
+    if (selectcar) {
+      setcarname(selectcar);
+      const carmam = selectcar.map(({ car }) => ({
+        value: car,
+        label: car,
+      }));
+      setcarname(carmam);
+      console.log(carmam);
+    }
+
+    if (!selectcar || error) {
+      console.log("car :", error);
+    }
+  };
+
+  const tagcar = async () => {
+    let { data: selectcartag, error } = await supabase
+      .from("selection")
+      .select("car_tag");
+
+    if (selectcartag) {
+      setScta(selectcartag);
+      const scartag = selectcartag.map(({ car_tag }) => ({
+        value: car_tag,
+        label: car_tag,
+      }));
+      setScta(scartag);
+      console.log(scartag);
+    }
+
+    if (!selectcartag || error) {
+      console.log("tagcar :", error);
+    }
+  };
+
+  useEffect(() => {
+    tagcar();
+    carname();
+  }, []);
+
+  const showModal = () => {
+    setOpen(true);
+  };
+
+  const handleCancel = () => {
+    form.resetFields(); // ล้างข้อมูลฟอร์มเมื่อ Modal ถูกปิด
+    setOpen(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      const Datacartag = form.getFieldsValue();
+      const DatacartagJson = JSON.stringify(Datacartag);
+
+      console.log("Datacartag:", DatacartagJson);
+      await CartagIn(DatacartagJson);
+      messageApi.success("Success Insert Cartag!!");
+
+      handleCancel();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error Cartag:", error);
+      messageApi.error("Error Insert Cartag!!!");
+    }
+  };
+
+  const onChange: DatePickerProps["onChange"] = (date, dateString) => {
+    console.log(date, dateString);
+  };
+
+  const ondateend = (date: { c_startdate?: any }, dateString: string) => {
+    const { c_startdate } = date;
+
+    if (c_startdate) {
+      const newDateend = dayjs(dateString).add(1, "year");
+      form.setFieldsValue({ c_enddate: newDateend });
+    }
+  };
+  return (
+    <div>
+      <div className="flex justify-end mr-2">
+        <Tooltip title="Add">
+          <Button
+            size="middle"
+            icon={<PlusOutlined />}
+            onClick={showModal}
+            className="buttonYTPm1"
+          />
+        </Tooltip>
+      </div>
+
+      <div className="mb-2" />
+
+      <Modal
+        open={open}
+        title={
+          <div className="flex items-center space-x-1">
+            <PlusCircleFilled className="mr-2 text-teal-600" />
+            Add CarTag
+          </div>
+        }
+        onCancel={handleCancel}
+        footer={[
+          <div>
+            {contextHolder}
+            <Button
+              shape="round"
+              icon={<CheckOutlined />}
+              onClick={handleSave}
+              className="ml-2"
+            >
+              Save
+            </Button>
+            <Tooltip title="Cancle">
+              <Button
+                type="primary"
+                danger
+                icon={<CloseOutlined />}
+                onClick={handleCancel}
+                shape="circle"
+                className="ml-2"
+              ></Button>
+            </Tooltip>
+          </div>,
+        ]}
+      >
+        <Form
+          form={form}
+          style={{ maxWidth: 450 }}
+          initialValues={{
+            c_startdate: dayjs(),
+            c_enddate: dayjs().add(1, "year"),
+          }}
+          autoComplete="off"
+          labelCol={{ span: 4 }}
+        >
+          <Form.Item
+            label="Car"
+            name="c_name"
+            rules={[{ required: true, message: "Please input your Car!" }]}
+            className="mb-4"
+          >
+            <Select
+              placeholder="Search to Select"
+              optionFilterProp="children"
+              options={Carname}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="CarTag"
+            name="c_tag"
+            rules={[{ required: true, message: "Please Select Your CarTag!" }]}
+            className="mb-4"
+          >
+            <Select
+              placeholder="Search to Select"
+              optionFilterProp="children"
+              options={Scta}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Price"
+            name="c_price"
+            className="mb-4"
+            initialValue={0}
+            rules={[
+              {
+                required: true,
+                type: "number",
+                message: "Please input a valid number",
+              },
+            ]}
+          >
+            <InputNumber
+              prefix="THB"
+              className="w-full"
+              name="c_price"
+              formatter={(value) => (value ? `${value}` : "0")}
+              parser={(value) => (value ? parseFloat(value) : 0)}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Date"
+            name="c_startdate"
+            rules={[{ required: true, message: "Please input Date!" }]}
+            className="mb-4"
+          >
+            <DatePicker
+              onChange={ondateend}
+              style={{ width: "100%" }}
+              name="c_startdate"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="DateEnd"
+            name="c_enddate"
+            rules={[{ required: true, message: "Please input Date!" }]}
+            className="mb-4"
+          >
+            <DatePicker
+              onChange={onChange}
+              style={{ width: "100%" }}
+              name="c_enddate"
+            />
+          </Form.Item>
         </Form>
       </Modal>
     </div>
