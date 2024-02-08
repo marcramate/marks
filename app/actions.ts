@@ -500,54 +500,77 @@ export async function UPDCartag(EditJSONcartag: string) {
       "EID:",
       id
     );
-  } catch (error) {
-    console.error("Error All Update in UPDCartag:", error);
-  }
-}
-/*
-export async function UPDXGM(EditJSONGm: string) {
-  try {
-    const EditDataGXPM = JSON.parse(EditJSONGm);
-    if (!EditDataGXPM) {
-      console.error("Error: EditDataGXPM is not defined");
-      return;
-    }
-
-    const text = EditDataGXPM.text;
-    const company = EditDataGXPM.company;
-    const cost = EditDataGXPM.cost;
-    const status = EditDataGXPM.status;
-    const id = EditDataGXPM.id;
-
-    console.log(
-      "Te:",
-      text,
-      "Co:",
-      company,
-      "ST:",
-      cost,
-      "Ess:",
-      status,
-      "EID:",
-      id
-    );
 
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
     const { data, error } = await supabase
-      .from("expenses")
-      .update({ text, company, cost, status })
+      .from("car")
+      .update({ c_name, c_price, c_startdate, c_enddate, c_tag })
       .eq("id", id)
       .select();
 
     if (error) {
-      console.log("Error Update UPDXGM!!", error);
+      console.log("Error Update UPDCartag!!", error);
     }
 
-    console.log("Ok Update UPDXGM", data);
+    console.log("Ok Update UPDCartag", data);
   } catch (error) {
-    console.error("Error All Update in UPDXGM:", error);
+    console.error("Error All Update in UPDCartag:", error);
+  }
+}
+
+export async function DELcartag(id: string) {
+  try {
+    const IDcartag = id;
+
+    if (!IDcartag) {
+      console.log("Error: ID is not defined");
+      return;
+    }
+
+    console.log("ID DELcartag:", IDcartag);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { error } = await supabase
+      .from("car")
+      .delete()
+      .eq("id", IDcartag);
+
+      if(error){
+        console.log("Error Delete DELCartag!!", error);
+      }
+  } catch (error) {}
+}
+/*
+export async function DELEXPM(id: string) {
+  try {
+    const dataIDPm = id;
+
+    if (!dataIDPm) {
+      console.error("Error: ID is not defined");
+      return;
+    }
+
+    console.log("data", dataIDPm);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { error } = await supabase
+      .from("expenses")
+      .delete()
+      .eq("id", dataIDPm);
+
+    if (error) {
+      console.log("Error Delete EX!!", error);
+    }
+
+    console.log("Ok Delete Ex");
+  } catch (error) {
+    console.error("Error All Delete in EX:", error);
   }
 }
 */

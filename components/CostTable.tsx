@@ -41,6 +41,7 @@ import {
   UPDXGM,
   DELEXGM,
   UPDCartag,
+  DELcartag,
 } from "@/app/actions";
 import { Gmmodal, Cartagmodal } from "./CostModal";
 
@@ -57,6 +58,7 @@ interface MonthlyexpensesProps {
   company: string;
   isTab1: boolean;
 }
+
 export default function Monthlyexpenses({
   company,
   isTab1,
@@ -852,7 +854,7 @@ export function CarTag() {
         handleCancel(); // หลังจากส่งข้อมูลเสร็จ ปิด Modal
 
         setTimeout(() => {
-          //Gme();
+          CarTagData();
           setSpinning(false);
         }, 1000);
         messageApi.success("Success Update Cartag!!");
@@ -870,7 +872,7 @@ export function CarTag() {
 
       console.log("id:", id);
       setSpinning(true);
-      //await DELEXGM(id);
+      await DELcartag(id);
 
       setTimeout(() => {
         //Gme();
@@ -885,13 +887,18 @@ export function CarTag() {
     }
   };
 
-  const onChange: DatePickerProps["onChange"] = (date, dateString) => {
+  const onDate: DatePickerProps["onChange"] = (date, dateString) => {
     console.log(date, dateString);
   };
 
   const ondateend = (date: any, dateString: string) => {
-    const newDateend = dayjs(dateString).add(1, "year");
-    form.setFieldsValue({ c_enddate: newDateend });
+    const startDate: dayjs.Dayjs = dayjs(dateString).endOf("day");
+
+    const newDateend = dayjs(dateString).endOf("day").add(1, "year");
+    form.setFieldsValue({
+      c_startdate: startDate,
+      c_enddate: newDateend,
+    });
   };
 
   /*
@@ -1096,7 +1103,7 @@ export function CarTag() {
 
                 <Form.Item label="DateEnd" name="c_enddate" className="mb-4">
                   <DatePicker
-                    onChange={onChange}
+                    onChange={onDate}
                     style={{ width: "100%" }}
                     name="c_enddate"
                   />
