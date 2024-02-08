@@ -534,15 +534,16 @@ export async function DELcartag(id: string) {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const { error } = await supabase
-      .from("car")
-      .delete()
-      .eq("id", IDcartag);
+    const { error } = await supabase.from("car").delete().eq("id", IDcartag);
 
-      if(error){
-        console.log("Error Delete DELCartag!!", error);
-      }
-  } catch (error) {}
+    if (error) {
+      console.log("Error Delete DELCartag!!", error);
+    }
+
+    console.log("Ok Delete DELcartag");
+  } catch (error) {
+    console.error("Error All Delete in DELcartag:", error);
+  }
 }
 /*
 export async function DELEXPM(id: string) {

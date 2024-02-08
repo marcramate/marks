@@ -455,13 +455,14 @@ export function Cartagmodal() {
     console.log(date, dateString);
   };
 
-  const ondateend = (date: { c_startdate?: any }, dateString: string) => {
-    const { c_startdate } = date;
+  const ondateend = (date: any, dateString: string) => {
+    const startDate: dayjs.Dayjs = dayjs(dateString).endOf("day");
 
-    if (c_startdate) {
-      const newDateend = dayjs(dateString).add(1, "year");
-      form.setFieldsValue({ c_enddate: newDateend });
-    }
+    const newDateend = dayjs(dateString).endOf("day").add(1, "year");
+    form.setFieldsValue({
+      c_startdate: startDate,
+      c_enddate: newDateend,
+    });
   };
   return (
     <div>

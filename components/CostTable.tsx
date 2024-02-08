@@ -54,6 +54,18 @@ interface DataType {
   status: boolean;
 }
 
+interface CarMiles {
+  id: number;
+  c_name: string;
+  c_price: number;
+  c_startdate: Date;
+  c_enddate: Date;
+  c_miles: number;
+  c_oiltype: string;
+  c_oilstation: string;
+  c_liter: number;
+}
+
 interface MonthlyexpensesProps {
   company: string;
   isTab1: boolean;
@@ -213,7 +225,7 @@ export default function Monthlyexpenses({
               value={totalCost}
               precision={2}
               valueStyle={{ color: "#3f8600" }}
-              suffix="THB"
+              prefix="THB"
             />
           </Cardantd>
         </Col>
@@ -224,7 +236,7 @@ export default function Monthlyexpenses({
               value={PaidCost}
               precision={2}
               valueStyle={{ color: "#cf1322" }}
-              suffix="THB"
+              prefix="THB"
             />
           </Cardantd>
         </Col>
@@ -235,7 +247,7 @@ export default function Monthlyexpenses({
               value={UnPaidCost}
               precision={2}
               valueStyle={{ color: "#cf1322" }}
-              suffix="THB"
+              prefix="THB"
             />
           </Cardantd>
         </Col>
@@ -541,7 +553,7 @@ export function Gmcost() {
               value={totalGm}
               precision={2}
               valueStyle={{ color: "#3f8600" }}
-              suffix="THB"
+              prefix="THB"
             />
           </Cardantd>
         </Col>
@@ -552,7 +564,7 @@ export function Gmcost() {
               value={totalGmSh}
               precision={2}
               valueStyle={{ color: "#cf1322" }}
-              suffix="THB"
+              prefix="THB"
             />
           </Cardantd>
         </Col>
@@ -844,10 +856,17 @@ export function CarTag() {
   const handleOk = async () => {
     try {
       if (editedDataCarTag) {
-        const EditCarTag = form.getFieldsValue();
-        const EditJSONcartag = JSON.stringify(EditCarTag);
+        const { c_startdate, c_enddate, ...EditCarTag } = form.getFieldsValue();
 
-        console.log(EditJSONcartag);
+        const datestart = dayjs(c_startdate).endOf("day");
+        const enddate = dayjs(c_enddate).endOf("day");
+
+        const EditJSONcartag = JSON.stringify({
+          ...EditCarTag,
+          c_startdate: datestart,
+          c_enddate: enddate,
+        });
+
         setSpinning(true);
         await UPDCartag(EditJSONcartag);
 
@@ -875,7 +894,7 @@ export function CarTag() {
       await DELcartag(id);
 
       setTimeout(() => {
-        //Gme();
+        CarTagData();
         setSpinning(false);
       }, 1000);
 
@@ -887,30 +906,40 @@ export function CarTag() {
     }
   };
 
-  const onDate: DatePickerProps["onChange"] = (date, dateString) => {
-    console.log(date, dateString);
+  const updDateField = (field: string, date: dayjs.Dayjs | null) => {
+    const fieldValue = form.getFieldValue(field);
+
+    console.log(`${field} Date:`, fieldValue, date);
+
+    if (date && !fieldValue?.isSame(date, "day")) {
+      const updatedDate: dayjs.Dayjs = date.endOf("day");
+      form.setFieldsValue({
+        [field]: updatedDate,
+      });
+    }
   };
 
-  const ondateend = (date: any, dateString: string) => {
-    const startDate: dayjs.Dayjs = dayjs(dateString).endOf("day");
-
-    const newDateend = dayjs(dateString).endOf("day").add(1, "year");
-    form.setFieldsValue({
-      c_startdate: startDate,
-      c_enddate: newDateend,
-    });
+  const onStartDate = (date: dayjs.Dayjs | null, dateString: string) => {
+    updDateField("c_startdate", date);
   };
 
-  /*
-  const totalGm = Gmexp.reduce((accumulator: any, current: { cost: any }) => {
-    return accumulator + current.cost;
+  const ondateend = (date: dayjs.Dayjs | null, dateString: string) => {
+    updDateField("c_enddate", date);
+  };
+
+  const totalCar = CarTag.filter(
+    (car: { c_name: string }) => car.c_name === "Vios"
+  ).reduce((accumulator: any, current: { c_price: any }) => {
+    return accumulator + current.c_price;
   }, 0);
 
-  const totalGmSh =
-    Gmexp.reduce((accumulator: any, current: { cost: any }) => {
-      return accumulator + current.cost;
-    }, 0) / 2;
-    */
+  const totalMoto =
+    CarTag.filter((car: { c_name: string }) => car.c_name !== "Vios").reduce(
+      (accumulator: any, current: { c_price: any }) => {
+        return accumulator + current.c_price;
+      },
+      0
+    ) / 2;
 
   return (
     <div>
@@ -918,22 +947,22 @@ export function CarTag() {
         <Col xs={24} sm={12} md={12} lg={12} xl={12}>
           <Cardantd bordered={true}>
             <Statistic
-              title="All Expenses"
-              value="5"
+              title="Car"
+              value={totalCar}
               precision={2}
-              valueStyle={{ color: "#3f8600" }}
-              suffix="THB"
+              valueStyle={{ color: "#000" }}
+              prefix="THB"
             />
           </Cardantd>
         </Col>
         <Col xs={24} sm={12} md={12} lg={12} xl={12}>
           <Cardantd bordered={true}>
             <Statistic
-              title="Share"
-              value="d"
+              title="Motorcycle"
+              value={totalMoto}
               precision={2}
-              valueStyle={{ color: "#cf1322" }}
-              suffix="THB"
+              valueStyle={{ color: "#000" }}
+              prefix="THB"
             />
           </Cardantd>
         </Col>
@@ -998,6 +1027,30 @@ export function CarTag() {
                 render: (c_enddate) => {
                   const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
                   return <Tag color="#f50">{fomated}</Tag>;
+                },
+              },
+              {
+                title: "Status",
+                key: "status",
+                render: ({ c_enddate }) => {
+                  const nowdate = dayjs().format("YYYY-MM-DD");
+
+                  return (
+                    <span>
+                      {dayjs(c_enddate).isBefore(nowdate) ||
+                      dayjs(c_enddate).isSame(nowdate) ? (
+                        <Badge status="error" text="หมดแล้ว" />
+                      ) : (
+                        <>
+                          {dayjs(c_enddate).diff(nowdate, "day") <= 7 ? (
+                            <Badge status="warning" text="ใกล้แล้ว" />
+                          ) : (
+                            <Badge status="success" text="ยังไม่หมด" />
+                          )}
+                        </>
+                      )}
+                    </span>
+                  );
                 },
               },
 
@@ -1095,7 +1148,7 @@ export function CarTag() {
                 </Form.Item>
                 <Form.Item label="Date" name="c_startdate" className="mb-4">
                   <DatePicker
-                    onChange={ondateend}
+                    onChange={onStartDate}
                     style={{ width: "100%" }}
                     name="c_startdate"
                   />
@@ -1103,7 +1156,7 @@ export function CarTag() {
 
                 <Form.Item label="DateEnd" name="c_enddate" className="mb-4">
                   <DatePicker
-                    onChange={onDate}
+                    onChange={ondateend}
                     style={{ width: "100%" }}
                     name="c_enddate"
                   />
@@ -1114,5 +1167,210 @@ export function CarTag() {
         </Modal>
       </Spin>
     </div>
+  );
+}
+export function CarMiles() {
+  const supabase = createClient();
+  const [CarTag, setCarTag] = useState<any>([]);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
+  const [spinning, setSpinning] = useState<boolean>(false);
+  const [editedDataCarTag, setEditedDataCarTag] = useState<any>(null);
+  const [Scta, setScta] = useState<any>([]);
+  const [Carname, setcarname] = useState<any>([]);
+
+  const Carmiles = async () => {
+    try {
+      let { data: car, error } = await supabase
+        .from("car")
+        .select("*")
+        .not("c_miles", "is", null);
+
+      if (car) {
+        setCarTag(car);
+      }
+      if (!car || error) {
+        console.log("CarTag:", error);
+      }
+    } catch (error) {
+      console.error("Error CarTag:", error);
+    }
+  };
+
+  useEffect(() => {
+    Carmiles();
+  }, []);
+
+  return (
+    <>
+      <Row gutter={16}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+          <Cardantd bordered={true}>
+            <Statistic
+              title="Cost"
+              value="124"
+              precision={2}
+              valueStyle={{ color: "#000" }}
+              prefix="THB"
+            />
+          </Cardantd>
+        </Col>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+          <Cardantd bordered={true}>
+            <Statistic
+              title="Kilo"
+              value="567"
+              precision={2}
+              valueStyle={{ color: "#000" }}
+              prefix="Km"
+            />
+          </Cardantd>
+        </Col>
+      </Row>
+
+      <div className="mb-4" />
+      <Spin
+        spinning={spinning}
+        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+      >
+        <Card decoration="top" decorationColor="indigo" key="unique-key">
+          <Table
+            dataSource={CarTag}
+            columns={[
+              {
+                title: "ID",
+                dataIndex: "id",
+                key: "id",
+                sorter: (id1: { id: number }, id2: { id: number }) =>
+                  id1.id - id2.id,
+                defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+              },
+              {
+                title: "Name",
+                dataIndex: "c_name",
+                key: "c_name",
+              },
+
+              {
+                title: "Price",
+                dataIndex: "c_price",
+                key: "c_price",
+                render: (c_price: number) => (
+                  <span>
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(c_price)}
+                  </span>
+                ),
+              },
+              {
+                title: "OilType",
+                dataIndex: "c_oiltype",
+                key: "c_oiltype",
+              },
+
+              {
+                title: "Station",
+                dataIndex: "c_oilstation",
+                key: "c_oilstation",
+              },
+              {
+                title: "OilPrice",
+                dataIndex: "c_oilprice",
+                key: "c_oilprice",
+                render: (c_oilprice: number) => (
+                  <span>
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(c_oilprice)}
+                  </span>
+                ),
+              },
+              {
+                title: "Miles",
+                dataIndex: "c_miles",
+                key: "c_miles",
+                render: (c_miles: number) => (
+                  <Statistic
+                    value={c_miles}
+                    precision={2}
+                    valueStyle={{ color: "#000", fontSize: "14px" }}
+                    prefix="Km"
+                  />
+                ),
+              },
+              {
+                title: "StarDate",
+                dataIndex: "c_startdate",
+                key: "c_startdate",
+                render: (c_stardate) => {
+                  const fomatsd = dayjs(c_stardate).format("DD/MM/YYYY");
+                  return <Tag color="#87d068">{fomatsd}</Tag>;
+                },
+              },
+              {
+                title: "EndDate",
+                dataIndex: "c_enddate",
+                key: "c_enddate",
+                render: (c_enddate) => {
+                  const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
+                  return <Tag color="#f50">{fomated}</Tag>;
+                },
+              },
+              {
+                title: "Status",
+                key: "status",
+                render: ({ c_enddate }) => {
+                  const nowdate = dayjs().format("YYYY-MM-DD");
+
+                  return (
+                    <span>
+                      {dayjs(c_enddate).isSame(c_enddate) ? (
+                        <Badge status="error" text="ใช้หมดแล้ว" />
+                      ) : (
+                        <Badge status="success" text="กำลังใช้งาน" />
+                      )}
+                    </span>
+                  );
+                },
+              },
+
+              {
+                title: "",
+                key: "action",
+                render: (_, record) => (
+                  <Space size="middle">
+                    <Tooltip title="Edit">
+                      <Button
+                        shape="circle"
+                        icon={<EditFilled />}
+                        size={"small"}
+                        //onClick={() => showModal(record)}
+                      />
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <Button
+                        danger
+                        shape="circle"
+                        icon={<DeleteFilled />}
+                        size={"small"}
+                        //onClick={() => handleDel(record)}
+                      />
+                    </Tooltip>
+                  </Space>
+                ),
+              },
+            ]}
+          />
+        </Card>
+      </Spin>
+    </>
   );
 }

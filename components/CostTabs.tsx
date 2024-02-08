@@ -5,7 +5,7 @@ import { Tabs } from "antd";
 import type { TabsProps } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import Monthlyexpenses from "./CostTable";
-import { Gmcost, CarTag } from "./CostTable";
+import { Gmcost, CarTag, CarMiles } from "./CostTable";
 
 export default function TBCost() {
   const supabase = createClient();
@@ -74,7 +74,7 @@ export default function TBCost() {
         </Tabs.TabPane>
 
         <Tabs.TabPane key="4" tab="Miles">
-          Content of Locked Tab 4
+          <CarMiles />
         </Tabs.TabPane>
         <Tabs.TabPane key="5" tab="Cars">
           <CarTag />
