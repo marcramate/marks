@@ -42,8 +42,10 @@ import {
   DELEXGM,
   UPDCartag,
   DELcartag,
+  UPDMiles,
+  DELMiles,
 } from "@/app/actions";
-import { Gmmodal, Cartagmodal } from "./CostModal";
+import { Gmmodal, Cartagmodal, MilesAdd } from "./CostModal";
 
 interface DataType {
   key: React.Key;
@@ -642,6 +644,7 @@ export function Gmcost() {
                 key: "action",
                 render: (_, record) => (
                   <Space size="middle">
+                    {contextHolder}
                     <Tooltip title="Edit">
                       <Button
                         shape="circle"
@@ -1059,6 +1062,7 @@ export function CarTag() {
                 key: "action",
                 render: (_, record) => (
                   <Space size="middle">
+                    {contextHolder}
                     <Tooltip title="Edit">
                       <Button
                         shape="circle"
@@ -1171,16 +1175,15 @@ export function CarTag() {
 }
 export function CarMiles() {
   const supabase = createClient();
-  const [CarTag, setCarTag] = useState<any>([]);
+  const [CarMiles, setCarMiles] = useState<any>([]);
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [spinning, setSpinning] = useState<boolean>(false);
-  const [editedDataCarTag, setEditedDataCarTag] = useState<any>(null);
-  const [Scta, setScta] = useState<any>([]);
+  const [editedDataMiles, setEditedDataMiles] = useState<any>(null);
   const [Carname, setcarname] = useState<any>([]);
 
-  const Carmiles = async () => {
+  const Carmilesfe = async () => {
     try {
       let { data: car, error } = await supabase
         .from("car")
@@ -1188,7 +1191,7 @@ export function CarMiles() {
         .not("c_miles", "is", null);
 
       if (car) {
-        setCarTag(car);
+        setCarMiles(car);
       }
       if (!car || error) {
         console.log("CarTag:", error);
@@ -1198,10 +1201,254 @@ export function CarMiles() {
     }
   };
 
+  const carname = async () => {
+    let { data: selectcar, error } = await supabase
+      .from("selection")
+      .select("car")
+      .not("car", "is", null);
+
+    if (selectcar) {
+      setcarname(selectcar);
+      const carmam = selectcar.map(({ car }) => ({
+        value: car,
+        label: car,
+      }));
+      setcarname(carmam);
+      console.log(carmam);
+    }
+
+    if (!selectcar || error) {
+      console.log("car :", error);
+    }
+  };
+
   useEffect(() => {
-    Carmiles();
+    Carmilesfe();
+    carname();
   }, []);
 
+  useEffect(() => {
+    if (editedDataMiles) {
+      form.setFieldsValue({
+        id: editedDataMiles.id,
+        c_name: editedDataMiles.c_name,
+        c_price: editedDataMiles.c_price,
+        c_startdate: dayjs(editedDataMiles.c_startdate),
+        c_enddate: editedDataMiles.c_enddate
+          ? dayjs(editedDataMiles.c_enddate)
+          : dayjs(),
+        c_miles: editedDataMiles.c_miles,
+        c_oilprice: editedDataMiles.c_oilprice,
+        c_oilstation: editedDataMiles.c_oilstation,
+        c_liter: editedDataMiles.c_liter,
+        c_oiltype: editedDataMiles.c_oiltype,
+      });
+    }
+  }, [editedDataMiles, form]);
+
+  const showModal = (record: SetStateAction<null> | { id: number }) => {
+    setEditedDataMiles(null);
+    setEditedDataMiles(record);
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setEditedDataMiles(null);
+    setIsModalOpen(false);
+  };
+
+  const oilstation = [
+    {
+      value: "PTT",
+      label: "PTT (ปตท.)",
+    },
+    {
+      value: "Bangchak",
+      label: "Bangchak (บางจาก)",
+    },
+    {
+      value: "Caltex",
+      label: "Caltex (คาลเท็กซ์)",
+    },
+    {
+      value: "Susco",
+      label: "Susco (ซัสโก้)",
+    },
+    {
+      value: "PT",
+      label: "PT (พีที)",
+    },
+    {
+      value: "Shell",
+      label: "Shell (เชลล์)",
+    },
+  ];
+
+  const oiltype = [
+    {
+      value: "Gasohol 95",
+      label: "E10 (แก๊สโซฮอล์ 95)",
+    },
+    {
+      value: "Gasohol 91",
+      label: "E10 (แก๊สโซฮอล์ 91)",
+    },
+    {
+      value: "Gasohol E20",
+      label: "E20 (แก๊สโซฮอล์ E20)",
+    },
+    {
+      value: "Gasohol E85",
+      label: "E85 (แก๊สโซฮอล์ E85)",
+    },
+    {
+      value: "Gasoline 95",
+      label: "E95 (เบนซิน 95)",
+    },
+    {
+      value: "Diesel B7",
+      label: "B7 (ดีเซล B7)",
+    },
+    {
+      value: "Diesel B10",
+      label: "B10 (ดีเซล B10)",
+    },
+    {
+      value: "Diesel B20",
+      label: "B20 (ดีเซล B20)",
+    },
+  ];
+
+  const Gasohol = oiltype
+    .filter(
+      (type) =>
+        type.value.includes("Gasohol") || type.value.includes("Gasoline")
+    )
+    .map((type) => ({
+      label: type.label,
+      value: type.value,
+    }));
+
+  const Diesel = oiltype
+    .filter((type) => type.value.includes("Diesel"))
+    .map((type) => ({
+      label: type.label,
+      value: type.value,
+    }));
+
+  const onDate: DatePickerProps["onChange"] = (date, dateString) => {
+    console.log(date, dateString);
+  };
+
+  const handleOk = async () => {
+    try {
+      if (editedDataMiles) {
+        const { c_startdate, c_enddate, ...EditMiles } = form.getFieldsValue();
+
+        const datestart = dayjs(c_startdate).endOf("day");
+        const enddate = dayjs(c_enddate).endOf("day");
+
+        const EditJSONMile = JSON.stringify({
+          ...EditMiles,
+          c_startdate: datestart,
+          c_enddate: enddate,
+        });
+        console.log(EditJSONMile);
+        setSpinning(true);
+        await UPDMiles(EditJSONMile);
+
+        handleCancel(); // หลังจากส่งข้อมูลเสร็จ ปิด Modal
+
+        setTimeout(() => {
+          Carmilesfe();
+          setSpinning(false);
+        }, 1000);
+        messageApi.success("Success Update!!");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setSpinning(false);
+      messageApi.error("Error Update!!!");
+    }
+  };
+
+  const handleDel = async (record: any) => {
+    try {
+      const { id } = record;
+
+      console.log("id:", id);
+      setSpinning(true);
+      await DELMiles(id);
+
+      setTimeout(() => {
+        Carmilesfe();
+        setSpinning(false);
+      }, 1000);
+
+      messageApi.success("Success Delete !!");
+    } catch (error) {
+      console.error("ErrorDel:", error);
+      setSpinning(false);
+      messageApi.error("Error Delete!!!");
+    }
+  };
+
+  const totalCarmiles = CarMiles.reduce(
+    (accumulator: any, current: { c_price: any }) => {
+      return accumulator + current.c_price;
+    },
+    0
+  );
+
+  const totalmiles = CarMiles.reduce(
+    (accumulator: any, current: { c_miles: any }) => {
+      return accumulator + current.c_miles;
+    },
+    0
+  );
+
+  const { confirm } = Modal;
+  const itemsToDelete = CarMiles.map(
+    (item: { id: any; c_enddate: any }) =>
+      `ID: ${item.id}, End Date: ${item.c_enddate}`
+  );
+  const showDeleteConfirmation = () => {
+    confirm({
+      title: "Are you sure you want to Delete all?",
+      content: (
+        <div>
+          <ul>
+            <li>{dayjs().format("YYYY-MM-DD")}</li>
+            {itemsToDelete
+              .filter((item: any) => item.enddate !== null)
+              .map((item: any, index: any) => (
+                <li key={index}>{item}</li>
+              ))}
+          </ul>
+        </div>
+      ),
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk() {
+        // ใส่โค้ดที่ต้องการให้ทำเมื่อผู้ใช้กด "Yes"
+        //handleDeleteAll();
+      },
+      onCancel() {
+        {
+          handleCancel;
+        }
+      },
+    });
+  };
+
+  /*
+  const showModal = (record: SetStateAction<null> | { id: number }) => {
+    setEditedDataMiles(null);
+    setEditedDataMiles(record);
+    setIsModalOpen(true);
+  };
+  */
   return (
     <>
       <Row gutter={16}>
@@ -1209,7 +1456,7 @@ export function CarMiles() {
           <Cardantd bordered={true}>
             <Statistic
               title="Cost"
-              value="124"
+              value={totalCarmiles}
               precision={2}
               valueStyle={{ color: "#000" }}
               prefix="THB"
@@ -1219,11 +1466,11 @@ export function CarMiles() {
         <Col xs={24} sm={12} md={12} lg={12} xl={12}>
           <Cardantd bordered={true}>
             <Statistic
-              title="Kilo"
-              value="567"
+              title="Miles"
+              value={totalmiles}
               precision={2}
               valueStyle={{ color: "#000" }}
-              prefix="Km"
+              suffix="Km"
             />
           </Cardantd>
         </Col>
@@ -1235,8 +1482,15 @@ export function CarMiles() {
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
         <Card decoration="top" decorationColor="indigo" key="unique-key">
+          <div className="flex justify-end mr-2">
+            <Button className="mr-2" danger onClick={showDeleteConfirmation}>
+              Delete All
+            </Button>
+            <MilesAdd />
+          </div>
+          <div className="mb-2"></div>
           <Table
-            dataSource={CarTag}
+            dataSource={CarMiles}
             columns={[
               {
                 title: "ID",
@@ -1294,6 +1548,19 @@ export function CarMiles() {
                 ),
               },
               {
+                title: "Litre",
+                dataIndex: "c_liter",
+                key: "c_liter",
+                render: (c_liter: number) => (
+                  <Statistic
+                    value={c_liter}
+                    precision={2}
+                    valueStyle={{ color: "#000", fontSize: "14px" }}
+                    suffix="L"
+                  />
+                ),
+              },
+              {
                 title: "Miles",
                 dataIndex: "c_miles",
                 key: "c_miles",
@@ -1302,7 +1569,7 @@ export function CarMiles() {
                     value={c_miles}
                     precision={2}
                     valueStyle={{ color: "#000", fontSize: "14px" }}
-                    prefix="Km"
+                    suffix="Km"
                   />
                 ),
               },
@@ -1320,8 +1587,12 @@ export function CarMiles() {
                 dataIndex: "c_enddate",
                 key: "c_enddate",
                 render: (c_enddate) => {
-                  const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
-                  return <Tag color="#f50">{fomated}</Tag>;
+                  if (c_enddate) {
+                    const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
+                    return <Tag color="#f50">{fomated}</Tag>;
+                  } else {
+                    return <Tag color="#f50">Wait</Tag>;
+                  }
                 },
               },
               {
@@ -1347,12 +1618,13 @@ export function CarMiles() {
                 key: "action",
                 render: (_, record) => (
                   <Space size="middle">
+                    {contextHolder}
                     <Tooltip title="Edit">
                       <Button
                         shape="circle"
                         icon={<EditFilled />}
                         size={"small"}
-                        //onClick={() => showModal(record)}
+                        onClick={() => showModal(record)}
                       />
                     </Tooltip>
                     <Tooltip title="Delete">
@@ -1361,7 +1633,7 @@ export function CarMiles() {
                         shape="circle"
                         icon={<DeleteFilled />}
                         size={"small"}
-                        //onClick={() => handleDel(record)}
+                        onClick={() => handleDel(record)}
                       />
                     </Tooltip>
                   </Space>
@@ -1370,6 +1642,202 @@ export function CarMiles() {
             ]}
           />
         </Card>
+
+        <Modal
+          title={
+            <div className="flex items-center space-x-1">
+              <EditFilled className="mr-2 text-teal-600" />
+              Edit Miles
+            </div>
+          }
+          open={isModalOpen}
+          onCancel={handleCancel}
+          footer={[
+            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
+              Save
+            </Button>,
+            <Tooltip title="Cancle">
+              <Button
+                type="primary"
+                danger
+                icon={<CloseOutlined />}
+                onClick={handleCancel}
+                shape="circle"
+              ></Button>
+            </Tooltip>,
+          ]}
+        >
+          <Form
+            style={{ maxWidth: 450 }}
+            autoComplete="off"
+            form={form}
+            labelCol={{ span: 4 }}
+            //wrapperCol={{ span: 9 }}
+          >
+            {editedDataMiles && (
+              <>
+                <Form.Item label="ID" name="id" className="mb-4" hidden>
+                  <p>{editedDataMiles?.id}</p>
+                </Form.Item>
+
+                <div className="mb-4"></div>
+                <Form.Item label="Car" name="c_name" className="mb-4">
+                  <Select
+                    showSearch
+                    placeholder="Search to Select"
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      typeof option?.label === "string" &&
+                      option.label.toLowerCase().includes(input.toLowerCase())
+                    }
+                    filterSort={(optionCrn1, optionCrn2) => {
+                      const labelcrn1 =
+                        typeof optionCrn1?.label === "string"
+                          ? optionCrn1.label
+                          : "";
+                      const labelcrn2 =
+                        typeof optionCrn2?.label === "string"
+                          ? optionCrn2.label
+                          : "";
+
+                      return labelcrn1
+                        .toLowerCase()
+                        .localeCompare(labelcrn2.toLowerCase());
+                    }}
+                    options={Carname}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Price"
+                  name="c_price"
+                  className="mb-4"
+                  initialValue={0}
+                >
+                  <InputNumber
+                    prefix="THB"
+                    className="w-full"
+                    name="c_price"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="OilStation"
+                  name="c_oilstation"
+                  className="mb-4"
+                >
+                  <Select
+                    showSearch
+                    placeholder="Search to Select"
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      (option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      (optionA?.label ?? "")
+                        .toLowerCase()
+                        .localeCompare((optionB?.label ?? "").toLowerCase())
+                    }
+                    options={oilstation}
+                  />
+                </Form.Item>
+
+                <Form.Item label="OilType" name="c_oiltype" className="mb-4">
+                  <Select
+                    showSearch
+                    placeholder="Search to Select"
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      (option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      (optionA?.label ?? "")
+                        .toLowerCase()
+                        .localeCompare((optionB?.label ?? "").toLowerCase())
+                    }
+                    options={[
+                      {
+                        label: "Gasohol",
+                        options: Gasohol,
+                      },
+                      {
+                        label: "Diesel",
+                        options: Diesel,
+                      },
+                    ]}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="OilPrice"
+                  name="c_oilprice"
+                  className="mb-4"
+                  initialValue={0}
+                >
+                  <InputNumber
+                    prefix="THB"
+                    className="w-full"
+                    name="c_oilprice"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="OilLitre"
+                  name="c_liter"
+                  className="mb-4"
+                  initialValue={0}
+                >
+                  <InputNumber
+                    prefix="L"
+                    className="w-full"
+                    name="c_liter"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Miles"
+                  name="c_miles"
+                  className="mb-4"
+                  initialValue={0}
+                >
+                  <InputNumber
+                    prefix="Km"
+                    className="w-full"
+                    name="c_miles"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
+                </Form.Item>
+
+                <Form.Item label="Date" name="c_startdate" className="mb-4">
+                  <DatePicker
+                    onChange={onDate}
+                    style={{ width: "100%" }}
+                    name="c_startdate"
+                  />
+                </Form.Item>
+
+                <Form.Item label="DateEnd" name="c_enddate" className="mb-4">
+                  <DatePicker
+                    onChange={onDate}
+                    style={{ width: "100%" }}
+                    name="c_enddate"
+                  />
+                </Form.Item>
+              </>
+            )}
+          </Form>
+        </Modal>
       </Spin>
     </>
   );
