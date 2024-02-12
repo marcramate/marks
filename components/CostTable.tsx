@@ -44,6 +44,7 @@ import {
   DELcartag,
   UPDMiles,
   DELMiles,
+  DELAllMiles,
 } from "@/app/actions";
 import { Gmmodal, Cartagmodal, MilesAdd } from "./CostModal";
 
@@ -1393,6 +1394,28 @@ export function CarMiles() {
     }
   };
 
+  const handleDelAll = async (ids: any[]) => {
+    try {
+      const IDSid = ids.map((item) => item.replace("ID: ", ""));
+
+      console.log("ids:", ids);
+      console.log("cle:", IDSid);
+      setSpinning(true);
+      await DELAllMiles(ids);
+
+      setTimeout(() => {
+        Carmilesfe();
+        setSpinning(false);
+      }, 1000);
+
+      messageApi.success("Success Delete All !!");
+    } catch (error) {
+      console.error("ErrorDelAll:", error);
+      setSpinning(false);
+      messageApi.error("Error Delete All!!!");
+    }
+  };
+
   const totalCarmiles = CarMiles.reduce(
     (accumulator: any, current: { c_price: any }) => {
       return accumulator + current.c_price;
@@ -1408,8 +1431,11 @@ export function CarMiles() {
   );
 
   const { confirm } = Modal;
-  const itemsToDelete = CarMiles.map(
-    (item: { id: any; c_enddate: any }) =>
+
+  const itemdel = CarMiles.filter(
+    (item: { c_enddate: any }) => item.c_enddate !== null
+  ).map(
+    (item: { id: any; c_enddate: any }, index: any) =>
       `ID: ${item.id}, End Date: ${item.c_enddate}`
   );
   const showDeleteConfirmation = () => {
@@ -1418,22 +1444,29 @@ export function CarMiles() {
       content: (
         <div>
           <ul>
-            <li>{dayjs().format("YYYY-MM-DD")}</li>
-            {itemsToDelete
-              .filter((item: any) => item.enddate !== null)
-              .map((item: any, index: any) => (
-                <li key={index}>{item}</li>
-              ))}
+            <li className="mb-2">
+              <h1 className="font-medium">
+                <Space>
+                  <Badge status="success" text="Today :" />
+                  {dayjs().format("YYYY-MM-DD")}
+                </Space>
+              </h1>
+            </li>
+            {itemdel.map((item: string, index: number) => (
+              <li className="text-red-500" key={index}>
+                <Tag color="error" className="mb-1">
+                  {item}
+                </Tag>
+              </li>
+            ))}
           </ul>
         </div>
       ),
       okText: "Yes",
       okType: "danger",
       cancelText: "No",
-      onOk() {
-        // ใส่โค้ดที่ต้องการให้ทำเมื่อผู้ใช้กด "Yes"
-        //handleDeleteAll();
-      },
+      onOk: () =>
+        handleDelAll(itemdel.map((item: string) => item.split(",")[0])),
       onCancel() {
         {
           handleCancel;

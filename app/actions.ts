@@ -710,6 +710,34 @@ export async function DELMiles(id: string) {
     console.error("Error All Delete in DELMiles:", error);
   }
 }
+
+export async function DELAllMiles(ids: string[]) {
+  try {
+    if (!ids || ids.length === 0) {
+      console.log("Error: No IDs provided for deletion");
+      return;
+    }
+    console.log("IDs DELMiles:", ids);
+
+    const IDSid = ids.map((item) => item.replace("ID: ", ""));
+    console.log("ID :", IDSid);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    for (const id of IDSid) {
+      const { error } = await supabase.from("car").delete().eq("id", id);
+
+      if (error) {
+        console.log(`Error deleting item with ID ${id}:`, error);
+      }
+
+      console.log("Ok Delete DELMiles");
+    }
+  } catch (error) {
+    console.error("Error All Delete in DELAllMiles:", error);
+  }
+}
 /*
 export async function DELcartag(id: string) {
   try {
