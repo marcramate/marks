@@ -28,6 +28,7 @@ import {
   CheckOutlined,
   CloseOutlined,
   LoadingOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { Card } from "@tremor/react";
@@ -47,6 +48,7 @@ import {
   DELAllMiles,
 } from "@/app/actions";
 import { Gmmodal, Cartagmodal, MilesAdd } from "./CostModal";
+import * as XLSX from "xlsx";
 
 interface DataType {
   key: React.Key;
@@ -1475,13 +1477,50 @@ export function CarMiles() {
     });
   };
 
-  /*
-  const showModal = (record: SetStateAction<null> | { id: number }) => {
-    setEditedDataMiles(null);
-    setEditedDataMiles(record);
-    setIsModalOpen(true);
+  interface YourData {
+    name: string;
+    age: number;
+    city: string;
+  }
+
+  function exportToExcel(
+    data: YourData[],
+    sheetName: string,
+    fileName: string
+  ) {
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    XLSX.writeFile(wb, `${fileName}.xlsx`);
+  }
+
+  const handlemilesExport = async () => {
+    try {
+      let { data: car, error } = await supabase
+        .from("car")
+        .select("*")
+        .not("c_miles", "is", null)
+        .not("c_enddate", "is", null);
+
+      setSpinning(true);
+
+      if (!car || error || car.length === 0) {
+        console.log("milesExport:", error);
+        messageApi.error("No data available.");
+        setSpinning(false);
+        return;
+      }
+
+      exportToExcel(car, "Sheet1", "your_excel_file");
+      setSpinning(false);
+      messageApi.success("Downloading Excel file...");
+    } catch (error) {
+      setSpinning(false);
+      console.error("Error fetching data:", error);
+      messageApi.error("Error fetching data.");
+    }
   };
-  */
+
   return (
     <>
       <Row gutter={16}>
@@ -1519,8 +1558,16 @@ export function CarMiles() {
             <Button className="mr-2" danger onClick={showDeleteConfirmation}>
               Delete All
             </Button>
+            <Button
+              className="mr-2 buttonExport"
+              icon={<DownloadOutlined />}
+              onClick={handlemilesExport}
+            >
+              Dowlode Excel
+            </Button>
             <MilesAdd />
           </div>
+
           <div className="mb-2"></div>
           <Table
             dataSource={CarMiles}
