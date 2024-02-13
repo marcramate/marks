@@ -6,6 +6,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.3.0",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@tremor/react": "^3.12.2",

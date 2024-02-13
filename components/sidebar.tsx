@@ -34,6 +34,11 @@ const items = [
         label: "Youtube Premium",
         link: "/MarcSpace/YoutubePremium",
       },
+      {
+        key: "2-3",
+        label: "Credit Card",
+        link: "/MarcSpace/CreditCard",
+      },
     ],
   },
 ];
