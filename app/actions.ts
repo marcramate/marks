@@ -738,30 +738,213 @@ export async function DELAllMiles(ids: string[]) {
     console.error("Error All Delete in DELAllMiles:", error);
   }
 }
-/*
-export async function DELcartag(id: string) {
-  try {
-    const IDcartag = id;
 
-    if (!IDcartag) {
-      console.log("Error: ID is not defined");
+export async function CreditCostAdd(DataADCJSON: string) {
+  try {
+    const DataCreditAdd = JSON.parse(DataADCJSON);
+    if (!DataCreditAdd) {
+      console.log("Error: DataCreditAdd is not defined");
       return;
     }
 
-    console.log("ID DELcartag:", IDcartag);
+    const list = DataCreditAdd.list;
+    const price = DataCreditAdd.price;
+    const card = DataCreditAdd.card;
+    const date = DataCreditAdd.date;
+    const purchase_type = DataCreditAdd.purchase_type;
+    const oncredit_month = DataCreditAdd.oncredit_month;
+    const price_oncredit = DataCreditAdd.price_oncredit;
+    const type = DataCreditAdd.type;
+    const status = DataCreditAdd.status;
+
+    console.log(
+      "list:",
+      list,
+      "price:",
+      price,
+      "card:",
+      card,
+      "date:",
+      date,
+      "purchase_type:",
+      purchase_type,
+      "oncredit_month:",
+      oncredit_month,
+      "price_oncredit:",
+      price_oncredit,
+      "type:",
+      type,
+      "status:",
+      status
+    );
 
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const { error } = await supabase.from("car").delete().eq("id", IDcartag);
+    const { data, error } = await supabase
+      .from("CreditCard")
+      .insert([
+        {
+          list,
+          price,
+          card,
+          date,
+          purchase_type,
+          oncredit_month,
+          price_oncredit,
+          type,
+          status,
+        },
+      ])
+      .select();
 
     if (error) {
-      console.log("Error Delete DELCartag!!", error);
+      console.log("Error Insert DataCreditAdd!!", error);
+      return;
+    }
+    console.log("Inster OK DataCreditAdd:", data);
+  } catch (error) {
+    console.error("Error All Insert in DataCreditAdd:", error);
+  }
+}
+
+export async function UPDCredit(EditJSONCredit: string) {
+  try {
+    const EditDataCredit = JSON.parse(EditJSONCredit);
+    if (!EditDataCredit) {
+      console.error("Error: EditDataCredit is not defined");
+      return;
     }
 
-    console.log("Ok Delete DELcartag");
+    const id = EditDataCredit.id;
+    const list = EditDataCredit.list;
+    const price = EditDataCredit.price;
+    const card = EditDataCredit.card;
+    const date = EditDataCredit.date;
+    const purchase_type = EditDataCredit.purchase_type;
+    const oncredit_month = EditDataCredit.oncredit_month;
+    const price_oncredit = EditDataCredit.price_oncredit;
+    const type = EditDataCredit.type;
+    const status = EditDataCredit.status;
+
+    console.log(
+      "id:",
+      id,
+      "list:",
+      list,
+      "price:",
+      price,
+      "card:",
+      card,
+      "date:",
+      date,
+      "purchase_type:",
+      purchase_type,
+      "oncredit_month:",
+      oncredit_month,
+      "price_oncredit:",
+      price_oncredit,
+      "type:",
+      type,
+      "status:",
+      status
+    );
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("CreditCard")
+      .update({
+        list,
+        price,
+        card,
+        date,
+        purchase_type,
+        oncredit_month,
+        price_oncredit,
+        type,
+        status,
+      })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.log("Error Update UPDCredit!!", error);
+    }
+
+    console.log("Ok Update UPDCredit", data);
   } catch (error) {
-    console.error("Error All Delete in DELcartag:", error);
+    console.error("Error All Update in UPDCredit:", error);
+  }
+}
+/*
+export async function UPDMiles(EditJSONMile: string) {
+  try {
+    const EditDateMiles = JSON.parse(EditJSONMile);
+    if (!EditDateMiles) {
+      console.error("Error: EditDateMiles is not defined");
+      return;
+    }
+    const id = EditDateMiles.id;
+    const c_name = EditDateMiles.c_name;
+    const c_price = EditDateMiles.c_price;
+    const c_startdate = EditDateMiles.c_startdate;
+    const c_enddate = EditDateMiles.c_enddate;
+    const c_miles = EditDateMiles.c_miles;
+    const c_oilprice = EditDateMiles.c_oilprice;
+    const c_oilstation = EditDateMiles.c_oilstation;
+    const c_liter = EditDateMiles.c_liter;
+    const c_oiltype = EditDateMiles.c_oiltype;
+
+    console.log(
+      "EDIT ::",
+      "c_name:",
+      c_name,
+      "c_price:",
+      c_price,
+      "c_startdate:",
+      c_startdate,
+      "c_enddate:",
+      c_enddate,
+      "c_miles:",
+      c_miles,
+      "c_oilprice:",
+      c_oilprice,
+      "c_oilstation:",
+      c_oilstation,
+      "c_liter:",
+      c_liter,
+      "c_oiltype:",
+      c_oiltype
+    );
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("car")
+      .update([
+        {
+          c_name,
+          c_price,
+          c_startdate,
+          c_enddate,
+          c_miles,
+          c_oilprice,
+          c_oilstation,
+          c_liter,
+          c_oiltype,
+        },
+      ])
+      .eq("id", id)
+      .select();
+    if (error) {
+      console.log("Error Update UPDMiles!!", error);
+    }
+
+    console.log("Ok Update UPDMiles", data);
+  } catch (error) {
+    console.error("Error All Update in UPDMiles:", error);
   }
 }
 */

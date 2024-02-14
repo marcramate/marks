@@ -5,6 +5,7 @@ import { Tabs } from "antd";
 import type { TabsProps } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import CreditCard from "./CreditCardTable";
+import { AddCreditCost } from "./CreditCardTable";
 
 export default function CCTabs() {
   const supabase = createClient();
@@ -59,7 +60,11 @@ export default function CCTabs() {
 
   return (
     <div>
-      <Tabs activeKey={activeKey} onChange={onChange}>
+      <Tabs
+        activeKey={activeKey}
+        onChange={onChange}
+        tabBarExtraContent={<AddCreditCost />}
+      >
         {tabItems?.map((item) => (
           <Tabs.TabPane key={item.key} tab={item.label}>
             {item.children}

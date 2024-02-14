@@ -38,6 +38,7 @@ import dayjs from "dayjs";
 import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 import * as XLSX from "xlsx";
+import { CreditCostAdd, UPDCredit } from "@/app/actions";
 
 interface CreditCardProps {
   creditcard: string;
@@ -48,6 +49,58 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
   const supabase = createClient();
   const [Credisel, setCredisel] = useState<any>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
+  const [editedDataCredit, seteditedDataCredit] = useState<any>(null);
+  const [cardAdd, setcardAdd] = useState<any>([]);
+  const [showFields, setShowFields] = useState(false);
+
+  const purc_type = [
+    {
+      value: "เงินสด",
+      label: "เงินสด",
+    },
+    {
+      value: "ผ่อน",
+      label: "ผ่อน",
+    },
+  ];
+
+  const type = [
+    {
+      value: "น้ำมัน",
+      label: "น้ำมัน",
+    },
+    {
+      value: "น้ำ",
+      label: "น้ำ",
+    },
+    {
+      value: "อาหาร",
+      label: "อาหาร",
+    },
+    {
+      value: "เสื้อผ้า",
+      label: "เสื้อผ้า",
+    },
+    {
+      value: "เกม",
+      label: "เกม",
+    },
+    {
+      value: "ค่าเดินทาง",
+      label: "ค่าเดินทาง",
+    },
+    {
+      value: "ของใช้",
+      label: "ของใช้",
+    },
+    {
+      value: "ทั่วไป",
+      label: "ทั่วไป",
+    },
+  ];
 
   const creditcardselect = async () => {
     let { data: CreditCard, error } = await supabase
@@ -64,9 +117,90 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
       console.log("ERRORCreditCard :", error);
     }
   };
+
+  const showModal = (record: SetStateAction<null> | { id: number }) => {
+    seteditedDataCredit(null);
+    seteditedDataCredit(record);
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    seteditedDataCredit(null);
+    setIsModalOpen(false);
+  };
+
+  const AddCard = async () => {
+    let { data: selectcard, error } = await supabase
+      .from("selection")
+      .select("creditcard")
+      .not("creditcard", "is", null);
+
+    if (selectcard) {
+      setcardAdd(selectcard);
+      const cardcreditname = selectcard.map(({ creditcard }) => ({
+        value: creditcard,
+        label: creditcard,
+      }));
+      setcardAdd(cardcreditname);
+      console.log(cardcreditname);
+    }
+
+    if (!selectcard || error) {
+      console.log("creditcard :", error);
+    }
+  };
+
   useEffect(() => {
     creditcardselect();
+    AddCard();
   }, [creditcard, isTab1]);
+
+  useEffect(() => {
+    if (editedDataCredit) {
+      form.setFieldsValue({
+        id: editedDataCredit.id,
+        list: editedDataCredit.list,
+        price: editedDataCredit.price,
+        card: editedDataCredit.card,
+        date: dayjs(editedDataCredit.date),
+        purchase_type: editedDataCredit.purchase_type,
+        oncredit_month: editedDataCredit.oncredit_month,
+        price_oncredit: editedDataCredit.price_oncredit,
+        type: editedDataCredit.type,
+        status: editedDataCredit.status,
+      });
+    }
+  }, [editedDataCredit, form]);
+
+  const handleUpdate = async () => {
+    try {
+      if (editedDataCredit) {
+        const { date, ...EditCreditCost } = form.getFieldsValue();
+
+        const datefor = dayjs(date).endOf("day");
+
+        const EditJSONCredit = JSON.stringify({
+          ...EditCreditCost,
+          date: datefor,
+        });
+        console.log(EditJSONCredit);
+        setSpinning(true);
+        await UPDCredit(EditJSONCredit);
+
+        handleCancel(); // หลังจากส่งข้อมูลเสร็จ ปิด Modal
+
+        setTimeout(() => {
+          creditcardselect();
+          setSpinning(false);
+        }, 1000);
+        messageApi.success("Success Update!!");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setSpinning(false);
+      messageApi.error("Error Update!!!");
+    }
+  };
 
   return (
     <div>
@@ -106,7 +240,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
         </Col>
       </Row>
       <div className="mb-4"></div>
-      <AddCreditCost />
+
       <Spin
         spinning={spinning}
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
@@ -166,12 +300,12 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                 title: "Oncredit_month",
                 dataIndex: "oncredit_month",
                 key: "oncredit_month",
-                render: (oncredit_month: number | null) => (
+                render: (oncredit_month: number) => (
                   <Statistic
-                    value={oncredit_month !== null ? oncredit_month : "-"}
+                    value={oncredit_month}
                     precision={0}
                     valueStyle={{ color: "#000", fontSize: "14px" }}
-                    suffix={oncredit_month !== null ? "month" : ""}
+                    suffix="month"
                   />
                 ),
               },
@@ -227,7 +361,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                         shape="circle"
                         icon={<EditFilled />}
                         size={"small"}
-                        //onClick={() => showModal(record)}
+                        onClick={() => showModal(record)}
                       />
                     </Tooltip>
                     <Tooltip title="Delete">
@@ -245,6 +379,179 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
             ]}
           />
         </Card>
+        <Modal
+          open={isModalOpen}
+          title={
+            <div className="flex items-center space-x-1">
+              <PlusCircleFilled className="mr-2 text-teal-600" />
+              Add Credit Cost
+            </div>
+          }
+          //onOk={handleOk}
+          onCancel={handleCancel}
+          footer={(_, { OkBtn, CancelBtn }) => (
+            <>
+              {contextHolder}
+              <Button
+                shape="round"
+                icon={<CheckOutlined />}
+                onClick={handleUpdate}
+                className="ml-2"
+              >
+                Save
+              </Button>
+              <Tooltip title="Cancle">
+                <Button
+                  type="primary"
+                  danger
+                  icon={<CloseOutlined />}
+                  onClick={handleCancel}
+                  shape="circle"
+                  className="ml-2"
+                ></Button>
+              </Tooltip>
+            </>
+          )}
+          style={{ maxWidth: "90vw", width: "100%" }}
+        >
+          <Form
+            form={form}
+            style={{ maxWidth: "100%" }}
+            initialValues={{ status: false }}
+            autoComplete="off"
+            labelCol={{ span: 4 }}
+          >
+            {editedDataCredit && (
+              <>
+                <Form.Item label="ID" name="id" className="mb-4" hidden>
+                  <p>{editedDataCredit?.id}</p>
+                </Form.Item>
+                <Form.Item label="List" name="list" className="mb-4">
+                  <Input name="list" className="w-full" />
+                </Form.Item>
+
+                <Form.Item
+                  label="Price"
+                  name="price"
+                  className="mb-4"
+                  initialValue={0}
+                >
+                  <InputNumber
+                    prefix="THB"
+                    className="w-full"
+                    name="price"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
+                </Form.Item>
+
+                <Form.Item label="Card" name="card" className="mb-4">
+                  <Select
+                    showSearch
+                    placeholder="Search to Select"
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      typeof option?.label === "string" &&
+                      option.label.toLowerCase().includes(input.toLowerCase())
+                    }
+                    filterSort={(optionCrn1, optionCrn2) => {
+                      const labelcrn1 =
+                        typeof optionCrn1?.label === "string"
+                          ? optionCrn1.label
+                          : "";
+                      const labelcrn2 =
+                        typeof optionCrn2?.label === "string"
+                          ? optionCrn2.label
+                          : "";
+
+                      return labelcrn1
+                        .toLowerCase()
+                        .localeCompare(labelcrn2.toLowerCase());
+                    }}
+                    options={cardAdd}
+                  />
+                </Form.Item>
+
+                <Form.Item label="Date" name="date" className="mb-4">
+                  <DatePicker
+                    //onChange={onChange}
+                    style={{ width: "100%" }}
+                    name="date"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="TPurchase"
+                  name="purchase_type"
+                  className="mb-4"
+                >
+                  <Select
+                    showSearch
+                    placeholder="Search to Select"
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      (option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      (optionA?.label ?? "")
+                        .toLowerCase()
+                        .localeCompare((optionB?.label ?? "").toLowerCase())
+                    }
+                    options={purc_type}
+                  />
+                </Form.Item>
+
+                <Form.Item label="OCDM" name="oncredit_month" className="mb-4">
+                  <Input name="oncredit_month" className="w-full" />
+                </Form.Item>
+
+                <Form.Item
+                  label="Price credit"
+                  name="price_oncredit"
+                  className="mb-4"
+                  initialValue={0}
+                >
+                  <InputNumber
+                    prefix="THB"
+                    className="w-full"
+                    name="price_oncredit"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
+                </Form.Item>
+
+                <Form.Item label="Type" name="type" className="mb-4">
+                  <Select
+                    showSearch
+                    placeholder="Search to Select"
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      (option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      (optionA?.label ?? "")
+                        .toLowerCase()
+                        .localeCompare((optionB?.label ?? "").toLowerCase())
+                    }
+                    options={type}
+                  />
+                </Form.Item>
+
+                <Form.Item label="Status" name="status">
+                  <Switch
+                    checkedChildren={<CheckOutlined />}
+                    unCheckedChildren={<CloseOutlined />}
+                    className="bg-red-500"
+                  />
+                </Form.Item>
+              </>
+            )}
+          </Form>
+        </Modal>
       </Spin>
     </div>
   );
@@ -254,43 +561,158 @@ export function AddCreditCost() {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm(); // เพิ่ม form instance
   const [messageApi, contextHolder] = message.useMessage();
+  const [cardAdd, setcardAdd] = useState<any>([]);
+  const [showFields, setShowFields] = useState(false);
+  const [spinning, setSpinning] = useState<boolean>(false);
+
+  const supabase = createClient();
+
+  const AddCard = async () => {
+    let { data: selectcard, error } = await supabase
+      .from("selection")
+      .select("creditcard")
+      .not("creditcard", "is", null);
+
+    if (selectcard) {
+      setcardAdd(selectcard);
+      const cardcreditname = selectcard.map(({ creditcard }) => ({
+        value: creditcard,
+        label: creditcard,
+      }));
+      setcardAdd(cardcreditname);
+      console.log(cardcreditname);
+    }
+
+    if (!selectcard || error) {
+      console.log("creditcard :", error);
+    }
+  };
+
+  const purc_type = [
+    {
+      value: "เงินสด",
+      label: "เงินสด",
+    },
+    {
+      value: "ผ่อน",
+      label: "ผ่อน",
+    },
+  ];
+
+  const type = [
+    {
+      value: "น้ำมัน",
+      label: "น้ำมัน",
+    },
+    {
+      value: "น้ำ",
+      label: "น้ำ",
+    },
+    {
+      value: "อาหาร",
+      label: "อาหาร",
+    },
+    {
+      value: "เสื้อผ้า",
+      label: "เสื้อผ้า",
+    },
+    {
+      value: "เกม",
+      label: "เกม",
+    },
+    {
+      value: "ค่าเดินทาง",
+      label: "ค่าเดินทาง",
+    },
+    {
+      value: "ของใช้",
+      label: "ของใช้",
+    },
+    {
+      value: "ทั่วไป",
+      label: "ทั่วไป",
+    },
+  ];
+
+  useEffect(() => {
+    AddCard();
+  }, []);
 
   const showModal = () => {
     setOpen(true);
   };
 
+  const handleCancel = () => {
+    form.resetFields();
+    setOpen(false);
+  };
+
+  const handlePurchaseType = (value: string) => {
+    setShowFields(value === "ผ่อน");
+
+    // Clear values when hiding the fields
+    if (!showFields) {
+      form.setFieldsValue({
+        oncredit_month: "0",
+        price_oncredit: "0",
+      });
+    }
+  };
+
+  const handleOk = async () => {
+    try {
+      const DataADC = form.getFieldsValue();
+      const DataADCJSON = JSON.stringify(DataADC);
+
+      console.log(DataADCJSON);
+      setSpinning(true);
+      await CreditCostAdd(DataADCJSON);
+
+      handleCancel();
+
+      messageApi.success("Success Insert Credit Cost!!");
+
+      setTimeout(() => {
+        window.location.reload();
+        setSpinning(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error:", error);
+      setSpinning(false);
+      messageApi.error("Error Insert Credit Cost!!!");
+    }
+  };
+
   return (
     <div>
-      <FloatButton.Group
-        trigger="hover"
-        type="primary"
-        style={{ right: 40 }}
-        icon={<BarsOutlined />}
-      >
-        <FloatButton
-          icon={<PlusOutlined />}
-          tooltip={<div>Add Cost Credit</div>}
-          onClick={showModal}
-        />
-      </FloatButton.Group>
+      <div className="flex justify-end mr-2">
+        <Tooltip title="Add">
+          <Button
+            size="middle"
+            icon={<PlusOutlined />}
+            onClick={showModal}
+            className="buttonYTPm1"
+          />
+        </Tooltip>
+      </div>
 
       <Modal
         open={open}
         title={
           <div className="flex items-center space-x-1">
             <PlusCircleFilled className="mr-2 text-teal-600" />
-            Add Credit Cost 
+            Add Credit Cost
           </div>
         }
         //onOk={handleOk}
-        // onCancel={handleCancel}
+        onCancel={handleCancel}
         footer={(_, { OkBtn, CancelBtn }) => (
           <>
             {contextHolder}
             <Button
               shape="round"
               icon={<CheckOutlined />}
-              //onClick={handleOk}
+              onClick={handleOk}
               className="ml-2"
             >
               Save
@@ -300,18 +722,19 @@ export function AddCreditCost() {
                 type="primary"
                 danger
                 icon={<CloseOutlined />}
-                //onClick={handleCancel}
+                onClick={handleCancel}
                 shape="circle"
                 className="ml-2"
               ></Button>
             </Tooltip>
           </>
         )}
+        style={{ maxWidth: "90vw", width: "100%" }}
       >
         <Form
           form={form}
-          style={{ maxWidth: 450 }}
-          initialValues={{ pay_status: false }} // กำหนดค่าเริ่มต้นของ pay_status เป็น false
+          style={{ maxWidth: "100%" }}
+          initialValues={{ status: false }}
           autoComplete="off"
           labelCol={{ span: 4 }}
         >
@@ -325,9 +748,52 @@ export function AddCreditCost() {
           </Form.Item>
 
           <Form.Item
+            label="Price"
+            name="price"
+            className="mb-4"
+            initialValue={0}
+          >
+            <InputNumber
+              prefix="THB"
+              className="w-full"
+              name="price"
+              formatter={(value) => (value ? `${value}` : "0")}
+              parser={(value) => (value ? parseFloat(value) : 0)}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Card"
+            name="card"
+            rules={[{ required: true, message: "Please input your Card!" }]}
+            className="mb-4"
+          >
+            <Select
+              showSearch
+              placeholder="Search to Select"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                typeof option?.label === "string" &&
+                option.label.toLowerCase().includes(input.toLowerCase())
+              }
+              filterSort={(optionCrn1, optionCrn2) => {
+                const labelcrn1 =
+                  typeof optionCrn1?.label === "string" ? optionCrn1.label : "";
+                const labelcrn2 =
+                  typeof optionCrn2?.label === "string" ? optionCrn2.label : "";
+
+                return labelcrn1
+                  .toLowerCase()
+                  .localeCompare(labelcrn2.toLowerCase());
+              }}
+              options={cardAdd}
+            />
+          </Form.Item>
+
+          <Form.Item
             label="Date"
             name="date"
-            rules={[{ required: true, message: "Please input Month!" }]}
+            rules={[{ required: true, message: "Please input Date!" }]}
             className="mb-4"
           >
             <DatePicker
@@ -338,19 +804,82 @@ export function AddCreditCost() {
           </Form.Item>
 
           <Form.Item
-            label="DateEnd"
-            name="dateend"
-            rules={[{ required: true, message: "Please input Month!" }]}
+            label="TPurchase"
+            name="purchase_type"
             className="mb-4"
+            rules={[
+              { required: true, message: "Please input your purchase_Type!" },
+            ]}
           >
-            <DatePicker
-              //onChange={onChange}
-              style={{ width: "100%" }}
-              name="dateend"
+            <Select
+              showSearch
+              placeholder="Search to Select"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? "")
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? "").toLowerCase())
+              }
+              options={purc_type}
+              onChange={handlePurchaseType}
             />
           </Form.Item>
 
-          <Form.Item label="Pay_Status" name="pay_status">
+          <Form.Item
+            label="OCDM"
+            name="oncredit_month"
+            className="mb-4"
+            style={{ display: showFields ? "block" : "none" }}
+          >
+            <Input name="oncredit_month" className="w-full" />
+          </Form.Item>
+
+          <Form.Item
+            label="Price credit"
+            name="price_oncredit"
+            className="mb-4"
+            initialValue={0}
+            style={{ display: showFields ? "block" : "none" }}
+          >
+            <InputNumber
+              prefix="THB"
+              className="w-full"
+              name="price_oncredit"
+              formatter={(value) => (value ? `${value}` : "0")}
+              parser={(value) => (value ? parseFloat(value) : 0)}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Type"
+            name="type"
+            className="mb-4"
+            rules={[{ required: true, message: "Please input your Type!" }]}
+          >
+            <Select
+              showSearch
+              placeholder="Search to Select"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? "")
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? "").toLowerCase())
+              }
+              options={type}
+            />
+          </Form.Item>
+
+          <Form.Item label="Status" name="status">
             <Switch
               checkedChildren={<CheckOutlined />}
               unCheckedChildren={<CloseOutlined />}

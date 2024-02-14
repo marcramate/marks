@@ -40,6 +40,7 @@ module.exports = {
           },
         },
         // dark mode
+        /*
         "dark-tremor": {
           brand: {
             faint: "#0B1229", // custom
@@ -69,6 +70,7 @@ module.exports = {
             inverted: "#000000", // black
           },
         },
+        */
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         btn: {
