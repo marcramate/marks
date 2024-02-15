@@ -272,7 +272,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
         </Col>
 
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true} className="drop-shadow-xl" title="Total">
+          <Cardantd bordered={true} className="drop-shadow-md" >
             <Progress
               percent={70}
               strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
@@ -280,7 +280,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
           </Cardantd>
         </Col>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true} className="drop-shadow-xl">
+          <Cardantd bordered={true} className="drop-shadow-lg">
             <Statistic
               title="Price"
               value="sd"
@@ -290,6 +290,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
             />
           </Cardantd>
         </Col>
+        
       </Row>
       <div className="mb-4"></div>
 
