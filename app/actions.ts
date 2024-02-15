@@ -908,30 +908,58 @@ export async function DelCredit(id: string) {
     console.error("Error All Delete in DelCredit:", error);
   }
 }
-/*
-export async function DELMiles(id: string) {
+
+export async function STATCREDIT(id: string, status: boolean) {
   try {
-    const IDMiles = id;
+    const IDCredit = id;
+    const STACredit = status;
+    const newstatCredit = !status;
 
-    if (!IDMiles) {
-      console.log("Error: ID is not defined");
-      return;
-    }
-
-    console.log("ID DELMiles:", IDMiles);
+    console.log("ID", IDCredit, "Sta:", STACredit, "new", newstatCredit);
 
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const { error } = await supabase.from("car").delete().eq("id", IDMiles);
+    const { data, error } = await supabase
+      .from("CreditCard")
+      .update({ status: newstatCredit })
+      .eq("id", id)
+      .select();
 
     if (error) {
-      console.log("Error Delete DELMiles!!", error);
+      console.log("Error Update Status CREDIT", error);
     }
 
-    console.log("Ok Delete DELMiles");
+    console.log("OK Update Status CREDIT:", data);
   } catch (error) {
-    console.error("Error All Delete in DELMiles:", error);
+    console.error("Error Update Status CREDIT", error);
+  }
+}
+/*
+export async function STATUPIDPM(id: string, status: boolean) {
+  try {
+    const IDPm = id;
+    const STAPm = status;
+    const newstat = !status;
+
+    console.log("ID", id, "Sta:", status, "new", newstat);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .update({ status: newstat })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.log("Error Update Status EX", error);
+    }
+
+    console.log("OK Update Status", data);
+  } catch (error) {
+    console.error("Error Update Status Ex", error);
   }
 }
 */

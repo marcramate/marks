@@ -21,7 +21,7 @@ import {
   Tag,
   DatePicker,
   DatePickerProps,
-  FloatButton,
+  Progress,
 } from "antd";
 import {
   EditFilled,
@@ -38,7 +38,7 @@ import dayjs from "dayjs";
 import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 import * as XLSX from "xlsx";
-import { CreditCostAdd, UPDCredit, DelCredit } from "@/app/actions";
+import { CreditCostAdd, UPDCredit, DelCredit, STATCREDIT } from "@/app/actions";
 
 interface CreditCardProps {
   creditcard: string;
@@ -222,36 +222,68 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
       messageApi.error("Error Delete!!!");
     }
   };
+
+  const handleStatus = async (record: any) => {
+    try {
+      const { id, status } = record;
+
+      console.log("ID:", id, "Status:", status);
+
+      setSpinning(true);
+      await STATCREDIT(id, status);
+
+      setTimeout(() => {
+        creditcardselect();
+        setSpinning(false);
+      }, 1000);
+
+      messageApi.success("Success Update Status");
+    } catch (error) {
+      console.log("ErrorStatus:", error);
+      setSpinning(false);
+      messageApi.error("Error UpdateStatus!!!");
+    }
+  };
   return (
     <div>
       <Row gutter={16}>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-          <Cardantd bordered={true}>
-            <Statistic
-              title="All Expenses"
-              value="{totalCost}"
-              precision={2}
-              valueStyle={{ color: "#3f8600" }}
-              prefix="THB"
+        <Col xs={24} sm={24} md={24} lg={24} xl={24} className="mb-2">
+          <div className="mb-0">
+            <span className="text-lg font-medium ">Total</span>
+            <Progress
+              percent={30}
+              status="active"
+              format={(percent) => `${percent} Days Left`}
+            />
+          </div>
+
+          <div className="mb-0">
+            <span className="text-lg font-medium ">Success</span>
+            <Progress
+              percent={50}
+              strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
+            />
+          </div>
+
+          <Progress
+            percent={70}
+            strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
+          />
+        </Col>
+
+        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+          <Cardantd bordered={true} className="drop-shadow-xl" title="Total">
+            <Progress
+              percent={70}
+              strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
             />
           </Cardantd>
         </Col>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-          <Cardantd bordered={true}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+          <Cardantd bordered={true} className="drop-shadow-xl">
             <Statistic
-              title="Paid"
+              title="Price"
               value="sd"
-              precision={2}
-              valueStyle={{ color: "#cf1322" }}
-              prefix="THB"
-            />
-          </Cardantd>
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-          <Cardantd bordered={true}>
-            <Statistic
-              title="Remain"
-              value="{UnPaidCost}"
               precision={2}
               valueStyle={{ color: "#cf1322" }}
               prefix="THB"
@@ -372,7 +404,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                         shape="round"
                         icon={<CheckOutlined className="text-green-700" />}
                         size={"small"}
-                        //onClick={() => handleStatus(record)}
+                        onClick={() => handleStatus(record)}
                       >
                         UpdateStatus
                       </Button>
