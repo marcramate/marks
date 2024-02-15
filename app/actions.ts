@@ -3,6 +3,8 @@
 import { Console } from "console";
 import { createClient } from "../utils/supabase/server";
 import { cookies } from "next/headers";
+import { permanentRedirect } from "next/navigation";
+import { revalidateTag } from "next/cache";
 
 export async function YTPM(formDataJSON: string) {
   try {
@@ -878,73 +880,58 @@ export async function UPDCredit(EditJSONCredit: string) {
     console.error("Error All Update in UPDCredit:", error);
   }
 }
-/*
-export async function UPDMiles(EditJSONMile: string) {
+
+export async function DelCredit(id: string) {
   try {
-    const EditDateMiles = JSON.parse(EditJSONMile);
-    if (!EditDateMiles) {
-      console.error("Error: EditDateMiles is not defined");
+    const IDCredit = id;
+
+    if (!IDCredit) {
+      console.log("Error: ID is not defined");
       return;
     }
-    const id = EditDateMiles.id;
-    const c_name = EditDateMiles.c_name;
-    const c_price = EditDateMiles.c_price;
-    const c_startdate = EditDateMiles.c_startdate;
-    const c_enddate = EditDateMiles.c_enddate;
-    const c_miles = EditDateMiles.c_miles;
-    const c_oilprice = EditDateMiles.c_oilprice;
-    const c_oilstation = EditDateMiles.c_oilstation;
-    const c_liter = EditDateMiles.c_liter;
-    const c_oiltype = EditDateMiles.c_oiltype;
+    console.log("IDCredit:", IDCredit);
 
-    console.log(
-      "EDIT ::",
-      "c_name:",
-      c_name,
-      "c_price:",
-      c_price,
-      "c_startdate:",
-      c_startdate,
-      "c_enddate:",
-      c_enddate,
-      "c_miles:",
-      c_miles,
-      "c_oilprice:",
-      c_oilprice,
-      "c_oilstation:",
-      c_oilstation,
-      "c_liter:",
-      c_liter,
-      "c_oiltype:",
-      c_oiltype
-    );
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const { data, error } = await supabase
-      .from("car")
-      .update([
-        {
-          c_name,
-          c_price,
-          c_startdate,
-          c_enddate,
-          c_miles,
-          c_oilprice,
-          c_oilstation,
-          c_liter,
-          c_oiltype,
-        },
-      ])
-      .eq("id", id)
-      .select();
+    const { error } = await supabase
+      .from("CreditCard")
+      .delete()
+      .eq("id", IDCredit);
+
     if (error) {
-      console.log("Error Update UPDMiles!!", error);
+      console.log("Error Delete DelCredit!!", error);
     }
 
-    console.log("Ok Update UPDMiles", data);
+    console.log("Ok Delete DelCredit ID:", IDCredit);
   } catch (error) {
-    console.error("Error All Update in UPDMiles:", error);
+    console.error("Error All Delete in DelCredit:", error);
+  }
+}
+/*
+export async function DELMiles(id: string) {
+  try {
+    const IDMiles = id;
+
+    if (!IDMiles) {
+      console.log("Error: ID is not defined");
+      return;
+    }
+
+    console.log("ID DELMiles:", IDMiles);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { error } = await supabase.from("car").delete().eq("id", IDMiles);
+
+    if (error) {
+      console.log("Error Delete DELMiles!!", error);
+    }
+
+    console.log("Ok Delete DELMiles");
+  } catch (error) {
+    console.error("Error All Delete in DELMiles:", error);
   }
 }
 */

@@ -38,12 +38,58 @@ import dayjs from "dayjs";
 import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 import * as XLSX from "xlsx";
-import { CreditCostAdd, UPDCredit } from "@/app/actions";
+import { CreditCostAdd, UPDCredit, DelCredit } from "@/app/actions";
 
 interface CreditCardProps {
   creditcard: string;
   isTab1: boolean;
 }
+
+const purc_type = [
+  {
+    value: "เงินสด",
+    label: "เงินสด",
+  },
+  {
+    value: "ผ่อน",
+    label: "ผ่อน",
+  },
+];
+
+const type = [
+  {
+    value: "น้ำมัน",
+    label: "น้ำมัน",
+  },
+  {
+    value: "น้ำ",
+    label: "น้ำ",
+  },
+  {
+    value: "อาหาร",
+    label: "อาหาร",
+  },
+  {
+    value: "เสื้อผ้า",
+    label: "เสื้อผ้า",
+  },
+  {
+    value: "เกม",
+    label: "เกม",
+  },
+  {
+    value: "ค่าเดินทาง",
+    label: "ค่าเดินทาง",
+  },
+  {
+    value: "ของใช้",
+    label: "ของใช้",
+  },
+  {
+    value: "ทั่วไป",
+    label: "ทั่วไป",
+  },
+];
 
 export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
   const supabase = createClient();
@@ -55,52 +101,6 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
   const [editedDataCredit, seteditedDataCredit] = useState<any>(null);
   const [cardAdd, setcardAdd] = useState<any>([]);
   const [showFields, setShowFields] = useState(false);
-
-  const purc_type = [
-    {
-      value: "เงินสด",
-      label: "เงินสด",
-    },
-    {
-      value: "ผ่อน",
-      label: "ผ่อน",
-    },
-  ];
-
-  const type = [
-    {
-      value: "น้ำมัน",
-      label: "น้ำมัน",
-    },
-    {
-      value: "น้ำ",
-      label: "น้ำ",
-    },
-    {
-      value: "อาหาร",
-      label: "อาหาร",
-    },
-    {
-      value: "เสื้อผ้า",
-      label: "เสื้อผ้า",
-    },
-    {
-      value: "เกม",
-      label: "เกม",
-    },
-    {
-      value: "ค่าเดินทาง",
-      label: "ค่าเดินทาง",
-    },
-    {
-      value: "ของใช้",
-      label: "ของใช้",
-    },
-    {
-      value: "ทั่วไป",
-      label: "ทั่วไป",
-    },
-  ];
 
   const creditcardselect = async () => {
     let { data: CreditCard, error } = await supabase
@@ -202,6 +202,26 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
     }
   };
 
+  const handleDel = async (record: any) => {
+    try {
+      const { id } = record;
+
+      console.log("id:", id);
+      setSpinning(true);
+      await DelCredit(id);
+
+      setTimeout(() => {
+        creditcardselect();
+        setSpinning(false);
+      }, 1000);
+
+      messageApi.success("Success Delete !!");
+    } catch (error) {
+      console.error("ErrorDel:", error);
+      setSpinning(false);
+      messageApi.error("Error Delete!!!");
+    }
+  };
   return (
     <div>
       <Row gutter={16}>
@@ -345,6 +365,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                 key: "action",
                 render: (_, record) => (
                   <Space size="middle">
+                    {contextHolder}
                     <Tooltip title="UpdateStatus">
                       <Button
                         className="buttonUpStatus"
@@ -370,7 +391,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                         shape="circle"
                         icon={<DeleteFilled />}
                         size={"small"}
-                        //onClick={() => handleDel(record)}
+                        onClick={() => handleDel(record)}
                       />
                     </Tooltip>
                   </Space>
@@ -588,6 +609,7 @@ export function AddCreditCost() {
     }
   };
 
+  /*
   const purc_type = [
     {
       value: "เงินสด",
@@ -633,6 +655,7 @@ export function AddCreditCost() {
       label: "ทั่วไป",
     },
   ];
+  */
 
   useEffect(() => {
     AddCard();
