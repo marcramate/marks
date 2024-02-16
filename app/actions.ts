@@ -755,6 +755,7 @@ export async function CreditCostAdd(DataADCJSON: string) {
     const date = DataCreditAdd.date;
     const purchase_type = DataCreditAdd.purchase_type;
     const oncredit_month = DataCreditAdd.oncredit_month;
+    const paycredit_month = DataCreditAdd.paycredit_month;
     const price_oncredit = DataCreditAdd.price_oncredit;
     const type = DataCreditAdd.type;
     const status = DataCreditAdd.status;
@@ -772,6 +773,8 @@ export async function CreditCostAdd(DataADCJSON: string) {
       purchase_type,
       "oncredit_month:",
       oncredit_month,
+      "paycredit_month:",
+      paycredit_month,
       "price_oncredit:",
       price_oncredit,
       "type:",
@@ -793,6 +796,7 @@ export async function CreditCostAdd(DataADCJSON: string) {
           date,
           purchase_type,
           oncredit_month,
+          paycredit_month,
           price_oncredit,
           type,
           status,
@@ -825,6 +829,7 @@ export async function UPDCredit(EditJSONCredit: string) {
     const date = EditDataCredit.date;
     const purchase_type = EditDataCredit.purchase_type;
     const oncredit_month = EditDataCredit.oncredit_month;
+    const paycredit_month = EditDataCredit.paycredit_month;
     const price_oncredit = EditDataCredit.price_oncredit;
     const type = EditDataCredit.type;
     const status = EditDataCredit.status;
@@ -844,6 +849,8 @@ export async function UPDCredit(EditJSONCredit: string) {
       purchase_type,
       "oncredit_month:",
       oncredit_month,
+      "paycredit_month:",
+      paycredit_month,
       "price_oncredit:",
       price_oncredit,
       "type:",
@@ -864,6 +871,7 @@ export async function UPDCredit(EditJSONCredit: string) {
         date,
         purchase_type,
         oncredit_month,
+        paycredit_month,
         price_oncredit,
         type,
         status,
@@ -933,6 +941,54 @@ export async function STATCREDIT(id: string, status: boolean) {
     console.log("OK Update Status CREDIT:", data);
   } catch (error) {
     console.error("Error Update Status CREDIT", error);
+  }
+}
+
+export async function UpPerMonthCredit(
+  id: string,
+  paycredit_month: number,
+  oncredit_month: number,
+  status: boolean,
+  purchase_type: string
+) {
+  try {
+    const oldPcm = paycredit_month;
+    const OncM = oncredit_month;
+    const oldstatus = status;
+    const purtype = purchase_type;
+
+    console.log("Old:", id, oldPcm, OncM, oldstatus, purtype);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    if (purtype === "ผ่อน") {
+      if (oldPcm < OncM) {
+        const newPcm = oldPcm + 1;
+        console.log("NewPercredit :", newPcm);
+
+        if (newPcm === OncM) {
+          const newstatus = !oldstatus;
+          console.log("NewStatus :", newstatus);
+        }
+
+        const { data, error } = await supabase
+          .from("CreditCard")
+          .update({ paycredit_month: newPcm })
+          .eq("id", id)
+          .select();
+
+        if (error) {
+          console.log("Error Update UpPerMonthCredit", error);
+        }
+
+        console.log("OK Update Status", data);
+      }
+    } else {
+      console.log("Error UpPerMonthCredit :Purtype");
+    }
+  } catch (error) {
+    console.error("Error Update UpPerMonthCredit", error);
   }
 }
 /*

@@ -22,6 +22,7 @@ import {
   DatePicker,
   DatePickerProps,
   Progress,
+  Descriptions,
 } from "antd";
 import {
   EditFilled,
@@ -100,7 +101,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
   const [form] = Form.useForm();
   const [editedDataCredit, seteditedDataCredit] = useState<any>(null);
   const [cardAdd, setcardAdd] = useState<any>([]);
-  const [showFields, setShowFields] = useState(false);
+  const [Salycr, setSalycr] = useState<any>([]);
 
   const creditcardselect = async () => {
     let { data: CreditCard, error } = await supabase
@@ -150,9 +151,27 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
     }
   };
 
+  const SaralyCr = async () => {
+    let { data: selection, error } = await supabase
+      .from("selection")
+      .select("creditcard,SalaryCredit")
+      .eq("creditcard", creditcard)
+      .not("creditcard", "is", null);
+
+    if (selection) {
+      console.log("DATA SaralyCr", selection);
+      setSalycr(selection);
+    }
+
+    if (!selection || error) {
+      console.log("ERRORSaralyCr :", error);
+    }
+  };
+
   useEffect(() => {
     creditcardselect();
     AddCard();
+    SaralyCr();
   }, [creditcard, isTab1]);
 
   useEffect(() => {
@@ -165,6 +184,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
         date: dayjs(editedDataCredit.date),
         purchase_type: editedDataCredit.purchase_type,
         oncredit_month: editedDataCredit.oncredit_month,
+        paycredit_month: editedDataCredit.paycredit_month,
         price_oncredit: editedDataCredit.price_oncredit,
         type: editedDataCredit.type,
         status: editedDataCredit.status,
@@ -244,53 +264,242 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
       messageApi.error("Error UpdateStatus!!!");
     }
   };
+
+  const handleUpPayMonth = async (record: any) => {
+    try {
+      const { id, paycredit_month, oncredit_month, status, purchase_type } =
+        record;
+
+      console.log(
+        "ID:",
+        id,
+        "Pcm:",
+        paycredit_month,
+        "ocm:",
+        oncredit_month,
+        "status:",
+        status,
+        "purchase_type",
+        purchase_type
+      );
+      
+      setSpinning(true);
+      setTimeout(() => {
+        creditcardselect();
+        setSpinning(false);
+      }, 1000);
+    } catch (error) {
+      console.log("ErrorStatus:", error);
+      setSpinning(false);
+      messageApi.error("Error UpdateMonthPay!!!");
+    }
+  };
+
+  const TotalCredit = Credisel.filter(
+    (CreditCard: { purchase_type: string }) =>
+      CreditCard.purchase_type && CreditCard.purchase_type === "เงินสด"
+  ).reduce((accumulator: any, currentTotalCredit: { price: any }) => {
+    return accumulator + currentTotalCredit.price;
+  }, 0);
+
+  const PayCost = Credisel.filter(
+    (CreditCard: { purchase_type: string; status: boolean }) =>
+      CreditCard.purchase_type === "เงินสด" && CreditCard.status
+  ).reduce(
+    (accumulator: number, currentPayCost: { price: number }) =>
+      accumulator + currentPayCost.price,
+    0
+  );
+
+  const WaitCost = Credisel.filter(
+    (CreditCard: { purchase_type: string; status: boolean }) =>
+      CreditCard.purchase_type === "เงินสด" && !CreditCard.status
+  ).reduce(
+    (accumulator: number, currentPayCost: { price: number }) =>
+      accumulator + currentPayCost.price,
+    0
+  );
+
+  const TotalinCredit = Credisel.filter(
+    (CreditCard: { purchase_type: string }) =>
+      CreditCard.purchase_type && CreditCard.purchase_type === "ผ่อน"
+  ).reduce((accumulator: any, currentTotalinCredit: { price: any }) => {
+    return accumulator + currentTotalinCredit.price;
+  }, 0);
+
+  const PayinCredit = Credisel.filter(
+    (CreditCard: { purchase_type: string; status: boolean }) =>
+      CreditCard.purchase_type === "ผ่อน" && !CreditCard.status
+  ).reduce(
+    (
+      accumulator: number,
+      currentPayinCredit: { price_oncredit: number; paycredit_month: number }
+    ) =>
+      accumulator +
+      currentPayinCredit.price_oncredit * currentPayinCredit.paycredit_month,
+    0
+  );
+
+  const WaitinCredit = Credisel.filter(
+    (CreditCard: { purchase_type: string }) =>
+      CreditCard.purchase_type && CreditCard.purchase_type === "ผ่อน"
+  ).reduce((accumulator: any, currentTotalinCredit: { price: number }) => {
+    return accumulator + currentTotalinCredit.price - PayinCredit;
+  }, 0);
+
   return (
     <div>
       <Row gutter={16}>
-        <Col xs={24} sm={24} md={24} lg={24} xl={24} className="mb-2">
-          <div className="mb-0">
-            <span className="text-lg font-medium ">Total</span>
-            <Progress
-              percent={30}
-              status="active"
-              format={(percent) => `${percent} Days Left`}
-            />
-          </div>
-
-          <div className="mb-0">
-            <span className="text-lg font-medium ">Success</span>
-            <Progress
-              percent={50}
-              strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
-            />
-          </div>
-
-          <Progress
-            percent={70}
-            strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
-          />
-        </Col>
-
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true} className="drop-shadow-md" >
-            <Progress
-              percent={70}
-              strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
-            />
+          <Cardantd bordered={true} className="drop-shadow-md" title="Cash">
+            <Descriptions>
+              <Descriptions.Item label="Credit limit">
+                {Salycr.map((item: any) => (
+                  <span key={item.creditcard} className="font-normal ">
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(item.SalaryCredit)}
+                  </span>
+                ))}
+              </Descriptions.Item>
+            </Descriptions>
+            <div>
+              <span className="text-lg font-medium ">Total</span>
+              {Salycr.map((item: any) => (
+                <Progress
+                  key={item.creditcard}
+                  percent={
+                    item.SalaryCredit
+                      ? (TotalCredit / item.SalaryCredit) * 100
+                      : 0
+                  }
+                  format={() => `${TotalCredit}`}
+                  status="active"
+                />
+              ))}
+            </div>
+
+            <div>
+              <span className="text-lg font-medium ">Pay</span>
+              {Salycr.map((item: any) => (
+                <Progress
+                  key={item.creditcard}
+                  percent={
+                    item.SalaryCredit ? (PayCost / item.SalaryCredit) * 100 : 0
+                  }
+                  format={() => `${PayCost}`}
+                  strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
+                />
+              ))}
+            </div>
+
+            <div>
+              <span className="text-lg font-medium ">Wait</span>
+              {Salycr.map((item: any) => (
+                <Progress
+                  key={item.creditcard}
+                  percent={
+                    item.SalaryCredit ? (WaitCost / item.SalaryCredit) * 100 : 0
+                  }
+                  format={() => `${WaitCost}`}
+                  strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
+                />
+              ))}
+            </div>
           </Cardantd>
         </Col>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true} className="drop-shadow-lg">
-            <Statistic
-              title="Price"
-              value="sd"
-              precision={2}
-              valueStyle={{ color: "#cf1322" }}
-              prefix="THB"
-            />
+          <Cardantd
+            bordered={true}
+            className="drop-shadow-lg"
+            title="Installments"
+          >
+            <Descriptions>
+              <Descriptions.Item label="Credit limit">
+                {Salycr.map((item: any) => (
+                  <span key={item.creditcard} className="font-normal ">
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(item.SalaryCredit)}
+                  </span>
+                ))}
+              </Descriptions.Item>
+            </Descriptions>
+            <div>
+              <span className="text-base font-medium ">
+                Total{" - "}
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Number(TotalinCredit))}
+              </span>
+              {Salycr.map((item: any) => (
+                <Progress
+                  key={item.creditcard}
+                  percent={
+                    item.SalaryCredit
+                      ? (TotalinCredit / item.SalaryCredit) * 100
+                      : 0
+                  }
+                  showInfo={false}
+                  status="active"
+                />
+              ))}
+            </div>
+
+            <div>
+              <span className="text-base font-medium ">
+                Pay{" - "}
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Number(PayinCredit))}
+              </span>
+              {Salycr.map((item: any) => (
+                <Progress
+                  key={item.creditcard}
+                  percent={
+                    TotalinCredit ? (PayinCredit / TotalinCredit) * 100 : 0
+                  }
+                  showInfo={false}
+                  strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
+                />
+              ))}
+            </div>
+
+            <div>
+              <span className="text-base font-medium ">
+                Wait{" - "}
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Number(WaitinCredit))}
+              </span>
+              {Salycr.map((item: any) => (
+                <Progress
+                  key={item.creditcard}
+                  percent={
+                    TotalinCredit ? (WaitinCredit / TotalinCredit) * 100 : 0
+                  }
+                  showInfo={false}
+                  strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
+                />
+              ))}
+            </div>
           </Cardantd>
         </Col>
-        
       </Row>
       <div className="mb-4"></div>
 
@@ -363,6 +572,19 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                 ),
               },
               {
+                title: "paycredit_month",
+                dataIndex: "paycredit_month",
+                key: "paycredit_month",
+                render: (paycredit_month: number) => (
+                  <Statistic
+                    value={paycredit_month}
+                    precision={0}
+                    valueStyle={{ color: "#000", fontSize: "14px" }}
+                    suffix="month"
+                  />
+                ),
+              },
+              {
                 title: "Price_oncredit",
                 dataIndex: "price_oncredit",
                 key: "price_oncredit",
@@ -399,17 +621,6 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                 render: (_, record) => (
                   <Space size="middle">
                     {contextHolder}
-                    <Tooltip title="UpdateStatus">
-                      <Button
-                        className="buttonUpStatus"
-                        shape="round"
-                        icon={<CheckOutlined className="text-green-700" />}
-                        size={"small"}
-                        onClick={() => handleStatus(record)}
-                      >
-                        UpdateStatus
-                      </Button>
-                    </Tooltip>
                     <Tooltip title="Edit">
                       <Button
                         shape="circle"
@@ -430,6 +641,37 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                   </Space>
                 ),
               },
+              {
+                title: "All Update",
+                key: "action2",
+                render: (_, record) => (
+                  <Space size="middle">
+                    {contextHolder}
+                    <Tooltip title="UpdateStatus">
+                      <Button
+                        className="buttonUpStatus"
+                        shape="round"
+                        icon={<CheckOutlined className="text-green-700" />}
+                        size={"small"}
+                        onClick={() => handleStatus(record)}
+                      >
+                        Status
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="UpdateMonthPay">
+                      <Button
+                        className="buttonUpStatus"
+                        shape="round"
+                        icon={<PlusOutlined className="text-green-700" />}
+                        size={"small"}
+                        onClick={() => handleUpPayMonth(record)}
+                      >
+                        MonthPay
+                      </Button>
+                    </Tooltip>
+                  </Space>
+                ),
+              },
             ]}
           />
         </Card>
@@ -438,10 +680,9 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
           title={
             <div className="flex items-center space-x-1">
               <PlusCircleFilled className="mr-2 text-teal-600" />
-              Add Credit Cost
+              Edit Credit Cost
             </div>
           }
-          //onOk={handleOk}
           onCancel={handleCancel}
           footer={(_, { OkBtn, CancelBtn }) => (
             <>
@@ -558,7 +799,25 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                 </Form.Item>
 
                 <Form.Item label="OCDM" name="oncredit_month" className="mb-4">
-                  <Input name="oncredit_month" className="w-full" />
+                  <InputNumber
+                    name="oncredit_month"
+                    className="w-full"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="PreCm"
+                  name="paycredit_month"
+                  className="mb-4"
+                >
+                  <InputNumber
+                    name="paycredit_month"
+                    className="w-full"
+                    formatter={(value) => (value ? `${value}` : "0")}
+                    parser={(value) => (value ? parseFloat(value) : 0)}
+                  />
                 </Form.Item>
 
                 <Form.Item
@@ -642,54 +901,6 @@ export function AddCreditCost() {
     }
   };
 
-  /*
-  const purc_type = [
-    {
-      value: "เงินสด",
-      label: "เงินสด",
-    },
-    {
-      value: "ผ่อน",
-      label: "ผ่อน",
-    },
-  ];
-
-  const type = [
-    {
-      value: "น้ำมัน",
-      label: "น้ำมัน",
-    },
-    {
-      value: "น้ำ",
-      label: "น้ำ",
-    },
-    {
-      value: "อาหาร",
-      label: "อาหาร",
-    },
-    {
-      value: "เสื้อผ้า",
-      label: "เสื้อผ้า",
-    },
-    {
-      value: "เกม",
-      label: "เกม",
-    },
-    {
-      value: "ค่าเดินทาง",
-      label: "ค่าเดินทาง",
-    },
-    {
-      value: "ของใช้",
-      label: "ของใช้",
-    },
-    {
-      value: "ทั่วไป",
-      label: "ทั่วไป",
-    },
-  ];
-  */
-
   useEffect(() => {
     AddCard();
   }, []);
@@ -711,6 +922,7 @@ export function AddCreditCost() {
       form.setFieldsValue({
         oncredit_month: "0",
         price_oncredit: "0",
+        paycredit_month: "0",
       });
     }
   };
@@ -893,6 +1105,20 @@ export function AddCreditCost() {
             style={{ display: showFields ? "block" : "none" }}
           >
             <Input name="oncredit_month" className="w-full" />
+          </Form.Item>
+
+          <Form.Item
+            label="PerCm"
+            name="paycredit_month"
+            className="mb-4"
+            style={{ display: showFields ? "block" : "none" }}
+          >
+            <InputNumber
+              name="paycredit_month"
+              className="w-full"
+              formatter={(value) => (value ? `${value}` : "0")}
+              parser={(value) => (value ? parseFloat(value) : 0)}
+            />
           </Form.Item>
 
           <Form.Item
