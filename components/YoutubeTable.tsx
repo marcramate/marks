@@ -198,101 +198,104 @@ export default function TBYoutubePremium() {
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
         <div className="mb-4"></div>
-
-        <Card decoration="top" decorationColor="indigo" key="unique-key">
-          <Table
-            dataSource={YTPremium}
-            columns={[
-              {
-                title: "ID",
-                dataIndex: "id",
-                key: "id",
-                sorter: (id1: { id: number }, id2: { id: number }) =>
-                  id1.id - id2.id,
-                defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-              },
-              {
-                title: "Name",
-                dataIndex: "name",
-                key: "name",
-                filters: fName.map((name) => ({
-                  text: name,
-                  value: name,
-                })),
-                onFilter: (
-                  dataname: string | number | boolean,
-                  nam: { name: string }
-                ) =>
-                  typeof dataname === "string"
-                    ? nam.name.indexOf(String(dataname)) === 0
-                    : true,
-              },
-              {
-                title: "Month",
-                dataIndex: "date",
-                key: "date",
-                render: (text: string, DB: any) => {
-                  const datenew = new Date(DB.date);
-                  const dateEnd = new Date(DB.date_end);
-                  const formattedDate = `Start Month: ${datenew.toLocaleDateString(
-                    "en-US",
-                    { year: "numeric", month: "2-digit" }
-                  )} - End Month: ${dateEnd.toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "2-digit",
-                  })}`;
-                  return <span>{formattedDate}</span>;
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+          <Card decoration="top" decorationColor="indigo" key="unique-key">
+            <Table
+              dataSource={YTPremium}
+              columns={[
+                {
+                  title: "ID",
+                  dataIndex: "id",
+                  key: "id",
+                  sorter: (id1: { id: number }, id2: { id: number }) =>
+                    id1.id - id2.id,
+                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                  responsive: ["lg"],
                 },
-              },
-              {
-                title: "Status Pay",
-                dataIndex: "status_pay",
-                key: "status_pay",
-                render: (status_pay: any) => (
-                  <Badge
-                    status={status_pay ? "success" : "error"}
-                    text={status_pay ? "Paid" : "UnPaid"}
-                  />
-                ),
-                filters: statpay.map((status_pay) => ({
-                  text: status_pay ? "Paid" : "UnPaid",
-                  value: status_pay,
-                })),
-                onFilter: (
-                  datastatus: string | boolean | number,
-                  sta: { status_pay: boolean }
-                ) => (datastatus ? sta.status_pay : !sta.status_pay),
-              },
-              {
-                title: "",
-                key: "action",
-                render: (_, record) => (
-                  <Space size="middle">
-                    {contextHolder}
-                    <Tooltip title="Edit">
-                      <Button
-                        shape="circle"
-                        icon={<EditFilled />}
-                        size={"small"}
-                        onClick={() => showModal(record)}
-                      />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <Button
-                        danger
-                        shape="circle"
-                        icon={<DeleteFilled />}
-                        size={"small"}
-                        onClick={() => handleDel(record)}
-                      />
-                    </Tooltip>
-                  </Space>
-                ),
-              },
-            ]}
-            onChange={onChange}
-          />
-        </Card>
+                {
+                  title: "Name",
+                  dataIndex: "name",
+                  key: "name",
+                  filters: fName.map((name) => ({
+                    text: name,
+                    value: name,
+                  })),
+                  onFilter: (
+                    dataname: string | number | boolean,
+                    nam: { name: string }
+                  ) =>
+                    typeof dataname === "string"
+                      ? nam.name.indexOf(String(dataname)) === 0
+                      : true,
+                },
+                {
+                  title: "Month",
+                  dataIndex: "date",
+                  key: "date",
+                  render: (text: string, DB: any) => {
+                    const datenew = new Date(DB.date);
+                    const dateEnd = new Date(DB.date_end);
+                    const formattedDate = `Start Month: ${datenew.toLocaleDateString(
+                      "en-US",
+                      { year: "numeric", month: "2-digit" }
+                    )} - End Month: ${dateEnd.toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                    })}`;
+                    return <span>{formattedDate}</span>;
+                  },
+                },
+                {
+                  title: "Status Pay",
+                  dataIndex: "status_pay",
+                  key: "status_pay",
+                  render: (status_pay: any) => (
+                    <Badge
+                      status={status_pay ? "success" : "error"}
+                      text={status_pay ? "Paid" : "UnPaid"}
+                    />
+                  ),
+                  filters: statpay.map((status_pay) => ({
+                    text: status_pay ? "Paid" : "UnPaid",
+                    value: status_pay,
+                  })),
+                  onFilter: (
+                    datastatus: string | boolean | number,
+                    sta: { status_pay: boolean }
+                  ) => (datastatus ? sta.status_pay : !sta.status_pay),
+                },
+                {
+                  title: "",
+                  key: "action",
+                  render: (_, record) => (
+                    <Space size="middle">
+                      {contextHolder}
+                      <Tooltip title="Edit">
+                        <Button
+                          shape="circle"
+                          icon={<EditFilled />}
+                          size={"small"}
+                          onClick={() => showModal(record)}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <Button
+                          danger
+                          shape="circle"
+                          icon={<DeleteFilled />}
+                          size={"small"}
+                          onClick={() => handleDel(record)}
+                        />
+                      </Tooltip>
+                    </Space>
+                  ),
+                },
+              ]}
+              scroll={{ x: "max-content", y: "mac-content" }}
+              onChange={onChange}
+            />
+          </Card>
+        </div>
         <div className="mb-4"></div>
         <Card decoration="top" decorationColor="indigo">
           <div>

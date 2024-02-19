@@ -59,11 +59,12 @@ export default function CCTabs() {
   };
 
   return (
-    <div>
+    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
       <Tabs
         activeKey={activeKey}
         onChange={onChange}
         tabBarExtraContent={<AddCreditCost />}
+        //className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4"
       >
         {tabItems?.map((item) => (
           <Tabs.TabPane key={item.key} tab={item.label}>

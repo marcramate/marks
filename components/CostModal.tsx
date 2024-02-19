@@ -789,8 +789,9 @@ export function MilesAdd() {
                 className="ml-2"
               ></Button>
             </Tooltip>
-          </div>,
+          </div>
         ]}
+        className="max-w-full"
       >
         <Form
           form={form}

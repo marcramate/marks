@@ -685,190 +685,194 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
         spinning={spinning}
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
-        <Card decoration="left" decorationColor="indigo" key="unique-key">
-          <div className="flex justify-end mb-2">
-            <Button className="mr-2" danger onClick={showDeleteConfirmation}>
-              Delete Select
-            </Button>
-            <Button
-              className="mr-2 buttonExport"
-              icon={<DownloadOutlined />}
-              onClick={handleCreditcardExport}
-            >
-              Dowlode Excel
-            </Button>
-          </div>
-          <div className="table-container" style={{ overflowX: "auto" }}>
-            <Table
-              rowKey={(record) => record.id}
-              dataSource={Credisel}
-              rowSelection={rowSelection}
-              columns={[
-                {
-                  title: "ID",
-                  dataIndex: "id",
-                  key: "id",
-                  sorter: (id1: { id: number }, id2: { id: number }) =>
-                    id1.id - id2.id,
-                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-                },
-                {
-                  title: "Date",
-                  dataIndex: "date",
-                  key: "date",
-                  render: (date) => {
-                    const fomatsd = dayjs(date).format("DD/MM/YYYY");
-                    return <span>{fomatsd}</span>;
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+          <Card decoration="left" decorationColor="indigo" key="unique-key">
+            <div className="flex justify-end mb-2">
+              <Button className="mr-2" danger onClick={showDeleteConfirmation}>
+                Delete Select
+              </Button>
+              <Button
+                className="mr-2 buttonExport"
+                icon={<DownloadOutlined />}
+                onClick={handleCreditcardExport}
+              >
+                Dowlode Excel
+              </Button>
+            </div>
+            <div className="table-container" style={{ overflowX: "auto" }}>
+              <Table
+                rowKey={(record) => record.id}
+                dataSource={Credisel}
+                rowSelection={rowSelection}
+                columns={[
+                  {
+                    title: "ID",
+                    dataIndex: "id",
+                    key: "id",
+                    sorter: (id1: { id: number }, id2: { id: number }) =>
+                      id1.id - id2.id,
+                    defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                    responsive: ["lg"],
                   },
-                },
-                {
-                  title: "List",
-                  dataIndex: "list",
-                  key: "list",
-                },
-                {
-                  title: "Card",
-                  dataIndex: "card",
-                  key: "card",
-                },
-                {
-                  title: "Price",
-                  dataIndex: "price",
-                  key: "price",
-                  render: (price: number) => (
-                    <span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "THB",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(price)}
-                    </span>
-                  ),
-                },
-                {
-                  title: "Pay_Type",
-                  dataIndex: "purchase_type",
-                  key: "purchase_type",
-                },
-                {
-                  title: "Installment",
-                  dataIndex: "oncredit_month",
-                  key: "oncredit_month",
-                  render: (oncredit_month: number) => (
-                    <Statistic
-                      value={oncredit_month}
-                      precision={0}
-                      valueStyle={{ color: "#000", fontSize: "14px" }}
-                      suffix="month"
-                    />
-                  ),
-                },
-                {
-                  title: "Pay_month",
-                  dataIndex: "paycredit_month",
-                  key: "paycredit_month",
-                  render: (paycredit_month: number) => (
-                    <Statistic
-                      value={paycredit_month}
-                      precision={0}
-                      valueStyle={{ color: "#000", fontSize: "14px" }}
-                      suffix="month"
-                    />
-                  ),
-                },
-                {
-                  title: "Price_month",
-                  dataIndex: "price_oncredit",
-                  key: "price_oncredit",
-                  render: (price_oncredit: number) => (
-                    <span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "THB",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(price_oncredit)}
-                    </span>
-                  ),
-                },
-                {
-                  title: "Type",
-                  dataIndex: "type",
-                  key: "type",
-                },
-                {
-                  title: "Status",
-                  dataIndex: "status",
-                  key: "status",
-                  render: (status: any) => (
-                    <Badge
-                      status={status ? "success" : "error"}
-                      text={status ? "จ่ายแล้ว" : "ยังไม่จ่าย"}
-                    />
-                  ),
-                },
-                {
-                  title: "",
-                  key: "action",
-                  render: (_, record) => (
-                    <Space size="middle">
-                      {contextHolder}
-                      <Tooltip title="Edit">
-                        <Button
-                          shape="circle"
-                          icon={<EditFilled />}
-                          size={"small"}
-                          onClick={() => showModal(record)}
-                        />
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <Button
-                          danger
-                          shape="circle"
-                          icon={<DeleteFilled />}
-                          size={"small"}
-                          onClick={() => handleDel(record)}
-                        />
-                      </Tooltip>
-                    </Space>
-                  ),
-                },
-                {
-                  title: "All Update",
-                  key: "action2",
-                  render: (_, record) => (
-                    <Space size="middle">
-                      {contextHolder}
-                      <Tooltip title="UpdateStatus">
-                        <Button
-                          className="buttonUpStatus"
-                          shape="round"
-                          icon={<CheckOutlined className="text-green-700" />}
-                          size={"small"}
-                          onClick={() => handleStatus(record)}
-                        >
-                          Status
-                        </Button>
-                      </Tooltip>
-                      <Tooltip title="UpdateMonthPay">
-                        <Button
-                          className="buttonUpStatus"
-                          shape="round"
-                          icon={<PlusOutlined className="text-green-700" />}
-                          size={"small"}
-                          onClick={() => handleUpPayMonth(record)}
-                        >
-                          MonthPay
-                        </Button>
-                      </Tooltip>
-                    </Space>
-                  ),
-                },
-              ]}
-            />
-          </div>
-        </Card>
+                  {
+                    title: "Date",
+                    dataIndex: "date",
+                    key: "date",
+                    render: (date) => {
+                      const fomatsd = dayjs(date).format("DD/MM/YYYY");
+                      return <span>{fomatsd}</span>;
+                    },
+                  },
+                  {
+                    title: "List",
+                    dataIndex: "list",
+                    key: "list",
+                  },
+                  {
+                    title: "Card",
+                    dataIndex: "card",
+                    key: "card",
+                  },
+                  {
+                    title: "Price",
+                    dataIndex: "price",
+                    key: "price",
+                    render: (price: number) => (
+                      <span>
+                        {new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "THB",
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }).format(price)}
+                      </span>
+                    ),
+                  },
+                  {
+                    title: "Pay_Type",
+                    dataIndex: "purchase_type",
+                    key: "purchase_type",
+                  },
+                  {
+                    title: "Installment",
+                    dataIndex: "oncredit_month",
+                    key: "oncredit_month",
+                    render: (oncredit_month: number) => (
+                      <Statistic
+                        value={oncredit_month}
+                        precision={0}
+                        valueStyle={{ color: "#000", fontSize: "14px" }}
+                        suffix="month"
+                      />
+                    ),
+                  },
+                  {
+                    title: "Pay_month",
+                    dataIndex: "paycredit_month",
+                    key: "paycredit_month",
+                    render: (paycredit_month: number) => (
+                      <Statistic
+                        value={paycredit_month}
+                        precision={0}
+                        valueStyle={{ color: "#000", fontSize: "14px" }}
+                        suffix="month"
+                      />
+                    ),
+                  },
+                  {
+                    title: "Price_month",
+                    dataIndex: "price_oncredit",
+                    key: "price_oncredit",
+                    render: (price_oncredit: number) => (
+                      <span>
+                        {new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "THB",
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }).format(price_oncredit)}
+                      </span>
+                    ),
+                  },
+                  {
+                    title: "Type",
+                    dataIndex: "type",
+                    key: "type",
+                  },
+                  {
+                    title: "Status",
+                    dataIndex: "status",
+                    key: "status",
+                    render: (status: any) => (
+                      <Badge
+                        status={status ? "success" : "error"}
+                        text={status ? "จ่ายแล้ว" : "ยังไม่จ่าย"}
+                      />
+                    ),
+                  },
+                  {
+                    title: "",
+                    key: "action",
+                    render: (_, record) => (
+                      <Space size="middle">
+                        {contextHolder}
+                        <Tooltip title="Edit">
+                          <Button
+                            shape="circle"
+                            icon={<EditFilled />}
+                            size={"small"}
+                            onClick={() => showModal(record)}
+                          />
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <Button
+                            danger
+                            shape="circle"
+                            icon={<DeleteFilled />}
+                            size={"small"}
+                            onClick={() => handleDel(record)}
+                          />
+                        </Tooltip>
+                      </Space>
+                    ),
+                  },
+                  {
+                    title: "All Update",
+                    key: "action2",
+                    render: (_, record) => (
+                      <Space size="middle">
+                        {contextHolder}
+                        <Tooltip title="UpdateStatus">
+                          <Button
+                            className="buttonUpStatus"
+                            shape="round"
+                            icon={<CheckOutlined className="text-green-700" />}
+                            size={"small"}
+                            onClick={() => handleStatus(record)}
+                          >
+                            Status
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="UpdateMonthPay">
+                          <Button
+                            className="buttonUpStatus"
+                            shape="round"
+                            icon={<PlusOutlined className="text-green-700" />}
+                            size={"small"}
+                            onClick={() => handleUpPayMonth(record)}
+                          >
+                            MonthPay
+                          </Button>
+                        </Tooltip>
+                      </Space>
+                    ),
+                  },
+                ]}
+                scroll={{ x: "max-content", y: "max-content" }}
+              />
+            </div>
+          </Card>
+        </div>
         <Modal
           open={isModalOpen}
           title={

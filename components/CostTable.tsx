@@ -263,116 +263,115 @@ export default function Monthlyexpenses({
         spinning={spinning}
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
-        <Card decoration="left" decorationColor="indigo" key="unique-key">
-          <MDexpesescost company={company} isTab1={isTab1} />
-          <Table
-            dataSource={Monye}
-            columns={[
-              {
-                title: "ID",
-                dataIndex: "id",
-                key: "id",
-                sorter: (id1: { id: number }, id2: { id: number }) =>
-                  id1.id - id2.id,
-                defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-              },
-              {
-                title: "List",
-                dataIndex: "text",
-                key: "text",
-              },
-              {
-                title: "Company",
-                dataIndex: "company",
-                key: "company",
-              },
-              {
-                title: "Cost",
-                dataIndex: "cost",
-                key: "cost",
-                render: (cost: number) => (
-                  <span>
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(cost)}
-                  </span>
-                ),
-              },
-              {
-                title: "Status",
-                dataIndex: "status",
-                key: "status",
-                render: (status: any) => (
-                  <Badge
-                    status={status ? "success" : "error"}
-                    text={status ? "Paid" : "UnPaid"}
-                  />
-                ),
-              },
-              {
-                title: "",
-                key: "action",
-                render: (_, record) => (
-                  <Space size="middle">
-                    {contextHolder}
-                    <Tooltip title="UpdateStatus">
-                      <Button
-                        className="buttonUpStatus"
-                        shape="round"
-                        icon={<CheckOutlined className="text-green-700" />}
-                        size={"small"}
-                        onClick={() => handleStatus(record)}
-                      >
-                        UpdateStatus
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="Edit">
-                      <Button
-                        shape="circle"
-                        icon={<EditFilled />}
-                        size={"small"}
-                        onClick={() => showModal(record)}
-                      />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <Button
-                        danger
-                        shape="circle"
-                        icon={<DeleteFilled />}
-                        size={"small"}
-                        onClick={() => handleDel(record)}
-                      />
-                    </Tooltip>
-                  </Space>
-                ),
-              },
-              {
-                title: "",
-                key: "action2",
-                render: (_, record) => (
-                  <Space size="middle">
-                    {contextHolder}
-                    <Tooltip title="UpdateStatus">
-                      <Button
-                        className="buttonUpStatus"
-                        shape="round"
-                        icon={<CheckOutlined className="text-green-700" />}
-                        size={"small"}
-                        onClick={() => handleStatus(record)}
-                      >
-                        UpdateStatus
-                      </Button>
-                    </Tooltip>
-                  </Space>
-                ),
-              },
-            ]}
-          />
-        </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+          <Card
+            decoration="left"
+            decorationColor="indigo"
+            key="unique-key"
+            style={{ width: "100%" }}
+          >
+            <MDexpesescost company={company} isTab1={isTab1} />
 
+            <Table
+              dataSource={Monye}
+              columns={[
+                {
+                  title: "ID",
+                  dataIndex: "id",
+                  key: "id",
+                  sorter: (id1: { id: number }, id2: { id: number }) =>
+                    id1.id - id2.id,
+                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                  responsive: ["lg"],
+                },
+                {
+                  title: "List",
+                  dataIndex: "text",
+                  key: "text",
+                },
+                {
+                  title: "Company",
+                  dataIndex: "company",
+                  key: "company",
+                  responsive: ["lg"],
+                },
+                {
+                  title: "Cost",
+                  dataIndex: "cost",
+                  key: "cost",
+                  render: (cost: number) => (
+                    <span>
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "THB",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(cost)}
+                    </span>
+                  ),
+                },
+                {
+                  title: "Status",
+                  dataIndex: "status",
+                  key: "status",
+                  render: (status: any) => (
+                    <Badge
+                      status={status ? "success" : "error"}
+                      text={status ? "Paid" : "UnPaid"}
+                    />
+                  ),
+                },
+                {
+                  title: "",
+                  key: "action",
+                  render: (_, record) => (
+                    <Space size="middle">
+                      {contextHolder}
+                      <Tooltip title="Edit">
+                        <Button
+                          shape="circle"
+                          icon={<EditFilled />}
+                          size={"small"}
+                          onClick={() => showModal(record)}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <Button
+                          danger
+                          shape="circle"
+                          icon={<DeleteFilled />}
+                          size={"small"}
+                          onClick={() => handleDel(record)}
+                        />
+                      </Tooltip>
+                    </Space>
+                  ),
+                },
+                {
+                  title: "",
+                  key: "action2",
+                  render: (_, record) => (
+                    <Space size="middle">
+                      {contextHolder}
+                      <Tooltip title="UpdateStatus">
+                        <Button
+                          className="buttonUpStatus"
+                          shape="round"
+                          icon={<CheckOutlined className="text-green-700" />}
+                          size={"small"}
+                          onClick={() => handleStatus(record)}
+                        >
+                          UpdateStatus
+                        </Button>
+                      </Tooltip>
+                    </Space>
+                  ),
+                },
+              ]}
+              scroll={{ x: "max-content", y: "max-content" }}
+            />
+          </Card>
+        </div>
         <Modal
           title={
             <div className="flex items-center space-x-1">
@@ -571,7 +570,7 @@ export function Gmcost() {
   return (
     <div>
       <Row gutter={16}>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
           <Cardantd bordered={true}>
             <Statistic
               title="All Expenses"
@@ -582,7 +581,7 @@ export function Gmcost() {
             />
           </Cardantd>
         </Col>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
           <Cardantd bordered={true}>
             <Statistic
               title="Share"
@@ -600,98 +599,102 @@ export function Gmcost() {
         spinning={spinning}
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
-        <Card decoration="top" decorationColor="indigo" key="unique-key">
-          <Gmmodal />
-          <Table
-            dataSource={Gmexp}
-            columns={[
-              {
-                title: "ID",
-                dataIndex: "id",
-                key: "id",
-                sorter: (id1: { id: number }, id2: { id: number }) =>
-                  id1.id - id2.id,
-                defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-              },
-              {
-                title: "List",
-                dataIndex: "text",
-                key: "text",
-              },
-              {
-                title: "Choice",
-                dataIndex: "company",
-                key: "company",
-              },
-              {
-                title: "Cost",
-                dataIndex: "cost",
-                key: "cost",
-                render: (cost: number) => (
-                  <span>
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(cost)}
-                  </span>
-                ),
-              },
-              {
-                title: "Share",
-                key: "Share",
-                render: (record: { cost: number }) => (
-                  <span>
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(record.cost / 2)}
-                  </span>
-                ),
-              },
-              {
-                title: "Date",
-                key: "date",
-                render: () => {
-                  const nowDate = dayjs();
-                  const fomatD = nowDate.format("MM/YYYY");
-                  return <Tag color="geekblue">{fomatD}</Tag>;
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+          <Card decoration="top" decorationColor="indigo" key="unique-key">
+            <Gmmodal />
+            <Table
+              dataSource={Gmexp}
+              columns={[
+                {
+                  title: "ID",
+                  dataIndex: "id",
+                  key: "id",
+                  sorter: (id1: { id: number }, id2: { id: number }) =>
+                    id1.id - id2.id,
+                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                  responsive: ["lg"],
                 },
-              },
+                {
+                  title: "List",
+                  dataIndex: "text",
+                  key: "text",
+                },
+                {
+                  title: "Choice",
+                  dataIndex: "company",
+                  key: "company",
+                  responsive: ["lg"],
+                },
+                {
+                  title: "Cost",
+                  dataIndex: "cost",
+                  key: "cost",
+                  render: (cost: number) => (
+                    <span>
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "THB",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(cost)}
+                    </span>
+                  ),
+                },
+                {
+                  title: "Share",
+                  key: "Share",
+                  render: (record: { cost: number }) => (
+                    <span>
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "THB",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(record.cost / 2)}
+                    </span>
+                  ),
+                },
+                {
+                  title: "Date",
+                  key: "date",
+                  render: () => {
+                    const nowDate = dayjs();
+                    const fomatD = nowDate.format("MM/YYYY");
+                    return <Tag color="geekblue">{fomatD}</Tag>;
+                  },
+                },
 
-              {
-                title: "",
-                key: "action",
-                render: (_, record) => (
-                  <Space size="middle">
-                    {contextHolder}
-                    <Tooltip title="Edit">
-                      <Button
-                        shape="circle"
-                        icon={<EditFilled />}
-                        size={"small"}
-                        onClick={() => showModal(record)}
-                      />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <Button
-                        danger
-                        shape="circle"
-                        icon={<DeleteFilled />}
-                        size={"small"}
-                        onClick={() => handleDel(record)}
-                      />
-                    </Tooltip>
-                  </Space>
-                ),
-              },
-            ]}
-          />
-        </Card>
-
+                {
+                  title: "",
+                  key: "action",
+                  render: (_, record) => (
+                    <Space size="middle">
+                      {contextHolder}
+                      <Tooltip title="Edit">
+                        <Button
+                          shape="circle"
+                          icon={<EditFilled />}
+                          size={"small"}
+                          onClick={() => showModal(record)}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <Button
+                          danger
+                          shape="circle"
+                          icon={<DeleteFilled />}
+                          size={"small"}
+                          onClick={() => handleDel(record)}
+                        />
+                      </Tooltip>
+                    </Space>
+                  ),
+                },
+              ]}
+              scroll={{ x: "max-content", y: "max-content" }}
+            />
+          </Card>
+        </div>
         <Modal
           title={
             <div className="flex items-center space-x-1">
@@ -970,7 +973,7 @@ export function CarTag() {
   return (
     <div>
       <Row gutter={16}>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
           <Cardantd bordered={true}>
             <Statistic
               title="Car"
@@ -981,7 +984,7 @@ export function CarTag() {
             />
           </Cardantd>
         </Col>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
           <Cardantd bordered={true}>
             <Statistic
               title="Motorcycle"
@@ -999,117 +1002,120 @@ export function CarTag() {
         spinning={spinning}
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
-        <Card decoration="top" decorationColor="indigo" key="unique-key">
-          <Cartagmodal />
-          <Table
-            dataSource={CarTag}
-            columns={[
-              {
-                title: "ID",
-                dataIndex: "id",
-                key: "id",
-                sorter: (id1: { id: number }, id2: { id: number }) =>
-                  id1.id - id2.id,
-                defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-              },
-              {
-                title: "Name",
-                dataIndex: "c_name",
-                key: "c_name",
-              },
-              {
-                title: "Tag",
-                dataIndex: "c_tag",
-                key: "c_tag",
-              },
-              {
-                title: "Price",
-                dataIndex: "c_price",
-                key: "c_price",
-                render: (c_price: number) => (
-                  <span>
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(c_price)}
-                  </span>
-                ),
-              },
-              {
-                title: "StarDate",
-                dataIndex: "c_startdate",
-                key: "c_startdate",
-                render: (c_stardate) => {
-                  const fomatsd = dayjs(c_stardate).format("DD/MM/YYYY");
-                  return <Tag color="#87d068">{fomatsd}</Tag>;
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+          <Card decoration="top" decorationColor="indigo" key="unique-key">
+            <Cartagmodal />
+            <Table
+              dataSource={CarTag}
+              columns={[
+                {
+                  title: "ID",
+                  dataIndex: "id",
+                  key: "id",
+                  sorter: (id1: { id: number }, id2: { id: number }) =>
+                    id1.id - id2.id,
+                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                  responsive: ["lg"],
                 },
-              },
-              {
-                title: "EndDate",
-                dataIndex: "c_enddate",
-                key: "c_enddate",
-                render: (c_enddate) => {
-                  const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
-                  return <Tag color="#f50">{fomated}</Tag>;
+                {
+                  title: "Name",
+                  dataIndex: "c_name",
+                  key: "c_name",
                 },
-              },
-              {
-                title: "Status",
-                key: "status",
-                render: ({ c_enddate }) => {
-                  const nowdate = dayjs().format("YYYY-MM-DD");
-
-                  return (
+                {
+                  title: "Tag",
+                  dataIndex: "c_tag",
+                  key: "c_tag",
+                },
+                {
+                  title: "Price",
+                  dataIndex: "c_price",
+                  key: "c_price",
+                  render: (c_price: number) => (
                     <span>
-                      {dayjs(c_enddate).isBefore(nowdate) ||
-                      dayjs(c_enddate).isSame(nowdate) ? (
-                        <Badge status="error" text="หมดแล้ว" />
-                      ) : (
-                        <>
-                          {dayjs(c_enddate).diff(nowdate, "day") <= 7 ? (
-                            <Badge status="warning" text="ใกล้แล้ว" />
-                          ) : (
-                            <Badge status="success" text="ยังไม่หมด" />
-                          )}
-                        </>
-                      )}
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "THB",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(c_price)}
                     </span>
-                  );
+                  ),
                 },
-              },
+                {
+                  title: "StarDate",
+                  dataIndex: "c_startdate",
+                  key: "c_startdate",
+                  render: (c_stardate) => {
+                    const fomatsd = dayjs(c_stardate).format("DD/MM/YYYY");
+                    return <Tag color="#87d068">{fomatsd}</Tag>;
+                  },
+                },
+                {
+                  title: "EndDate",
+                  dataIndex: "c_enddate",
+                  key: "c_enddate",
+                  render: (c_enddate) => {
+                    const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
+                    return <Tag color="#f50">{fomated}</Tag>;
+                  },
+                },
+                {
+                  title: "Status",
+                  key: "status",
+                  render: ({ c_enddate }) => {
+                    const nowdate = dayjs().format("YYYY-MM-DD");
 
-              {
-                title: "",
-                key: "action",
-                render: (_, record) => (
-                  <Space size="middle">
-                    {contextHolder}
-                    <Tooltip title="Edit">
-                      <Button
-                        shape="circle"
-                        icon={<EditFilled />}
-                        size={"small"}
-                        onClick={() => showModal(record)}
-                      />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <Button
-                        danger
-                        shape="circle"
-                        icon={<DeleteFilled />}
-                        size={"small"}
-                        onClick={() => handleDel(record)}
-                      />
-                    </Tooltip>
-                  </Space>
-                ),
-              },
-            ]}
-          />
-        </Card>
+                    return (
+                      <span>
+                        {dayjs(c_enddate).isBefore(nowdate) ||
+                        dayjs(c_enddate).isSame(nowdate) ? (
+                          <Badge status="error" text="หมดแล้ว" />
+                        ) : (
+                          <>
+                            {dayjs(c_enddate).diff(nowdate, "day") <= 7 ? (
+                              <Badge status="warning" text="ใกล้แล้ว" />
+                            ) : (
+                              <Badge status="success" text="ยังไม่หมด" />
+                            )}
+                          </>
+                        )}
+                      </span>
+                    );
+                  },
+                },
 
+                {
+                  title: "",
+                  key: "action",
+                  render: (_, record) => (
+                    <Space size="middle">
+                      {contextHolder}
+                      <Tooltip title="Edit">
+                        <Button
+                          shape="circle"
+                          icon={<EditFilled />}
+                          size={"small"}
+                          onClick={() => showModal(record)}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <Button
+                          danger
+                          shape="circle"
+                          icon={<DeleteFilled />}
+                          size={"small"}
+                          onClick={() => handleDel(record)}
+                        />
+                      </Tooltip>
+                    </Space>
+                  ),
+                },
+              ]}
+              scroll={{ x: "max-content", y: "max-content" }}
+            />
+          </Card>
+        </div>
         <Modal
           title={
             <div className="flex items-center space-x-1">
@@ -1552,7 +1558,7 @@ export function CarMiles() {
   return (
     <>
       <Row gutter={16}>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
           <Cardantd bordered={true}>
             <Statistic
               title="Cost"
@@ -1563,7 +1569,7 @@ export function CarMiles() {
             />
           </Cardantd>
         </Col>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
           <Cardantd bordered={true}>
             <Statistic
               title="Miles"
@@ -1581,175 +1587,179 @@ export function CarMiles() {
         spinning={spinning}
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
-        <Card decoration="top" decorationColor="indigo" key="unique-key">
-          <div className="flex justify-end mr-2">
-            <Button className="mr-2" danger onClick={showDeleteConfirmation}>
-              Delete All
-            </Button>
-            <Button
-              className="mr-2 buttonExport"
-              icon={<DownloadOutlined />}
-              onClick={handlemilesExport}
-            >
-              Dowlode Excel
-            </Button>
-            <MilesAdd />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+          <Card decoration="top" decorationColor="indigo" key="unique-key">
+            <div className="flex justify-end mr-2">
+              <Button className="mr-2" danger onClick={showDeleteConfirmation}>
+                Delete All
+              </Button>
+              <Button
+                className="mr-2 buttonExport"
+                icon={<DownloadOutlined />}
+                onClick={handlemilesExport}
+              >
+                Dowlode Excel
+              </Button>
+              <MilesAdd />
+            </div>
 
-          <div className="mb-2"></div>
-          <Table
-            dataSource={CarMiles}
-            columns={[
-              {
-                title: "ID",
-                dataIndex: "id",
-                key: "id",
-                sorter: (id1: { id: number }, id2: { id: number }) =>
-                  id1.id - id2.id,
-                defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-              },
-              {
-                title: "Name",
-                dataIndex: "c_name",
-                key: "c_name",
-              },
-
-              {
-                title: "Price",
-                dataIndex: "c_price",
-                key: "c_price",
-                render: (c_price: number) => (
-                  <span>
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(c_price)}
-                  </span>
-                ),
-              },
-              {
-                title: "OilType",
-                dataIndex: "c_oiltype",
-                key: "c_oiltype",
-              },
-
-              {
-                title: "Station",
-                dataIndex: "c_oilstation",
-                key: "c_oilstation",
-              },
-              {
-                title: "OilPrice",
-                dataIndex: "c_oilprice",
-                key: "c_oilprice",
-                render: (c_oilprice: number) => (
-                  <span>
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(c_oilprice)}
-                  </span>
-                ),
-              },
-              {
-                title: "Litre",
-                dataIndex: "c_liter",
-                key: "c_liter",
-                render: (c_liter: number) => (
-                  <Statistic
-                    value={c_liter}
-                    precision={2}
-                    valueStyle={{ color: "#000", fontSize: "14px" }}
-                    suffix="L"
-                  />
-                ),
-              },
-              {
-                title: "Miles",
-                dataIndex: "c_miles",
-                key: "c_miles",
-                render: (c_miles: number) => (
-                  <Statistic
-                    value={c_miles}
-                    precision={2}
-                    valueStyle={{ color: "#000", fontSize: "14px" }}
-                    suffix="Km"
-                  />
-                ),
-              },
-              {
-                title: "StarDate",
-                dataIndex: "c_startdate",
-                key: "c_startdate",
-                render: (c_stardate) => {
-                  const fomatsd = dayjs(c_stardate).format("DD/MM/YYYY");
-                  return <Tag color="#87d068">{fomatsd}</Tag>;
+            <div className="mb-2"></div>
+            <Table
+              dataSource={CarMiles}
+              columns={[
+                {
+                  title: "ID",
+                  dataIndex: "id",
+                  key: "id",
+                  sorter: (id1: { id: number }, id2: { id: number }) =>
+                    id1.id - id2.id,
+                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                  responsive: ["lg"],
                 },
-              },
-              {
-                title: "EndDate",
-                dataIndex: "c_enddate",
-                key: "c_enddate",
-                render: (c_enddate) => {
-                  if (c_enddate) {
-                    const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
-                    return <Tag color="#f50">{fomated}</Tag>;
-                  } else {
-                    return <Tag color="#f50">Wait</Tag>;
-                  }
+                {
+                  title: "Car",
+                  dataIndex: "c_name",
+                  key: "c_name",
                 },
-              },
-              {
-                title: "Status",
-                key: "status",
-                render: ({ c_enddate }) => {
-                  const nowdate = dayjs().format("YYYY-MM-DD");
 
-                  return (
+                {
+                  title: "Price",
+                  dataIndex: "c_price",
+                  key: "c_price",
+                  render: (c_price: number) => (
                     <span>
-                      {dayjs(c_enddate).isSame(c_enddate) ? (
-                        <Badge status="error" text="ใช้หมดแล้ว" />
-                      ) : (
-                        <Badge status="success" text="กำลังใช้งาน" />
-                      )}
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "THB",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(c_price)}
                     </span>
-                  );
+                  ),
                 },
-              },
+                {
+                  title: "OilType",
+                  dataIndex: "c_oiltype",
+                  key: "c_oiltype",
+                },
 
-              {
-                title: "",
-                key: "action",
-                render: (_, record) => (
-                  <Space size="middle">
-                    {contextHolder}
-                    <Tooltip title="Edit">
-                      <Button
-                        shape="circle"
-                        icon={<EditFilled />}
-                        size={"small"}
-                        onClick={() => showModal(record)}
-                      />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <Button
-                        danger
-                        shape="circle"
-                        icon={<DeleteFilled />}
-                        size={"small"}
-                        onClick={() => handleDel(record)}
-                      />
-                    </Tooltip>
-                  </Space>
-                ),
-              },
-            ]}
-          />
-        </Card>
+                {
+                  title: "Station",
+                  dataIndex: "c_oilstation",
+                  key: "c_oilstation",
+                },
+                {
+                  title: "OilPrice",
+                  dataIndex: "c_oilprice",
+                  key: "c_oilprice",
+                  render: (c_oilprice: number) => (
+                    <span>
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "THB",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(c_oilprice)}
+                    </span>
+                  ),
+                },
+                {
+                  title: "Litre",
+                  dataIndex: "c_liter",
+                  key: "c_liter",
+                  render: (c_liter: number) => (
+                    <Statistic
+                      value={c_liter}
+                      precision={2}
+                      valueStyle={{ color: "#000", fontSize: "14px" }}
+                      suffix="L"
+                    />
+                  ),
+                },
+                {
+                  title: "Miles",
+                  dataIndex: "c_miles",
+                  key: "c_miles",
+                  render: (c_miles: number) => (
+                    <Statistic
+                      value={c_miles}
+                      precision={2}
+                      valueStyle={{ color: "#000", fontSize: "14px" }}
+                      suffix="Km"
+                    />
+                  ),
+                },
+                {
+                  title: "StarDate",
+                  dataIndex: "c_startdate",
+                  key: "c_startdate",
+                  render: (c_stardate) => {
+                    const fomatsd = dayjs(c_stardate).format("DD/MM/YYYY");
+                    return <Tag color="#87d068">{fomatsd}</Tag>;
+                  },
+                },
+                {
+                  title: "EndDate",
+                  dataIndex: "c_enddate",
+                  key: "c_enddate",
+                  render: (c_enddate) => {
+                    if (c_enddate) {
+                      const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
+                      return <Tag color="#f50">{fomated}</Tag>;
+                    } else {
+                      return <Tag color="#f50">Wait</Tag>;
+                    }
+                  },
+                },
+                {
+                  title: "Status",
+                  key: "status",
+                  render: ({ c_enddate }) => {
+                    const nowdate = dayjs().format("YYYY-MM-DD");
+
+                    return (
+                      <span>
+                        {dayjs(c_enddate).isSame(c_enddate) ? (
+                          <Badge status="error" text="ใช้หมดแล้ว" />
+                        ) : (
+                          <Badge status="success" text="กำลังใช้งาน" />
+                        )}
+                      </span>
+                    );
+                  },
+                },
+
+                {
+                  title: "",
+                  key: "action",
+                  render: (_, record) => (
+                    <Space size="middle">
+                      {contextHolder}
+                      <Tooltip title="Edit">
+                        <Button
+                          shape="circle"
+                          icon={<EditFilled />}
+                          size={"small"}
+                          onClick={() => showModal(record)}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <Button
+                          danger
+                          shape="circle"
+                          icon={<DeleteFilled />}
+                          size={"small"}
+                          onClick={() => handleDel(record)}
+                        />
+                      </Tooltip>
+                    </Space>
+                  ),
+                },
+              ]}
+              scroll={{ x: "max-content", y: "max-content" }}
+            />
+          </Card>
+        </div>
 
         <Modal
           title={
