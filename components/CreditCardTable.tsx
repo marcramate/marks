@@ -39,7 +39,14 @@ import dayjs from "dayjs";
 import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 import * as XLSX from "xlsx";
-import { CreditCostAdd, UPDCredit, DelCredit, STATCREDIT } from "@/app/actions";
+import {
+  CreditCostAdd,
+  UPDCredit,
+  DelCredit,
+  STATCREDIT,
+  UpPerMonthCredit,
+  DelAllCredit,
+} from "@/app/actions";
 
 interface CreditCardProps {
   creditcard: string;
@@ -102,6 +109,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
   const [editedDataCredit, seteditedDataCredit] = useState<any>(null);
   const [cardAdd, setcardAdd] = useState<any>([]);
   const [Salycr, setSalycr] = useState<any>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const creditcardselect = async () => {
     let { data: CreditCard, error } = await supabase
@@ -282,8 +290,15 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
         "purchase_type",
         purchase_type
       );
-      
+
       setSpinning(true);
+      await UpPerMonthCredit(
+        id,
+        paycredit_month,
+        oncredit_month,
+        status,
+        purchase_type
+      );
       setTimeout(() => {
         creditcardselect();
         setSpinning(false);
@@ -294,6 +309,13 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
       messageApi.error("Error UpdateMonthPay!!!");
     }
   };
+
+  const Credituse = Credisel.reduce(
+    (accumulator: any, currentTotalCredit: { price: any }) => {
+      return accumulator + currentTotalCredit.price;
+    },
+    0
+  );
 
   const TotalCredit = Credisel.filter(
     (CreditCard: { purchase_type: string }) =>
@@ -328,8 +350,8 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
   }, 0);
 
   const PayinCredit = Credisel.filter(
-    (CreditCard: { purchase_type: string; status: boolean }) =>
-      CreditCard.purchase_type === "ผ่อน" && !CreditCard.status
+    (CreditCard: { purchase_type: string }) =>
+      CreditCard.purchase_type === "ผ่อน"
   ).reduce(
     (
       accumulator: number,
@@ -341,33 +363,187 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
   );
 
   const WaitinCredit = Credisel.filter(
-    (CreditCard: { purchase_type: string }) =>
-      CreditCard.purchase_type && CreditCard.purchase_type === "ผ่อน"
+    (CreditCard: { purchase_type: string; status: boolean }) =>
+      CreditCard.purchase_type === "ผ่อน" && !CreditCard.status
   ).reduce((accumulator: any, currentTotalinCredit: { price: number }) => {
     return accumulator + currentTotalinCredit.price - PayinCredit;
   }, 0);
 
+  interface CreditData {
+    id: number;
+    list: string;
+    c_price: number;
+    card: string;
+    date: string;
+    purchase_type: string;
+    oncredit_month: number;
+    paycredit_month: number;
+    price_oncredit: string;
+    status: boolean;
+    type: string;
+  }
+
+  const handleCreditcardExport = async () => {
+    try {
+      let { data: CreditCard, error } = await supabase
+        .from("CreditCard")
+        .select("*")
+        .eq("status", true)
+        .like("card", `%${creditcard}%`);
+
+      setSpinning(true);
+
+      if (!CreditCard || error || CreditCard.length === 0) {
+        console.log("CreditCardExport:", error);
+        messageApi.error("No data available.");
+        setSpinning(false);
+        return;
+      }
+
+      exportToExcel(CreditCard, "CreditCard", "Credit_Data_");
+      setSpinning(false);
+      messageApi.success("Downloading Excel file...");
+    } catch (error) {
+      setSpinning(false);
+      console.error("Error fetching data:", error);
+      messageApi.error("Error fetching data.");
+    }
+  };
+  function exportToExcel(
+    data: CreditData[],
+    sheetName: string,
+    fileName: string
+  ) {
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    const newdate = new Date().toISOString().split("T")[0];
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    XLSX.writeFile(wb, `${fileName}_${newdate}.xlsx`);
+  }
+
+  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  };
+
+  const handleDelAll = async (ids: any[]) => {
+    try {
+      const IDSid = ids.map((item) => item.replace("ID: ", ""));
+
+      console.log("ids:", ids);
+      console.log("cle:", IDSid);
+      setSpinning(true);
+      await DelAllCredit(ids);
+
+      setTimeout(() => {
+        creditcardselect();
+        setSpinning(false);
+      }, 1000);
+
+      messageApi.success("Success Delete All !!");
+    } catch (error) {
+      console.error("ErrorDelAll:", error);
+      setSpinning(false);
+      messageApi.error("Error Delete All!!!");
+    }
+  };
+
+  const { confirm } = Modal;
+  const showDeleteConfirmation = () => {
+    if (selectedRowKeys.length === 0) {
+      messageApi.error("Please select at least one row to delete.");
+      return;
+    }
+    confirm({
+      title: "Are you sure you want to Delete all?",
+      content: (
+        <div>
+          <ul>
+            <li className="mb-2">
+              <h1 className="font-medium">
+                <Space>
+                  <Badge status="success" text="Today :" />
+                  {dayjs().format("YYYY-MM-DD")}
+                </Space>
+              </h1>
+            </li>
+            {selectedRowKeys.map((key, index) => {
+              const DataCredit = Credisel.find((item: any) => item.id === key);
+
+              return (
+                <li className="text-red-500" key={index}>
+                  <Tag color="error" className="mb-1">
+                    ID: {key}, Card: {DataCredit?.card}, Price:
+                    {DataCredit?.price}, Type:{DataCredit?.purchase_type}
+                  </Tag>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ),
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      style: { maxWidth: "90vw", width: "100%" },
+      onOk: () => handleDelAll(selectedRowKeys.map((key) => key.toString())),
+      onCancel() {
+        {
+          handleCancel;
+        }
+      },
+    });
+  };
   return (
     <div>
+      <div>
+        <Descriptions>
+          <Descriptions.Item label="Credit limit">
+            {Salycr.map((item: any) => (
+              <span
+                key={item.creditcard}
+                className="font-normal text-green-600"
+              >
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(item.SalaryCredit)}
+              </span>
+            ))}
+          </Descriptions.Item>
+
+          <Descriptions.Item label="Credit Use">
+            <span className="font-normal text-red-500">
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "THB",
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }).format(Credituse)}
+            </span>
+          </Descriptions.Item>
+        </Descriptions>
+      </div>
       <Row gutter={16}>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
           <Cardantd bordered={true} className="drop-shadow-md" title="Cash">
-            <Descriptions>
-              <Descriptions.Item label="Credit limit">
-                {Salycr.map((item: any) => (
-                  <span key={item.creditcard} className="font-normal ">
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(item.SalaryCredit)}
-                  </span>
-                ))}
-              </Descriptions.Item>
-            </Descriptions>
             <div>
-              <span className="text-lg font-medium ">Total</span>
+              <span className="text-base font-medium ">
+                Total{" - "}
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Number(TotalCredit))}
+              </span>
               {Salycr.map((item: any) => (
                 <Progress
                   key={item.creditcard}
@@ -376,35 +552,51 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                       ? (TotalCredit / item.SalaryCredit) * 100
                       : 0
                   }
-                  format={() => `${TotalCredit}`}
+                  showInfo={false}
                   status="active"
                 />
               ))}
             </div>
 
             <div>
-              <span className="text-lg font-medium ">Pay</span>
+              <span className="text-base font-medium ">
+                Pay{" - "}
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Number(PayCost))}
+              </span>
               {Salycr.map((item: any) => (
                 <Progress
                   key={item.creditcard}
                   percent={
                     item.SalaryCredit ? (PayCost / item.SalaryCredit) * 100 : 0
                   }
-                  format={() => `${PayCost}`}
+                  showInfo={false}
                   strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
                 />
               ))}
             </div>
 
             <div>
-              <span className="text-lg font-medium ">Wait</span>
+              <span className="text-base font-medium ">
+                Wait{" - "}
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Number(WaitCost))}
+              </span>
               {Salycr.map((item: any) => (
                 <Progress
                   key={item.creditcard}
                   percent={
                     item.SalaryCredit ? (WaitCost / item.SalaryCredit) * 100 : 0
                   }
-                  format={() => `${WaitCost}`}
+                  showInfo={false}
                   strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
                 />
               ))}
@@ -417,20 +609,6 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
             className="drop-shadow-lg"
             title="Installments"
           >
-            <Descriptions>
-              <Descriptions.Item label="Credit limit">
-                {Salycr.map((item: any) => (
-                  <span key={item.creditcard} className="font-normal ">
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(item.SalaryCredit)}
-                  </span>
-                ))}
-              </Descriptions.Item>
-            </Descriptions>
             <div>
               <span className="text-base font-medium ">
                 Total{" - "}
@@ -508,172 +686,188 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
         <Card decoration="left" decorationColor="indigo" key="unique-key">
-          <Table
-            dataSource={Credisel}
-            columns={[
-              {
-                title: "ID",
-                dataIndex: "id",
-                key: "id",
-                sorter: (id1: { id: number }, id2: { id: number }) =>
-                  id1.id - id2.id,
-                defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-              },
-              {
-                title: "Date",
-                dataIndex: "date",
-                key: "date",
-                render: (date) => {
-                  const fomatsd = dayjs(date).format("DD/MM/YYYY");
-                  return <span>{fomatsd}</span>;
+          <div className="flex justify-end mb-2">
+            <Button className="mr-2" danger onClick={showDeleteConfirmation}>
+              Delete Select
+            </Button>
+            <Button
+              className="mr-2 buttonExport"
+              icon={<DownloadOutlined />}
+              onClick={handleCreditcardExport}
+            >
+              Dowlode Excel
+            </Button>
+          </div>
+          <div className="table-container" style={{ overflowX: "auto" }}>
+            <Table
+              rowKey={(record) => record.id}
+              dataSource={Credisel}
+              rowSelection={rowSelection}
+              columns={[
+                {
+                  title: "ID",
+                  dataIndex: "id",
+                  key: "id",
+                  sorter: (id1: { id: number }, id2: { id: number }) =>
+                    id1.id - id2.id,
+                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
                 },
-              },
-              {
-                title: "List",
-                dataIndex: "list",
-                key: "list",
-              },
-              {
-                title: "Card",
-                dataIndex: "card",
-                key: "card",
-              },
-              {
-                title: "Price",
-                dataIndex: "price",
-                key: "price",
-                render: (price: number) => (
-                  <span>
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(price)}
-                  </span>
-                ),
-              },
-              {
-                title: "Purchase_type",
-                dataIndex: "purchase_type",
-                key: "purchase_type",
-              },
-              {
-                title: "Oncredit_month",
-                dataIndex: "oncredit_month",
-                key: "oncredit_month",
-                render: (oncredit_month: number) => (
-                  <Statistic
-                    value={oncredit_month}
-                    precision={0}
-                    valueStyle={{ color: "#000", fontSize: "14px" }}
-                    suffix="month"
-                  />
-                ),
-              },
-              {
-                title: "paycredit_month",
-                dataIndex: "paycredit_month",
-                key: "paycredit_month",
-                render: (paycredit_month: number) => (
-                  <Statistic
-                    value={paycredit_month}
-                    precision={0}
-                    valueStyle={{ color: "#000", fontSize: "14px" }}
-                    suffix="month"
-                  />
-                ),
-              },
-              {
-                title: "Price_oncredit",
-                dataIndex: "price_oncredit",
-                key: "price_oncredit",
-                render: (price_oncredit: number) => (
-                  <span>
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "THB",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(price_oncredit)}
-                  </span>
-                ),
-              },
-              {
-                title: "Type",
-                dataIndex: "type",
-                key: "type",
-              },
-              {
-                title: "Status",
-                dataIndex: "status",
-                key: "status",
-                render: (status: any) => (
-                  <Badge
-                    status={status ? "success" : "error"}
-                    text={status ? "Paid" : "UnPaid"}
-                  />
-                ),
-              },
-              {
-                title: "",
-                key: "action",
-                render: (_, record) => (
-                  <Space size="middle">
-                    {contextHolder}
-                    <Tooltip title="Edit">
-                      <Button
-                        shape="circle"
-                        icon={<EditFilled />}
-                        size={"small"}
-                        onClick={() => showModal(record)}
-                      />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <Button
-                        danger
-                        shape="circle"
-                        icon={<DeleteFilled />}
-                        size={"small"}
-                        onClick={() => handleDel(record)}
-                      />
-                    </Tooltip>
-                  </Space>
-                ),
-              },
-              {
-                title: "All Update",
-                key: "action2",
-                render: (_, record) => (
-                  <Space size="middle">
-                    {contextHolder}
-                    <Tooltip title="UpdateStatus">
-                      <Button
-                        className="buttonUpStatus"
-                        shape="round"
-                        icon={<CheckOutlined className="text-green-700" />}
-                        size={"small"}
-                        onClick={() => handleStatus(record)}
-                      >
-                        Status
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="UpdateMonthPay">
-                      <Button
-                        className="buttonUpStatus"
-                        shape="round"
-                        icon={<PlusOutlined className="text-green-700" />}
-                        size={"small"}
-                        onClick={() => handleUpPayMonth(record)}
-                      >
-                        MonthPay
-                      </Button>
-                    </Tooltip>
-                  </Space>
-                ),
-              },
-            ]}
-          />
+                {
+                  title: "Date",
+                  dataIndex: "date",
+                  key: "date",
+                  render: (date) => {
+                    const fomatsd = dayjs(date).format("DD/MM/YYYY");
+                    return <span>{fomatsd}</span>;
+                  },
+                },
+                {
+                  title: "List",
+                  dataIndex: "list",
+                  key: "list",
+                },
+                {
+                  title: "Card",
+                  dataIndex: "card",
+                  key: "card",
+                },
+                {
+                  title: "Price",
+                  dataIndex: "price",
+                  key: "price",
+                  render: (price: number) => (
+                    <span>
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "THB",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(price)}
+                    </span>
+                  ),
+                },
+                {
+                  title: "Pay_Type",
+                  dataIndex: "purchase_type",
+                  key: "purchase_type",
+                },
+                {
+                  title: "Installment",
+                  dataIndex: "oncredit_month",
+                  key: "oncredit_month",
+                  render: (oncredit_month: number) => (
+                    <Statistic
+                      value={oncredit_month}
+                      precision={0}
+                      valueStyle={{ color: "#000", fontSize: "14px" }}
+                      suffix="month"
+                    />
+                  ),
+                },
+                {
+                  title: "Pay_month",
+                  dataIndex: "paycredit_month",
+                  key: "paycredit_month",
+                  render: (paycredit_month: number) => (
+                    <Statistic
+                      value={paycredit_month}
+                      precision={0}
+                      valueStyle={{ color: "#000", fontSize: "14px" }}
+                      suffix="month"
+                    />
+                  ),
+                },
+                {
+                  title: "Price_month",
+                  dataIndex: "price_oncredit",
+                  key: "price_oncredit",
+                  render: (price_oncredit: number) => (
+                    <span>
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "THB",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(price_oncredit)}
+                    </span>
+                  ),
+                },
+                {
+                  title: "Type",
+                  dataIndex: "type",
+                  key: "type",
+                },
+                {
+                  title: "Status",
+                  dataIndex: "status",
+                  key: "status",
+                  render: (status: any) => (
+                    <Badge
+                      status={status ? "success" : "error"}
+                      text={status ? "จ่ายแล้ว" : "ยังไม่จ่าย"}
+                    />
+                  ),
+                },
+                {
+                  title: "",
+                  key: "action",
+                  render: (_, record) => (
+                    <Space size="middle">
+                      {contextHolder}
+                      <Tooltip title="Edit">
+                        <Button
+                          shape="circle"
+                          icon={<EditFilled />}
+                          size={"small"}
+                          onClick={() => showModal(record)}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <Button
+                          danger
+                          shape="circle"
+                          icon={<DeleteFilled />}
+                          size={"small"}
+                          onClick={() => handleDel(record)}
+                        />
+                      </Tooltip>
+                    </Space>
+                  ),
+                },
+                {
+                  title: "All Update",
+                  key: "action2",
+                  render: (_, record) => (
+                    <Space size="middle">
+                      {contextHolder}
+                      <Tooltip title="UpdateStatus">
+                        <Button
+                          className="buttonUpStatus"
+                          shape="round"
+                          icon={<CheckOutlined className="text-green-700" />}
+                          size={"small"}
+                          onClick={() => handleStatus(record)}
+                        >
+                          Status
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="UpdateMonthPay">
+                        <Button
+                          className="buttonUpStatus"
+                          shape="round"
+                          icon={<PlusOutlined className="text-green-700" />}
+                          size={"small"}
+                          onClick={() => handleUpPayMonth(record)}
+                        >
+                          MonthPay
+                        </Button>
+                      </Tooltip>
+                    </Space>
+                  ),
+                },
+              ]}
+            />
+          </div>
         </Card>
         <Modal
           open={isModalOpen}

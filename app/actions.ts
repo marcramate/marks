@@ -970,6 +970,18 @@ export async function UpPerMonthCredit(
         if (newPcm === OncM) {
           const newstatus = !oldstatus;
           console.log("NewStatus :", newstatus);
+
+          const { data, error } = await supabase
+            .from("CreditCard")
+            .update({ status: newstatus })
+            .eq("id", id)
+            .select();
+
+          if (error) {
+            console.log("Error Update UpPerMonthCredit", error);
+          }
+
+          console.log("OK Update NewStatus", data);
         }
 
         const { data, error } = await supabase
@@ -982,7 +994,7 @@ export async function UpPerMonthCredit(
           console.log("Error Update UpPerMonthCredit", error);
         }
 
-        console.log("OK Update Status", data);
+        console.log("OK Update Month", data);
       }
     } else {
       console.log("Error UpPerMonthCredit :Purtype");
@@ -991,31 +1003,60 @@ export async function UpPerMonthCredit(
     console.error("Error Update UpPerMonthCredit", error);
   }
 }
-/*
-export async function STATUPIDPM(id: string, status: boolean) {
-  try {
-    const IDPm = id;
-    const STAPm = status;
-    const newstat = !status;
 
-    console.log("ID", id, "Sta:", status, "new", newstat);
+export async function DelAllCredit(ids: string[]) {
+  try {
+    if (!ids || ids.length === 0) {
+      console.log("Error: No IDs provided for deletion");
+      return;
+    }
+    console.log("IDs DelCredit:", ids);
+
+    const IDSid = ids.map((item) => item.replace("ID: ", ""));
+    console.log("ID :", IDSid);
 
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const { data, error } = await supabase
-      .from("expenses")
-      .update({ status: newstat })
-      .eq("id", id)
-      .select();
+    for (const id of IDSid) {
+      const { error } = await supabase.from("CreditCard").delete().eq("id", id);
 
-    if (error) {
-      console.log("Error Update Status EX", error);
+      if (error) {
+        console.log(`Error deleting item with ID ${id}:`, error);
+      }
+
+      console.log("Ok Delete DelCredit",`${id}`);
     }
-
-    console.log("OK Update Status", data);
   } catch (error) {
-    console.error("Error Update Status Ex", error);
+    console.error("Error All Delete in DelAllCredit:", error);
+  }
+}
+/*
+export async function DELAllMiles(ids: string[]) {
+  try {
+    if (!ids || ids.length === 0) {
+      console.log("Error: No IDs provided for deletion");
+      return;
+    }
+    console.log("IDs DELMiles:", ids);
+
+    const IDSid = ids.map((item) => item.replace("ID: ", ""));
+    console.log("ID :", IDSid);
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    for (const id of IDSid) {
+      const { error } = await supabase.from("car").delete().eq("id", id);
+
+      if (error) {
+        console.log(`Error deleting item with ID ${id}:`, error);
+      }
+
+      console.log("Ok Delete DELMiles");
+    }
+  } catch (error) {
+    console.error("Error All Delete in DELAllMiles:", error);
   }
 }
 */

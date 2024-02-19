@@ -223,7 +223,7 @@ export default function Monthlyexpenses({
   return (
     <div>
       <Row gutter={16}>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
           <Cardantd bordered={true}>
             <Statistic
               title="All Expenses"
@@ -234,7 +234,7 @@ export default function Monthlyexpenses({
             />
           </Cardantd>
         </Col>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
           <Cardantd bordered={true}>
             <Statistic
               title="Paid"
@@ -245,7 +245,7 @@ export default function Monthlyexpenses({
             />
           </Cardantd>
         </Col>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
           <Cardantd bordered={true}>
             <Statistic
               title="Remain"
@@ -345,6 +345,26 @@ export default function Monthlyexpenses({
                         size={"small"}
                         onClick={() => handleDel(record)}
                       />
+                    </Tooltip>
+                  </Space>
+                ),
+              },
+              {
+                title: "",
+                key: "action2",
+                render: (_, record) => (
+                  <Space size="middle">
+                    {contextHolder}
+                    <Tooltip title="UpdateStatus">
+                      <Button
+                        className="buttonUpStatus"
+                        shape="round"
+                        icon={<CheckOutlined className="text-green-700" />}
+                        size={"small"}
+                        onClick={() => handleStatus(record)}
+                      >
+                        UpdateStatus
+                      </Button>
                     </Tooltip>
                   </Space>
                 ),
@@ -1477,21 +1497,29 @@ export function CarMiles() {
     });
   };
 
-  interface YourData {
-    name: string;
-    age: number;
-    city: string;
+  interface MilesDate {
+    id: number;
+    c_name: string;
+    c_price: number;
+    c_startdate: string;
+    c_enddate: string;
+    c_miles: number;
+    c_oilprice: number;
+    c_oilstation: string;
+    c_liter: number;
+    c_oiltype: string;
   }
 
   function exportToExcel(
-    data: YourData[],
+    data: MilesDate[],
     sheetName: string,
     fileName: string
   ) {
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    const newdate = new Date().toISOString().split("T")[0];
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
-    XLSX.writeFile(wb, `${fileName}.xlsx`);
+    XLSX.writeFile(wb, `${fileName}_${newdate}.xlsx`);
   }
 
   const handlemilesExport = async () => {
@@ -1511,7 +1539,7 @@ export function CarMiles() {
         return;
       }
 
-      exportToExcel(car, "Sheet1", "your_excel_file");
+      exportToExcel(car, "Miles", "MilesData");
       setSpinning(false);
       messageApi.success("Downloading Excel file...");
     } catch (error) {

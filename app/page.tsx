@@ -90,7 +90,7 @@ export default function Main() {
     <div className="flex flex-wrap">
       <Row gutter={16}>
         {/* Left Section */}
-        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={12} className="mb-2">
           <Card decoration="top" decorationColor="indigo">
             <Col span={24}>
               <div className="mb-2">
