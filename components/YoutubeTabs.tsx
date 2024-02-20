@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { Tabs, Col, Row, Progress } from "antd";
 import type { TabsProps } from "antd";
-import { Card, Metric, Text } from "@tremor/react";
+import { Metric, Text } from "@tremor/react";
+import { Card } from "antd";
 import { createClient } from "@/utils/supabase/client";
 
 export default function TabsYoutube() {
@@ -51,11 +52,7 @@ export default function TabsYoutube() {
                   </Col>
 
                   <Col xs={24} md={16} lg={18} xl={20}>
-                    <Card
-                      className="max-w-xs"
-                      decoration="left"
-                      decorationColor="indigo"
-                    >
+                    <Card className="max-w-xs drop-shadow-md" bordered={true}>
                       <Text>{item.status_pay ? "จ่ายแล้ว" : "เหลือ"}</Text>
                       <Metric className={item.status_pay ? "Paid" : "Unpaid"}>
                         {monthdiff} เดือน

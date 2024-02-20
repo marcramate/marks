@@ -6,7 +6,7 @@ import {
   Col,
   Row,
   Statistic,
-  Card as Cardantd,
+  Card,
   Space,
   Tooltip,
   Button,
@@ -31,7 +31,6 @@ import {
   DownloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 
 import MDexpesescost from "./CostModal";
@@ -224,7 +223,7 @@ export default function Monthlyexpenses({
     <div>
       <Row gutter={16}>
         <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
-          <Cardantd bordered={true}>
+          <Card bordered={true} className="drop-shadow-md">
             <Statistic
               title="All Expenses"
               value={totalCost}
@@ -232,10 +231,10 @@ export default function Monthlyexpenses({
               valueStyle={{ color: "#3f8600" }}
               prefix="THB"
             />
-          </Cardantd>
+          </Card>
         </Col>
         <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
-          <Cardantd bordered={true}>
+          <Card bordered={true} className="drop-shadow-md">
             <Statistic
               title="Paid"
               value={PaidCost}
@@ -243,10 +242,10 @@ export default function Monthlyexpenses({
               valueStyle={{ color: "#cf1322" }}
               prefix="THB"
             />
-          </Cardantd>
+          </Card>
         </Col>
         <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
-          <Cardantd bordered={true}>
+          <Card bordered={true} className="drop-shadow-md">
             <Statistic
               title="Remain"
               value={UnPaidCost}
@@ -254,7 +253,7 @@ export default function Monthlyexpenses({
               valueStyle={{ color: "#cf1322" }}
               prefix="THB"
             />
-          </Cardantd>
+          </Card>
         </Col>
       </Row>
 
@@ -264,12 +263,7 @@ export default function Monthlyexpenses({
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card
-            decoration="left"
-            decorationColor="indigo"
-            key="unique-key"
-            style={{ width: "100%" }}
-          >
+          <Card bordered={true} key="unique-key" style={{ width: "100%" }} className="drop-shadow-md">
             <MDexpesescost company={company} isTab1={isTab1} />
 
             <Table
@@ -348,7 +342,7 @@ export default function Monthlyexpenses({
                   ),
                 },
                 {
-                  title: "",
+                  title: "Update",
                   key: "action2",
                   render: (_, record) => (
                     <Space size="middle">
@@ -571,7 +565,7 @@ export function Gmcost() {
     <div>
       <Row gutter={16}>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true}>
+          <Card bordered={true} className="drop-shadow-md">
             <Statistic
               title="All Expenses"
               value={totalGm}
@@ -579,10 +573,10 @@ export function Gmcost() {
               valueStyle={{ color: "#3f8600" }}
               prefix="THB"
             />
-          </Cardantd>
+          </Card>
         </Col>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true}>
+          <Card bordered={true} className="drop-shadow-md">
             <Statistic
               title="Share"
               value={totalGmSh}
@@ -590,7 +584,7 @@ export function Gmcost() {
               valueStyle={{ color: "#cf1322" }}
               prefix="THB"
             />
-          </Cardantd>
+          </Card>
         </Col>
       </Row>
 
@@ -600,7 +594,7 @@ export function Gmcost() {
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card decoration="top" decorationColor="indigo" key="unique-key">
+          <Card bordered={true} key="unique-key" className="drop-shadow-md">
             <Gmmodal />
             <Table
               dataSource={Gmexp}
@@ -974,7 +968,7 @@ export function CarTag() {
     <div>
       <Row gutter={16}>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true}>
+          <Card bordered={true} className="drop-shadow-md">
             <Statistic
               title="Car"
               value={totalCar}
@@ -982,10 +976,10 @@ export function CarTag() {
               valueStyle={{ color: "#000" }}
               prefix="THB"
             />
-          </Cardantd>
+          </Card>
         </Col>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true}>
+          <Card bordered={true} className="drop-shadow-md">
             <Statistic
               title="Motorcycle"
               value={totalMoto}
@@ -993,7 +987,7 @@ export function CarTag() {
               valueStyle={{ color: "#000" }}
               prefix="THB"
             />
-          </Cardantd>
+          </Card>
         </Col>
       </Row>
 
@@ -1003,7 +997,7 @@ export function CarTag() {
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card decoration="top" decorationColor="indigo" key="unique-key">
+          <Card bordered={true} key="unique-key" className="drop-shadow-md">
             <Cartagmodal />
             <Table
               dataSource={CarTag}
@@ -1559,7 +1553,7 @@ export function CarMiles() {
     <>
       <Row gutter={16}>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true}>
+          <Card bordered={true} className="drop-shadow-md">
             <Statistic
               title="Cost"
               value={totalCarmiles}
@@ -1567,10 +1561,10 @@ export function CarMiles() {
               valueStyle={{ color: "#000" }}
               prefix="THB"
             />
-          </Cardantd>
+          </Card>
         </Col>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true}>
+          <Card bordered={true} className="drop-shadow-md">
             <Statistic
               title="Miles"
               value={totalmiles}
@@ -1578,7 +1572,7 @@ export function CarMiles() {
               valueStyle={{ color: "#000" }}
               suffix="Km"
             />
-          </Cardantd>
+          </Card>
         </Col>
       </Row>
 
@@ -1588,7 +1582,7 @@ export function CarMiles() {
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card decoration="top" decorationColor="indigo" key="unique-key">
+          <Card bordered={true} key="unique-key" className="drop-shadow-md">
             <div className="flex justify-end mr-2">
               <Button className="mr-2" danger onClick={showDeleteConfirmation}>
                 Delete All

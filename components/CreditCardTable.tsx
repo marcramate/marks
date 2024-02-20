@@ -6,7 +6,7 @@ import {
   Col,
   Row,
   Statistic,
-  Card as Cardantd,
+  Card,
   Space,
   Tooltip,
   Button,
@@ -20,7 +20,7 @@ import {
   Spin,
   Tag,
   DatePicker,
-  DatePickerProps,
+  TableProps,
   Progress,
   Descriptions,
 } from "antd";
@@ -36,7 +36,6 @@ import {
   PlusCircleFilled,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 import * as XLSX from "xlsx";
 import {
@@ -499,6 +498,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
       },
     });
   };
+
   return (
     <div>
       <div>
@@ -533,7 +533,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
       </div>
       <Row gutter={16}>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd bordered={true} className="drop-shadow-md" title="Cash">
+          <Card bordered={true} className="drop-shadow-lg" title="Cash">
             <div>
               <span className="text-base font-medium ">
                 Total{" - "}
@@ -601,14 +601,10 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                 />
               ))}
             </div>
-          </Cardantd>
+          </Card>
         </Col>
         <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Cardantd
-            bordered={true}
-            className="drop-shadow-lg"
-            title="Installments"
-          >
+          <Card bordered={true} className="drop-shadow-lg" title="Installments">
             <div>
               <span className="text-base font-medium ">
                 Total{" - "}
@@ -676,7 +672,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                 />
               ))}
             </div>
-          </Cardantd>
+          </Card>
         </Col>
       </Row>
       <div className="mb-4"></div>
@@ -686,9 +682,14 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
         indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
       >
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card decoration="left" decorationColor="indigo" key="unique-key">
+          <Card bordered={true} className="drop-shadow-lg">
             <div className="flex justify-end mb-2">
-              <Button className="mr-2" danger onClick={showDeleteConfirmation}>
+              <Button
+                className="mr-2"
+                danger
+                onClick={showDeleteConfirmation}
+                icon={<DeleteFilled />}
+              >
                 Delete Select
               </Button>
               <Button
@@ -811,32 +812,6 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                     ),
                   },
                   {
-                    title: "",
-                    key: "action",
-                    render: (_, record) => (
-                      <Space size="middle">
-                        {contextHolder}
-                        <Tooltip title="Edit">
-                          <Button
-                            shape="circle"
-                            icon={<EditFilled />}
-                            size={"small"}
-                            onClick={() => showModal(record)}
-                          />
-                        </Tooltip>
-                        <Tooltip title="Delete">
-                          <Button
-                            danger
-                            shape="circle"
-                            icon={<DeleteFilled />}
-                            size={"small"}
-                            onClick={() => handleDel(record)}
-                          />
-                        </Tooltip>
-                      </Space>
-                    ),
-                  },
-                  {
                     title: "All Update",
                     key: "action2",
                     render: (_, record) => (
@@ -863,6 +838,33 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                           >
                             MonthPay
                           </Button>
+                        </Tooltip>
+                      </Space>
+                    ),
+                  },
+                  {
+                    title: "",
+                    key: "action",
+                    render: (_, record) => (
+                      <Space size="middle">
+                        {contextHolder}
+                        <Tooltip title="Edit">
+                          <Button
+                            shape="circle"
+                            icon={<EditFilled />}
+                            size={"small"}
+                            onClick={() => showModal(record)}
+                          />
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <Button
+                            danger
+                            shape="circle"
+                            icon={<DeleteFilled />}
+                            size={"small"}
+                            onClick={() => handleDel(record)}
+                            hidden
+                          />
                         </Tooltip>
                       </Space>
                     ),

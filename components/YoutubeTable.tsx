@@ -1,8 +1,6 @@
 "use client";
 
 import { SetStateAction, useEffect, useState } from "react";
-import { Layout, theme } from "antd";
-import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
 import {
   Table,
@@ -19,6 +17,7 @@ import {
   Switch,
   Spin,
   Flex,
+  Card,
 } from "antd";
 import {
   EditFilled,
@@ -52,18 +51,19 @@ export default function TBYoutubePremium() {
   const [form] = Form.useForm();
   const [spinning, setSpinning] = useState<boolean>(false);
 
+  const fetchYTPM = async () => {
+    let { data, error } = await supabase.from("youtubepremium").select("*");
+
+    if (data) {
+      setYTPremium(data);
+    }
+
+    if (!data || error) {
+      console.log("error:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchYTPM = async () => {
-      let { data, error } = await supabase.from("youtubepremium").select("*");
-
-      if (data) {
-        setYTPremium(data);
-      }
-
-      if (!data || error) {
-        console.log("error:", error);
-      }
-    };
     fetchYTPM();
   }, []);
 
@@ -94,8 +94,8 @@ export default function TBYoutubePremium() {
       messageApi.error("Error Delete!!!");
     } finally {
       setTimeout(() => {
+        fetchYTPM();
         setSpinning(false);
-        window.location.reload();
       }, 1000);
     }
   };
@@ -130,10 +130,12 @@ export default function TBYoutubePremium() {
         await UPDYTPM(EditDataJSON);
 
         handleCancel(); // หลังจากส่งข้อมูลเสร็จ ปิด Modal
-        messageApi.success("Success Update!!");
+
         setTimeout(() => {
-          window.location.reload();
+          fetchYTPM();
+          setSpinning(false);
         }, 1000);
+        messageApi.success("Success Update!!");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -199,7 +201,7 @@ export default function TBYoutubePremium() {
       >
         <div className="mb-4"></div>
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card decoration="top" decorationColor="indigo" key="unique-key">
+          <Card bordered={true} key="unique-key" className="drop-shadow-md">
             <Table
               dataSource={YTPremium}
               columns={[
@@ -297,7 +299,7 @@ export default function TBYoutubePremium() {
           </Card>
         </div>
         <div className="mb-4"></div>
-        <Card decoration="top" decorationColor="indigo">
+        <Card bordered={true} className="drop-shadow-md">
           <div>
             <TabsYoutube />
           </div>

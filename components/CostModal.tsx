@@ -226,7 +226,6 @@ export function Gmmodal() {
   const [open, setOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm(); // เพิ่ม form instance
-  const supabase = createClient();
 
   const showModal = () => {
     setOpen(true);

@@ -2,7 +2,7 @@
 import React from "react";
 import { Layout, theme } from "antd";
 
-export default function Maindash({children}) {
+export default function Maindash({ children }) {
   const { Content } = Layout;
   const {
     token: { colorBgContainer, borderRadiusLG },

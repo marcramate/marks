@@ -18,6 +18,7 @@ import {
   DatePicker,
   Switch,
   message,
+  Skeleton,
 } from "antd";
 import React, { useState, useEffect } from "react";
 import type { DatePickerProps } from "antd";
@@ -27,6 +28,7 @@ export default function MDYoutubePremium() {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm(); // เพิ่ม form instance
   const [messageApi, contextHolder] = message.useMessage();
+  const [loading, setLoading] = useState(true);
 
   const showModal = () => {
     setOpen(true);
@@ -36,6 +38,7 @@ export default function MDYoutubePremium() {
       const formData = form.getFieldsValue(); // ดึงข้อมูลจาก form
       const formDataJSON = JSON.stringify(formData); // แปลงเป็น JSON string
 
+      
       console.log(formDataJSON);
       await YTPM(formDataJSON);
 
@@ -88,7 +91,12 @@ export default function MDYoutubePremium() {
         footer={(_, { OkBtn, CancelBtn }) => (
           <>
             {contextHolder}
-            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk} className="ml-2">
+            <Button
+              shape="round"
+              icon={<CheckOutlined />}
+              onClick={handleOk}
+              className="ml-2"
+            >
               Save
             </Button>
             <Tooltip title="Cancle">
