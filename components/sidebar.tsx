@@ -1,15 +1,10 @@
 "use client";
-import React from "react";
-import {
-  HeartFilled,
-  UserOutlined,
-  DribbbleCircleFilled,
-  HomeFilled,
-} from "@ant-design/icons";
-import { Layout, Menu, theme } from "antd";
+import React, { useState } from "react";
+import { HeartFilled, UserOutlined, HomeFilled } from "@ant-design/icons";
+import { Layout, Menu } from "antd";
 import Link from "next/link";
 
-const { Content, Sider } = Layout;
+const { Sider } = Layout;
 const { SubMenu } = Menu;
 
 const items = [
@@ -44,6 +39,14 @@ const items = [
 ];
 
 const Sidebar: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = async () => {
+    setLoading(true);
+    // Your data fetching logic here
+    // For example: await fetchSomeData();
+    setLoading(false); // Set loading to false once data is fetched
+  };
   return (
     <Layout>
       <Sider
@@ -62,27 +65,32 @@ const Sidebar: React.FC = () => {
           <HomeFilled /> Marc
         </div>
         <div className="demo-logo-vertical" />
-        <Menu theme="light" mode="inline">
-          {items.map((item) => {
-            if (item.subItems) {
-              return (
-                <SubMenu key={item.key} icon={item.icon} title={item.label}>
-                  {item.subItems.map((subItem) => (
-                    <Menu.Item key={subItem.key}>
-                      <Link href={subItem.link}>{subItem.label}</Link>
-                    </Menu.Item>
-                  ))}
-                </SubMenu>
-              );
-            }
+        {loading ? (
+          // Render loading indicator here
+          <div>Loading...</div>
+        ) : (
+          <Menu theme="light" mode="inline">
+            {items.map((item) => {
+              if (item.subItems) {
+                return (
+                  <SubMenu key={item.key} icon={item.icon} title={item.label}>
+                    {item.subItems.map((subItem) => (
+                      <Menu.Item key={subItem.key}>
+                        <Link href={subItem.link}>{subItem.label}</Link>
+                      </Menu.Item>
+                    ))}
+                  </SubMenu>
+                );
+              }
 
-            return (
-              <Menu.Item key={item.key} icon={item.icon}>
-                <Link href={item.link}>{item.label}</Link>
-              </Menu.Item>
-            );
-          })}
-        </Menu>
+              return (
+                <Menu.Item key={item.key} icon={item.icon}>
+                  <Link href={item.link}>{item.label}</Link>
+                </Menu.Item>
+              );
+            })}
+          </Menu>
+        )}
       </Sider>
     </Layout>
   );

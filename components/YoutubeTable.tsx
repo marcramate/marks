@@ -1,6 +1,6 @@
 "use client";
 
-import { SetStateAction, useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
 import {
   Table,

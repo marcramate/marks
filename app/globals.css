@@ -42,6 +42,7 @@
   }
 }
 
+
 .Unpaid {
   @apply text-red-500;
 }

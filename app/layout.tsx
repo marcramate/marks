@@ -3,6 +3,7 @@ import "./globals.css";
 import Sidebar from "../components/sidebar";
 import Maindash from "@/components/mainhome";
 
+
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";
@@ -18,6 +19,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Check if __NEXT_DATA__ is available
+  //const loading =
+  //  typeof window === "undefined" || !window.__NEXT_DATA__.props.pageProps;
+
   return (
     <html lang="en" className={GeistSans.className}>
       <head>

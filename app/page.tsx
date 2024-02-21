@@ -1,18 +1,19 @@
 // Content.tsx
 "use client";
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card as Carddash, Statistic, Badge } from "antd";
-import { Card, Metric, Text } from "@tremor/react";
+import { Row, Col, Card as Carddash, Statistic, Badge, Skeleton } from "antd";
+import { Card } from "@tremor/react";
 import { createClient } from "@/utils/supabase/client";
-import { Console } from "console";
 
 export default function Main() {
   const supabase = createClient();
   const [ExPm, setExPm] = useState<any>([]);
   const [ExS, setExS] = useState<any>([]);
+  const [loading, setLoading] = useState(true);
 
   const PMGF = async () => {
     try {
+      setLoading(true);
       let { data: expenses, error } = await supabase
         .from("expenses")
         .select("*")
@@ -34,6 +35,8 @@ export default function Main() {
       console.log("Ok Data P:", expenses, "Ok Data S:", expensesS);
     } catch (error) {
       console.error("Error", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,74 +91,55 @@ export default function Main() {
 
   return (
     <div className="flex flex-wrap">
-      <Row gutter={16}>
-        {/* Left Section */}
-        <Col xs={24} sm={24} md={12} lg={12} xl={12} className="mb-2">
-          <Card decoration="top" decorationColor="indigo">
-            <Col span={24}>
-              <div className="mb-2">
+      {loading ? (
+        <Skeleton active /> // Render loading state while data is being fetched
+      ) : (
+        <Row gutter={16}>
+          {/* Left Section */}
+          <Col xs={24} sm={24} md={12} lg={12} xl={12} className="mb-2">
+            <Card decoration="top" decorationColor="indigo">
+              <Col span={24}>
+                <div className="mb-2">
+                  <Badge.Ribbon text="Premier Gold" color="magenta">
+                    <Carddash bordered={true}>
+                      <div className="grid grid-flow-col justify-stretch">
+                        <Statistic
+                          title="All Expenses"
+                          value={AllPm}
+                          precision={2}
+                          suffix="THB"
+                        />
+                      </div>
+                    </Carddash>
+                  </Badge.Ribbon>
+                </div>
+              </Col>
+
+              <Col span={24}>
+                <div className="mb-2">
+                  <Badge.Ribbon text="Premier Gold" color="magenta">
+                    <Carddash bordered={true}>
+                      <div className="grid grid-flow-col justify-stretch">
+                        <Statistic
+                          title="Paid"
+                          value={PaidPm}
+                          precision={2}
+                          valueStyle={{ color: "#3f8600" }}
+                          suffix="THB"
+                        />
+                      </div>
+                    </Carddash>
+                  </Badge.Ribbon>
+                </div>
+              </Col>
+
+              <Col span={24}>
                 <Badge.Ribbon text="Premier Gold" color="magenta">
                   <Carddash bordered={true}>
                     <div className="grid grid-flow-col justify-stretch">
                       <Statistic
-                        title="All Expenses"
-                        value={AllPm}
-                        precision={2}
-                        suffix="THB"
-                      />
-                    </div>
-                  </Carddash>
-                </Badge.Ribbon>
-              </div>
-            </Col>
-
-            <Col span={24}>
-              <div className="mb-2">
-                <Badge.Ribbon text="Premier Gold" color="magenta">
-                  <Carddash bordered={true}>
-                    <div className="grid grid-flow-col justify-stretch">
-                      <Statistic
-                        title="Paid"
-                        value={PaidPm}
-                        precision={2}
-                        valueStyle={{ color: "#3f8600" }}
-                        suffix="THB"
-                      />
-                    </div>
-                  </Carddash>
-                </Badge.Ribbon>
-              </div>
-            </Col>
-
-            <Col span={24}>
-              <Badge.Ribbon text="Premier Gold" color="magenta">
-                <Carddash bordered={true}>
-                  <div className="grid grid-flow-col justify-stretch">
-                    <Statistic
-                      title="Remain"
-                      value={UnPaidPm}
-                      precision={2}
-                      valueStyle={{ color: "#cf1322" }}
-                      suffix="THB"
-                    />
-                  </div>
-                </Carddash>
-              </Badge.Ribbon>
-            </Col>
-          </Card>
-        </Col>
-
-        {/* Right Section */}
-        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-          <Card decoration="top" decorationColor="indigo">
-            <Col span={24}>
-              <div className="mb-2">
-                <Badge.Ribbon text="S11" color="green">
-                  <Carddash bordered={true}>
-                    <div className="grid grid-flow-col justify-stretch">
-                      <Statistic
-                        title="All Expenses"
-                        value={AllS}
+                        title="Remain"
+                        value={UnPaidPm}
                         precision={2}
                         valueStyle={{ color: "#cf1322" }}
                         suffix="THB"
@@ -163,17 +147,56 @@ export default function Main() {
                     </div>
                   </Carddash>
                 </Badge.Ribbon>
-              </div>
-            </Col>
+              </Col>
+            </Card>
+          </Col>
 
-            <Col span={24}>
-              <div className="mb-2">
+          {/* Right Section */}
+          <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+            <Card decoration="top" decorationColor="indigo">
+              <Col span={24}>
+                <div className="mb-2">
+                  <Badge.Ribbon text="S11" color="green">
+                    <Carddash bordered={true}>
+                      <div className="grid grid-flow-col justify-stretch">
+                        <Statistic
+                          title="All Expenses"
+                          value={AllS}
+                          precision={2}
+                          valueStyle={{ color: "#cf1322" }}
+                          suffix="THB"
+                        />
+                      </div>
+                    </Carddash>
+                  </Badge.Ribbon>
+                </div>
+              </Col>
+
+              <Col span={24}>
+                <div className="mb-2">
+                  <Badge.Ribbon text="S11" color="green">
+                    <Carddash bordered={true}>
+                      <div className="grid grid-flow-col justify-stretch">
+                        <Statistic
+                          title="All Expenses"
+                          value={PaidS}
+                          precision={2}
+                          valueStyle={{ color: "#cf1322" }}
+                          suffix="THB"
+                        />
+                      </div>
+                    </Carddash>
+                  </Badge.Ribbon>
+                </div>
+              </Col>
+
+              <Col span={24}>
                 <Badge.Ribbon text="S11" color="green">
                   <Carddash bordered={true}>
                     <div className="grid grid-flow-col justify-stretch">
                       <Statistic
                         title="All Expenses"
-                        value={PaidS}
+                        value={UnPaidS}
                         precision={2}
                         valueStyle={{ color: "#cf1322" }}
                         suffix="THB"
@@ -181,27 +204,11 @@ export default function Main() {
                     </div>
                   </Carddash>
                 </Badge.Ribbon>
-              </div>
-            </Col>
-
-            <Col span={24}>
-              <Badge.Ribbon text="S11" color="green">
-                <Carddash bordered={true}>
-                  <div className="grid grid-flow-col justify-stretch">
-                    <Statistic
-                      title="All Expenses"
-                      value={UnPaidS}
-                      precision={2}
-                      valueStyle={{ color: "#cf1322" }}
-                      suffix="THB"
-                    />
-                  </div>
-                </Carddash>
-              </Badge.Ribbon>
-            </Col>
-          </Card>
-        </Col>
-      </Row>
+              </Col>
+            </Card>
+          </Col>
+        </Row>
+      )}
     </div>
   );
 }
