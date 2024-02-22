@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HeartFilled, UserOutlined, HomeFilled } from "@ant-design/icons";
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Skeleton } from "antd";
 import Link from "next/link";
 
 const { Sider } = Layout;
@@ -39,36 +39,42 @@ const items = [
 ];
 
 const Sidebar: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
-    setLoading(true);
-    // Your data fetching logic here
-    // For example: await fetchSomeData();
-    setLoading(false); // Set loading to false once data is fetched
+  const loadsim = async () => {
+    const delay = setTimeout(() => {
+      setLoading(false);
+    }, 200);
+
+    return () => clearTimeout(delay);
   };
+
+  useEffect(() => {
+    loadsim();
+  }, []);
   return (
     <Layout>
-      <Sider
-        style={{ background: "white" }}
-        breakpoint="lg"
-        collapsedWidth="0"
-        onBreakpoint={(broken) => {
-          console.log(broken);
-        }}
-        onCollapse={(collapsed, type) => {
-          console.log(collapsed, type);
-        }}
-      >
-        <div className="mb-2"></div>
-        <div className="text-2xl font-bold text-indigo-600 text-center mb-4">
-          <HomeFilled /> Marc
-        </div>
-        <div className="demo-logo-vertical" />
-        {loading ? (
-          // Render loading indicator here
-          <div>Loading...</div>
-        ) : (
+      {loading ? (
+        <Skeleton active />
+      ) : (
+        <Sider
+          style={{ background: "white" }}
+          breakpoint="lg"
+          collapsedWidth="0"
+          onBreakpoint={(broken) => {
+            console.log(broken);
+          }}
+          onCollapse={(collapsed, type) => {
+            console.log(collapsed, type);
+          }}
+        >
+          <div className="mb-2"></div>
+          <div className="text-2xl font-bold text-indigo-600 text-center mb-4">
+            <HomeFilled /> Marc
+          </div>
+
+          <div className="demo-logo-vertical" />
+
           <Menu theme="light" mode="inline">
             {items.map((item) => {
               if (item.subItems) {
@@ -90,8 +96,8 @@ const Sidebar: React.FC = () => {
               );
             })}
           </Menu>
-        )}
-      </Sider>
+        </Sider>
+      )}
     </Layout>
   );
 };

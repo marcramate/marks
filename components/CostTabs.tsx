@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Tabs } from "antd";
+import { Tabs, Skeleton } from "antd";
 import type { TabsProps } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import Monthlyexpenses from "./CostTable";
@@ -13,12 +13,13 @@ export default function TBCost() {
   const [activeKey, setActiveKey] = useState<string>("1");
   const [company, setCompany] = useState<string>(""); // เพิ่มตัวแปร company
   const [isTab1, setIsTab1] = useState<boolean>(true); // เพิ่มตัวแปร isTab1
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
         // ดึงข้อมูลจาก Supabase
-
+        setLoading(true);
         let { data: selection, error } = await supabase
           .from("selection")
           .select("company")
@@ -47,6 +48,8 @@ export default function TBCost() {
         setTabItems(newTabItems);
       } catch (error: any) {
         console.error(error.message);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -62,24 +65,30 @@ export default function TBCost() {
 
   return (
     <div>
-      <Tabs activeKey={activeKey} onChange={onChange}>
-        {tabItems?.map((item) => (
-          <Tabs.TabPane key={item.key} tab={item.label}>
-            {item.children}
-          </Tabs.TabPane>
-        ))}
+      {loading ? (
+        <Skeleton active /> // Render loading state while data is being fetched
+      ) : (
+        <div>
+          <Tabs activeKey={activeKey} onChange={onChange}>
+            {tabItems?.map((item) => (
+              <Tabs.TabPane key={item.key} tab={item.label}>
+                {item.children}
+              </Tabs.TabPane>
+            ))}
 
-        <Tabs.TabPane key="3" tab="GraceMarc">
-          <Gmcost />
-        </Tabs.TabPane>
+            <Tabs.TabPane key="3" tab="GraceMarc">
+              <Gmcost />
+            </Tabs.TabPane>
 
-        <Tabs.TabPane key="4" tab="Miles">
-          <CarMiles />
-        </Tabs.TabPane>
-        <Tabs.TabPane key="5" tab="Cars">
-          <CarTag />
-        </Tabs.TabPane>
-      </Tabs>
+            <Tabs.TabPane key="4" tab="Miles">
+              <CarMiles />
+            </Tabs.TabPane>
+            <Tabs.TabPane key="5" tab="Cars">
+              <CarTag />
+            </Tabs.TabPane>
+          </Tabs>
+        </div>
+      )}
     </div>
   );
 }

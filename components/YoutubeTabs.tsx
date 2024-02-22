@@ -1,19 +1,21 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Tabs, Col, Row, Progress } from "antd";
+import { Tabs, Col, Row, Progress, Skeleton } from "antd";
 import type { TabsProps } from "antd";
 import { Metric, Text } from "@tremor/react";
 import { Card } from "antd";
 import { createClient } from "@/utils/supabase/client";
 
-export default function TabsYoutube() {
+export default function TabsYoutube({ dele }: { dele: number }) {
   const supabase = createClient();
   const [tabItems, setTabItems] = useState<TabsProps["items"]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
         // ดึงข้อมูลจาก Supabase
+        setLoading(true);
         const { data, error } = await supabase
           .from("youtubepremium")
           .select("*");
@@ -67,11 +69,13 @@ export default function TabsYoutube() {
         setTabItems(newTabItems);
       } catch (error: any) {
         console.error(error.message);
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchData();
-  }, []);
+  }, [dele]);
 
   const onChange = (key: string) => {
     console.log(key);
@@ -79,7 +83,13 @@ export default function TabsYoutube() {
 
   return (
     <div>
-      <Tabs defaultActiveKey="1" items={tabItems} onChange={onChange} />
+      {loading ? (
+        <Skeleton active /> // Render loading state while data is being fetched
+      ) : (
+        <div>
+          <Tabs defaultActiveKey="1" items={tabItems} onChange={onChange} />
+        </div>
+      )}
     </div>
   );
 }

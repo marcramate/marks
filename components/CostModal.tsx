@@ -13,6 +13,7 @@ import {
   message,
   DatePicker,
   DatePickerProps,
+  Spin,
 } from "antd";
 import {
   PlusOutlined,
@@ -40,6 +41,7 @@ export default function MDexpesescost({
 
   const [form] = Form.useForm(); // เพิ่ม form instance
   const supabase = createClient();
+  const [spinning, setSpinning] = useState<boolean>(false);
 
   const fetchSelcom = async () => {
     let { data: selection, error } = await supabase
@@ -72,6 +74,7 @@ export default function MDexpesescost({
 
   const handleOk = async () => {
     try {
+      setSpinning(true);
       const DataPm = form.getFieldsValue();
       const DataPmJSON = JSON.stringify(DataPm);
 
@@ -81,6 +84,11 @@ export default function MDexpesescost({
       handleCancel();
 
       messageApi.success("Success Insert Expenses!!");
+
+      setTimeout(() => {
+        setSpinning(false);
+      }, 5000);
+
       setTimeout(() => {
         window.location.reload();
       }, 1000);
@@ -97,8 +105,15 @@ export default function MDexpesescost({
 
   const handleUpdStatus = async () => {
     try {
+      setSpinning(true);
+
       await UPDSTALPM();
       messageApi.success("Success Update All Status ==> False");
+
+      setTimeout(() => {
+        setSpinning(false);
+      }, 5000);
+
       setTimeout(() => {
         window.location.reload();
       }, 1000);
@@ -111,6 +126,7 @@ export default function MDexpesescost({
   return (
     <>
       <div className="flex justify-end mr-2">
+        <Spin spinning={spinning} fullscreen />
         <Button className="mr-2" danger onClick={handleUpdStatus}>
           Update Status False
         </Button>
@@ -145,6 +161,7 @@ export default function MDexpesescost({
             >
               Save
             </Button>
+            <Spin spinning={spinning} fullscreen />
             <Tooltip title="Cancle">
               <Button
                 type="primary"
@@ -788,7 +805,7 @@ export function MilesAdd() {
                 className="ml-2"
               ></Button>
             </Tooltip>
-          </div>
+          </div>,
         ]}
         className="max-w-full"
       >

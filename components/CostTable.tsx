@@ -21,6 +21,7 @@ import {
   Tag,
   DatePicker,
   DatePickerProps,
+  Skeleton,
 } from "antd";
 import {
   EditFilled,
@@ -32,7 +33,6 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { createClient } from "@/utils/supabase/client";
-
 import MDexpesescost from "./CostModal";
 import {
   UPDEXPM,
@@ -82,19 +82,29 @@ export default function Monthlyexpenses({
   const supabase = createClient();
   const [Monye, setMoye] = useState<any>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+  
 
   const fetchPM = async () => {
-    let { data: expenses, error } = await supabase
-      .from("expenses")
-      .select("*")
-      .like("company ", `%${company}%`);
+    try {
+      setLoading(true);
+      let { data: expenses, error } = await supabase
+        .from("expenses")
+        .select("*")
+        .like("company ", `%${company}%`);
 
-    if (expenses) {
-      setMoye(expenses);
-    }
+      if (expenses) {
+        setMoye(expenses);
+      }
 
-    if (!expenses || error) {
-      console.log("PM :", error);
+      if (!expenses || error) {
+        console.log("PM :", error);
+      }
+      console.log("Ok Data PM:", expenses);
+    } catch (error) {
+      console.error("Error", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -221,235 +231,252 @@ export default function Monthlyexpenses({
 
   return (
     <div>
-      <Row gutter={16}>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
-          <Card bordered={true} className="drop-shadow-md">
-            <Statistic
-              title="All Expenses"
-              value={totalCost}
-              precision={2}
-              valueStyle={{ color: "#3f8600" }}
-              prefix="THB"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
-          <Card bordered={true} className="drop-shadow-md">
-            <Statistic
-              title="Paid"
-              value={PaidCost}
-              precision={2}
-              valueStyle={{ color: "#cf1322" }}
-              prefix="THB"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
-          <Card bordered={true} className="drop-shadow-md">
-            <Statistic
-              title="Remain"
-              value={UnPaidCost}
-              precision={2}
-              valueStyle={{ color: "#cf1322" }}
-              prefix="THB"
-            />
-          </Card>
-        </Col>
-      </Row>
+      {loading ? (
+        <Skeleton active /> // Render loading state while data is being fetched
+      ) : ( 
+        <div>
+          <Row gutter={16}>
+            <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="All Expenses"
+                  value={totalCost}
+                  precision={2}
+                  valueStyle={{ color: "#3f8600" }}
+                  prefix="THB"
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="Paid"
+                  value={PaidCost}
+                  precision={2}
+                  valueStyle={{ color: "#cf1322" }}
+                  prefix="THB"
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="Remain"
+                  value={UnPaidCost}
+                  precision={2}
+                  valueStyle={{ color: "#cf1322" }}
+                  prefix="THB"
+                />
+              </Card>
+            </Col>
+          </Row>
 
-      <div className="mb-4"></div>
-      <Spin
-        spinning={spinning}
-        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card bordered={true} key="unique-key" style={{ width: "100%" }} className="drop-shadow-md">
-            <MDexpesescost company={company} isTab1={isTab1} />
-
-            <Table
-              dataSource={Monye}
-              columns={[
-                {
-                  title: "ID",
-                  dataIndex: "id",
-                  key: "id",
-                  sorter: (id1: { id: number }, id2: { id: number }) =>
-                    id1.id - id2.id,
-                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-                  responsive: ["lg"],
-                },
-                {
-                  title: "List",
-                  dataIndex: "text",
-                  key: "text",
-                },
-                {
-                  title: "Company",
-                  dataIndex: "company",
-                  key: "company",
-                  responsive: ["lg"],
-                },
-                {
-                  title: "Cost",
-                  dataIndex: "cost",
-                  key: "cost",
-                  render: (cost: number) => (
-                    <span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "THB",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(cost)}
-                    </span>
-                  ),
-                },
-                {
-                  title: "Status",
-                  dataIndex: "status",
-                  key: "status",
-                  render: (status: any) => (
-                    <Badge
-                      status={status ? "success" : "error"}
-                      text={status ? "Paid" : "UnPaid"}
-                    />
-                  ),
-                },
-                {
-                  title: "",
-                  key: "action",
-                  render: (_, record) => (
-                    <Space size="middle">
-                      {contextHolder}
-                      <Tooltip title="Edit">
-                        <Button
-                          shape="circle"
-                          icon={<EditFilled />}
-                          size={"small"}
-                          onClick={() => showModal(record)}
-                        />
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <Button
-                          danger
-                          shape="circle"
-                          icon={<DeleteFilled />}
-                          size={"small"}
-                          onClick={() => handleDel(record)}
-                        />
-                      </Tooltip>
-                    </Space>
-                  ),
-                },
-                {
-                  title: "Update",
-                  key: "action2",
-                  render: (_, record) => (
-                    <Space size="middle">
-                      {contextHolder}
-                      <Tooltip title="UpdateStatus">
-                        <Button
-                          className="buttonUpStatus"
-                          shape="round"
-                          icon={<CheckOutlined className="text-green-700" />}
-                          size={"small"}
-                          onClick={() => handleStatus(record)}
-                        >
-                          UpdateStatus
-                        </Button>
-                      </Tooltip>
-                    </Space>
-                  ),
-                },
-              ]}
-              scroll={{ x: "max-content", y: "max-content" }}
-            />
-          </Card>
-        </div>
-        <Modal
-          title={
-            <div className="flex items-center space-x-1">
-              <EditFilled className="mr-2 text-teal-600" />
-              Edit Expenses
-            </div>
-          }
-          open={isModalOpen}
-          //onOk={handleOk}
-          onCancel={handleCancel}
-          footer={[
-            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
-              Save
-            </Button>,
-            <Tooltip title="Cancle">
-              <Button
-                type="primary"
-                danger
-                icon={<CloseOutlined />}
-                onClick={handleCancel}
-                shape="circle"
-              ></Button>
-            </Tooltip>,
-          ]}
-        >
-          <Form
-            style={{ maxWidth: 450 }}
-            autoComplete="off"
-            form={form}
-            labelCol={{ span: 4 }}
-            //wrapperCol={{ span: 9 }}
+          <div className="mb-4"></div>
+          <Spin
+            spinning={spinning}
+            indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
           >
-            {editedDataPm && (
-              <>
-                <Form.Item label="ID" name="id" className="mb-4" hidden>
-                  <p>{editedDataPm?.id}</p>
-                </Form.Item>
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+              <Card
+                bordered={true}
+                key="unique-key"
+                style={{ width: "100%" }}
+                className="drop-shadow-md"
+              >
+                <MDexpesescost company={company} isTab1={isTab1} />
 
-                <div className="mb-4"></div>
-                <Form.Item label="List" name="text">
-                  <Input name="text" className="w-full" />
-                </Form.Item>
-
-                <Form.Item label="Company" name="company" className="mb-4">
-                  <Select
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    disabled
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label="Cost"
-                  name="cost"
-                  className="mb-4"
-                  initialValue={0}
-                  rules={[
+                <Table
+                  dataSource={Monye}
+                  columns={[
                     {
-                      type: "number",
-                      message: "Please input a valid number",
+                      title: "ID",
+                      dataIndex: "id",
+                      key: "id",
+                      sorter: (id1: { id: number }, id2: { id: number }) =>
+                        id1.id - id2.id,
+                      defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                      responsive: ["lg"],
+                    },
+                    {
+                      title: "List",
+                      dataIndex: "text",
+                      key: "text",
+                    },
+                    {
+                      title: "Company",
+                      dataIndex: "company",
+                      key: "company",
+                      responsive: ["lg"],
+                    },
+                    {
+                      title: "Cost",
+                      dataIndex: "cost",
+                      key: "cost",
+                      render: (cost: number) => (
+                        <span>
+                          {new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: "THB",
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }).format(cost)}
+                        </span>
+                      ),
+                    },
+                    {
+                      title: "Status",
+                      dataIndex: "status",
+                      key: "status",
+                      render: (status: any) => (
+                        <Badge
+                          status={status ? "success" : "error"}
+                          text={status ? "Paid" : "UnPaid"}
+                        />
+                      ),
+                    },
+                    {
+                      title: "",
+                      key: "action",
+                      render: (_, record) => (
+                        <Space size="middle">
+                          {contextHolder}
+                          <Tooltip title="Edit">
+                            <Button
+                              shape="circle"
+                              icon={<EditFilled />}
+                              size={"small"}
+                              onClick={() => showModal(record)}
+                            />
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <Button
+                              danger
+                              shape="circle"
+                              icon={<DeleteFilled />}
+                              size={"small"}
+                              onClick={() => handleDel(record)}
+                            />
+                          </Tooltip>
+                        </Space>
+                      ),
+                    },
+                    {
+                      title: "Update",
+                      key: "action2",
+                      render: (_, record) => (
+                        <Space size="middle">
+                          {contextHolder}
+                          <Tooltip title="UpdateStatus">
+                            <Button
+                              className="buttonUpStatus"
+                              shape="round"
+                              icon={
+                                <CheckOutlined className="text-green-700" />
+                              }
+                              size={"small"}
+                              onClick={() => handleStatus(record)}
+                            >
+                              UpdateStatus
+                            </Button>
+                          </Tooltip>
+                        </Space>
+                      ),
                     },
                   ]}
+                  scroll={{ x: "max-content", y: "max-content" }}
+                />
+              </Card>
+            </div>
+            <Modal
+              title={
+                <div className="flex items-center space-x-1">
+                  <EditFilled className="mr-2 text-teal-600" />
+                  Edit Expenses
+                </div>
+              }
+              open={isModalOpen}
+              //onOk={handleOk}
+              onCancel={handleCancel}
+              footer={[
+                <Button
+                  shape="round"
+                  icon={<CheckOutlined />}
+                  onClick={handleOk}
                 >
-                  <InputNumber
-                    prefix="THB"
-                    className="w-full"
-                    name="cost"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
+                  Save
+                </Button>,
+                <Tooltip title="Cancle">
+                  <Button
+                    type="primary"
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={handleCancel}
+                    shape="circle"
+                  ></Button>
+                </Tooltip>,
+              ]}
+            >
+              <Form
+                style={{ maxWidth: 450 }}
+                autoComplete="off"
+                form={form}
+                labelCol={{ span: 4 }}
+                //wrapperCol={{ span: 9 }}
+              >
+                {editedDataPm && (
+                  <>
+                    <Form.Item label="ID" name="id" className="mb-4" hidden>
+                      <p>{editedDataPm?.id}</p>
+                    </Form.Item>
 
-                <Form.Item label="Status" name="status">
-                  <Switch
-                    checkedChildren={<CheckOutlined />}
-                    unCheckedChildren={<CloseOutlined />}
-                    className="bg-red-500"
-                  />
-                </Form.Item>
-              </>
-            )}
-          </Form>
-        </Modal>
-      </Spin>
+                    <div className="mb-4"></div>
+                    <Form.Item label="List" name="text">
+                      <Input name="text" className="w-full" />
+                    </Form.Item>
+
+                    <Form.Item label="Company" name="company" className="mb-4">
+                      <Select
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        disabled
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Cost"
+                      name="cost"
+                      className="mb-4"
+                      initialValue={0}
+                      rules={[
+                        {
+                          type: "number",
+                          message: "Please input a valid number",
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        prefix="THB"
+                        className="w-full"
+                        name="cost"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="Status" name="status">
+                      <Switch
+                        checkedChildren={<CheckOutlined />}
+                        unCheckedChildren={<CloseOutlined />}
+                        className="bg-red-500"
+                      />
+                    </Form.Item>
+                  </>
+                )}
+              </Form>
+            </Modal>
+          </Spin>
+        </div>
+      )}
     </div>
   );
 }
@@ -462,8 +489,11 @@ export function Gmcost() {
   const [form] = Form.useForm();
   const [spinning, setSpinning] = useState<boolean>(false);
   const [editedDataGm, setEditedDataGm] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
   const Gme = async () => {
     try {
+      setLoading(true);
       let { data: expenses, error } = await supabase
         .from("expenses")
         .select("*")
@@ -477,6 +507,8 @@ export function Gmcost() {
       }
     } catch (error) {
       console.error("Error GM:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -563,216 +595,226 @@ export function Gmcost() {
 
   return (
     <div>
-      <Row gutter={16}>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Card bordered={true} className="drop-shadow-md">
-            <Statistic
-              title="All Expenses"
-              value={totalGm}
-              precision={2}
-              valueStyle={{ color: "#3f8600" }}
-              prefix="THB"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Card bordered={true} className="drop-shadow-md">
-            <Statistic
-              title="Share"
-              value={totalGmSh}
-              precision={2}
-              valueStyle={{ color: "#cf1322" }}
-              prefix="THB"
-            />
-          </Card>
-        </Col>
-      </Row>
+      {loading ? (
+        <Skeleton active /> // Render loading state while data is being fetched
+      ) : (
+        <div>
+          <Row gutter={16}>
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="All Expenses"
+                  value={totalGm}
+                  precision={2}
+                  valueStyle={{ color: "#3f8600" }}
+                  prefix="THB"
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="Share"
+                  value={totalGmSh}
+                  precision={2}
+                  valueStyle={{ color: "#cf1322" }}
+                  prefix="THB"
+                />
+              </Card>
+            </Col>
+          </Row>
 
-      <div className="mb-4" />
-      <Spin
-        spinning={spinning}
-        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card bordered={true} key="unique-key" className="drop-shadow-md">
-            <Gmmodal />
-            <Table
-              dataSource={Gmexp}
-              columns={[
-                {
-                  title: "ID",
-                  dataIndex: "id",
-                  key: "id",
-                  sorter: (id1: { id: number }, id2: { id: number }) =>
-                    id1.id - id2.id,
-                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-                  responsive: ["lg"],
-                },
-                {
-                  title: "List",
-                  dataIndex: "text",
-                  key: "text",
-                },
-                {
-                  title: "Choice",
-                  dataIndex: "company",
-                  key: "company",
-                  responsive: ["lg"],
-                },
-                {
-                  title: "Cost",
-                  dataIndex: "cost",
-                  key: "cost",
-                  render: (cost: number) => (
-                    <span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "THB",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(cost)}
-                    </span>
-                  ),
-                },
-                {
-                  title: "Share",
-                  key: "Share",
-                  render: (record: { cost: number }) => (
-                    <span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "THB",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(record.cost / 2)}
-                    </span>
-                  ),
-                },
-                {
-                  title: "Date",
-                  key: "date",
-                  render: () => {
-                    const nowDate = dayjs();
-                    const fomatD = nowDate.format("MM/YYYY");
-                    return <Tag color="geekblue">{fomatD}</Tag>;
-                  },
-                },
-
-                {
-                  title: "",
-                  key: "action",
-                  render: (_, record) => (
-                    <Space size="middle">
-                      {contextHolder}
-                      <Tooltip title="Edit">
-                        <Button
-                          shape="circle"
-                          icon={<EditFilled />}
-                          size={"small"}
-                          onClick={() => showModal(record)}
-                        />
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <Button
-                          danger
-                          shape="circle"
-                          icon={<DeleteFilled />}
-                          size={"small"}
-                          onClick={() => handleDel(record)}
-                        />
-                      </Tooltip>
-                    </Space>
-                  ),
-                },
-              ]}
-              scroll={{ x: "max-content", y: "max-content" }}
-            />
-          </Card>
-        </div>
-        <Modal
-          title={
-            <div className="flex items-center space-x-1">
-              <EditFilled className="mr-2 text-teal-600" />
-              Edit Expenses GraceMarc
-            </div>
-          }
-          open={isModalOpen}
-          onCancel={handleCancel}
-          footer={[
-            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
-              Save
-            </Button>,
-            <Tooltip title="Cancle">
-              <Button
-                type="primary"
-                danger
-                icon={<CloseOutlined />}
-                onClick={handleCancel}
-                shape="circle"
-              ></Button>
-            </Tooltip>,
-          ]}
-        >
-          <Form
-            style={{ maxWidth: 450 }}
-            autoComplete="off"
-            form={form}
-            labelCol={{ span: 4 }}
-            //wrapperCol={{ span: 9 }}
+          <div className="mb-4" />
+          <Spin
+            spinning={spinning}
+            indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
           >
-            {editedDataGm && (
-              <>
-                <Form.Item label="ID" name="id" className="mb-4" hidden>
-                  <p>{editedDataGm?.id}</p>
-                </Form.Item>
-
-                <div className="mb-4"></div>
-                <Form.Item label="List" name="text">
-                  <Input name="text" className="w-full" />
-                </Form.Item>
-
-                <Form.Item label="Company" name="company" className="mb-4">
-                  <Select
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    disabled
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label="Cost"
-                  name="cost"
-                  className="mb-4"
-                  initialValue={0}
-                  rules={[
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+              <Card bordered={true} key="unique-key" className="drop-shadow-md">
+                <Gmmodal />
+                <Table
+                  dataSource={Gmexp}
+                  columns={[
                     {
-                      type: "number",
-                      message: "Please input a valid number",
+                      title: "ID",
+                      dataIndex: "id",
+                      key: "id",
+                      sorter: (id1: { id: number }, id2: { id: number }) =>
+                        id1.id - id2.id,
+                      defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                      responsive: ["lg"],
+                    },
+                    {
+                      title: "List",
+                      dataIndex: "text",
+                      key: "text",
+                    },
+                    {
+                      title: "Choice",
+                      dataIndex: "company",
+                      key: "company",
+                      responsive: ["lg"],
+                    },
+                    {
+                      title: "Cost",
+                      dataIndex: "cost",
+                      key: "cost",
+                      render: (cost: number) => (
+                        <span>
+                          {new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: "THB",
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }).format(cost)}
+                        </span>
+                      ),
+                    },
+                    {
+                      title: "Share",
+                      key: "Share",
+                      render: (record: { cost: number }) => (
+                        <span>
+                          {new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: "THB",
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }).format(record.cost / 2)}
+                        </span>
+                      ),
+                    },
+                    {
+                      title: "Date",
+                      key: "date",
+                      render: () => {
+                        const nowDate = dayjs();
+                        const fomatD = nowDate.format("MM/YYYY");
+                        return <Tag color="geekblue">{fomatD}</Tag>;
+                      },
+                    },
+
+                    {
+                      title: "",
+                      key: "action",
+                      render: (_, record) => (
+                        <Space size="middle">
+                          {contextHolder}
+                          <Tooltip title="Edit">
+                            <Button
+                              shape="circle"
+                              icon={<EditFilled />}
+                              size={"small"}
+                              onClick={() => showModal(record)}
+                            />
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <Button
+                              danger
+                              shape="circle"
+                              icon={<DeleteFilled />}
+                              size={"small"}
+                              onClick={() => handleDel(record)}
+                            />
+                          </Tooltip>
+                        </Space>
+                      ),
                     },
                   ]}
-                >
-                  <InputNumber
-                    prefix="THB"
-                    className="w-full"
-                    name="cost"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
-                <div className="hidden">
-                  <Form.Item label="Status" name="status">
-                    <Switch
-                      checkedChildren={<CheckOutlined />}
-                      unCheckedChildren={<CloseOutlined />}
-                      className="bg-red-500"
-                    />
-                  </Form.Item>
+                  scroll={{ x: "max-content", y: "max-content" }}
+                />
+              </Card>
+            </div>
+            <Modal
+              title={
+                <div className="flex items-center space-x-1">
+                  <EditFilled className="mr-2 text-teal-600" />
+                  Edit Expenses GraceMarc
                 </div>
-              </>
-            )}
-          </Form>
-        </Modal>
-      </Spin>
+              }
+              open={isModalOpen}
+              onCancel={handleCancel}
+              footer={[
+                <Button
+                  shape="round"
+                  icon={<CheckOutlined />}
+                  onClick={handleOk}
+                >
+                  Save
+                </Button>,
+                <Tooltip title="Cancle">
+                  <Button
+                    type="primary"
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={handleCancel}
+                    shape="circle"
+                  ></Button>
+                </Tooltip>,
+              ]}
+            >
+              <Form
+                style={{ maxWidth: 450 }}
+                autoComplete="off"
+                form={form}
+                labelCol={{ span: 4 }}
+                //wrapperCol={{ span: 9 }}
+              >
+                {editedDataGm && (
+                  <>
+                    <Form.Item label="ID" name="id" className="mb-4" hidden>
+                      <p>{editedDataGm?.id}</p>
+                    </Form.Item>
+
+                    <div className="mb-4"></div>
+                    <Form.Item label="List" name="text">
+                      <Input name="text" className="w-full" />
+                    </Form.Item>
+
+                    <Form.Item label="Company" name="company" className="mb-4">
+                      <Select
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        disabled
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Cost"
+                      name="cost"
+                      className="mb-4"
+                      initialValue={0}
+                      rules={[
+                        {
+                          type: "number",
+                          message: "Please input a valid number",
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        prefix="THB"
+                        className="w-full"
+                        name="cost"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
+                    <div className="hidden">
+                      <Form.Item label="Status" name="status">
+                        <Switch
+                          checkedChildren={<CheckOutlined />}
+                          unCheckedChildren={<CloseOutlined />}
+                          className="bg-red-500"
+                        />
+                      </Form.Item>
+                    </div>
+                  </>
+                )}
+              </Form>
+            </Modal>
+          </Spin>
+        </div>
+      )}
     </div>
   );
 }
@@ -787,9 +829,11 @@ export function CarTag() {
   const [editedDataCarTag, setEditedDataCarTag] = useState<any>(null);
   const [Scta, setScta] = useState<any>([]);
   const [Carname, setcarname] = useState<any>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const CarTagData = async () => {
     try {
+      setLoading(true);
       let { data: car, error } = await supabase
         .from("car")
         .select("*")
@@ -801,49 +845,68 @@ export function CarTag() {
       if (!car || error) {
         console.log("CarTag:", error);
       }
+      console.log("Ok CarTag:", car);
     } catch (error) {
       console.error("Error CarTag:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const carname = async () => {
-    let { data: selectcar, error } = await supabase
-      .from("selection")
-      .select("car")
-      .not("car", "is", null);
+    try {
+      setLoading(true);
+      let { data: selectcar, error } = await supabase
+        .from("selection")
+        .select("car")
+        .not("car", "is", null);
 
-    if (selectcar) {
-      setcarname(selectcar);
-      const carmam = selectcar.map(({ car }) => ({
-        value: car,
-        label: car,
-      }));
-      setcarname(carmam);
-      console.log(carmam);
-    }
+      if (selectcar) {
+        setcarname(selectcar);
+        const carmam = selectcar.map(({ car }) => ({
+          value: car,
+          label: car,
+        }));
+        setcarname(carmam);
+        console.log(carmam);
+      }
 
-    if (!selectcar || error) {
-      console.log("car :", error);
+      if (!selectcar || error) {
+        console.log("car :", error);
+      }
+      console.log("Ok carname:", selectcar);
+    } catch (error) {
+      console.error("Error carname:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const tagcar = async () => {
-    let { data: selectcartag, error } = await supabase
-      .from("selection")
-      .select("car_tag");
+    try {
+      setLoading(true);
+      let { data: selectcartag, error } = await supabase
+        .from("selection")
+        .select("car_tag");
 
-    if (selectcartag) {
-      setScta(selectcartag);
-      const scartag = selectcartag.map(({ car_tag }) => ({
-        value: car_tag,
-        label: car_tag,
-      }));
-      setScta(scartag);
-      console.log(scartag);
-    }
+      if (selectcartag) {
+        setScta(selectcartag);
+        const scartag = selectcartag.map(({ car_tag }) => ({
+          value: car_tag,
+          label: car_tag,
+        }));
+        setScta(scartag);
+        console.log(scartag);
+      }
 
-    if (!selectcartag || error) {
-      console.log("tagcar :", error);
+      if (!selectcartag || error) {
+        console.log("tagcar :", error);
+      }
+      console.log("Ok tagcar:", selectcartag);
+    } catch (error) {
+      console.error("Error tagcar:", error);
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -956,243 +1019,268 @@ export function CarTag() {
     return accumulator + current.c_price;
   }, 0);
 
-  const totalMoto =
-    CarTag.filter((car: { c_name: string }) => car.c_name !== "Vios").reduce(
-      (accumulator: any, current: { c_price: any }) => {
-        return accumulator + current.c_price;
-      },
-      0
-    ) / 2;
+  const totalMoto = CarTag.filter(
+    (car: { c_name: string }) => car.c_name !== "Vios"
+  ).reduce((accumulator: any, current: { c_price: any }) => {
+    return accumulator + current.c_price;
+  }, 0);
+
+  const totalAll = totalCar + totalMoto;
 
   return (
     <div>
-      <Row gutter={16}>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Card bordered={true} className="drop-shadow-md">
-            <Statistic
-              title="Car"
-              value={totalCar}
-              precision={2}
-              valueStyle={{ color: "#000" }}
-              prefix="THB"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Card bordered={true} className="drop-shadow-md">
-            <Statistic
-              title="Motorcycle"
-              value={totalMoto}
-              precision={2}
-              valueStyle={{ color: "#000" }}
-              prefix="THB"
-            />
-          </Card>
-        </Col>
-      </Row>
+      {loading ? (
+        <Skeleton active />
+      ) : (
+        <div>
+          <Row gutter={16}>
+            <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="All"
+                  value={totalAll}
+                  precision={2}
+                  valueStyle={{ color: "#000" }}
+                  prefix="THB"
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="Car"
+                  value={totalCar}
+                  precision={2}
+                  valueStyle={{ color: "#000" }}
+                  prefix="THB"
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={8} lg={8} xl={8} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="Motorcycle"
+                  value={totalMoto}
+                  precision={2}
+                  valueStyle={{ color: "#000" }}
+                  prefix="THB"
+                />
+              </Card>
+            </Col>
+          </Row>
 
-      <div className="mb-4" />
-      <Spin
-        spinning={spinning}
-        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card bordered={true} key="unique-key" className="drop-shadow-md">
-            <Cartagmodal />
-            <Table
-              dataSource={CarTag}
-              columns={[
-                {
-                  title: "ID",
-                  dataIndex: "id",
-                  key: "id",
-                  sorter: (id1: { id: number }, id2: { id: number }) =>
-                    id1.id - id2.id,
-                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-                  responsive: ["lg"],
-                },
-                {
-                  title: "Name",
-                  dataIndex: "c_name",
-                  key: "c_name",
-                },
-                {
-                  title: "Tag",
-                  dataIndex: "c_tag",
-                  key: "c_tag",
-                },
-                {
-                  title: "Price",
-                  dataIndex: "c_price",
-                  key: "c_price",
-                  render: (c_price: number) => (
-                    <span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "THB",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(c_price)}
-                    </span>
-                  ),
-                },
-                {
-                  title: "StarDate",
-                  dataIndex: "c_startdate",
-                  key: "c_startdate",
-                  render: (c_stardate) => {
-                    const fomatsd = dayjs(c_stardate).format("DD/MM/YYYY");
-                    return <Tag color="#87d068">{fomatsd}</Tag>;
-                  },
-                },
-                {
-                  title: "EndDate",
-                  dataIndex: "c_enddate",
-                  key: "c_enddate",
-                  render: (c_enddate) => {
-                    const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
-                    return <Tag color="#f50">{fomated}</Tag>;
-                  },
-                },
-                {
-                  title: "Status",
-                  key: "status",
-                  render: ({ c_enddate }) => {
-                    const nowdate = dayjs().format("YYYY-MM-DD");
-
-                    return (
-                      <span>
-                        {dayjs(c_enddate).isBefore(nowdate) ||
-                        dayjs(c_enddate).isSame(nowdate) ? (
-                          <Badge status="error" text="หมดแล้ว" />
-                        ) : (
-                          <>
-                            {dayjs(c_enddate).diff(nowdate, "day") <= 7 ? (
-                              <Badge status="warning" text="ใกล้แล้ว" />
-                            ) : (
-                              <Badge status="success" text="ยังไม่หมด" />
-                            )}
-                          </>
-                        )}
-                      </span>
-                    );
-                  },
-                },
-
-                {
-                  title: "",
-                  key: "action",
-                  render: (_, record) => (
-                    <Space size="middle">
-                      {contextHolder}
-                      <Tooltip title="Edit">
-                        <Button
-                          shape="circle"
-                          icon={<EditFilled />}
-                          size={"small"}
-                          onClick={() => showModal(record)}
-                        />
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <Button
-                          danger
-                          shape="circle"
-                          icon={<DeleteFilled />}
-                          size={"small"}
-                          onClick={() => handleDel(record)}
-                        />
-                      </Tooltip>
-                    </Space>
-                  ),
-                },
-              ]}
-              scroll={{ x: "max-content", y: "max-content" }}
-            />
-          </Card>
-        </div>
-        <Modal
-          title={
-            <div className="flex items-center space-x-1">
-              <EditFilled className="mr-2 text-teal-600" />
-              Edit CarTag
-            </div>
-          }
-          open={isModalOpen}
-          onCancel={handleCancel}
-          footer={[
-            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
-              Save
-            </Button>,
-            <Tooltip title="Cancle">
-              <Button
-                type="primary"
-                danger
-                icon={<CloseOutlined />}
-                onClick={handleCancel}
-                shape="circle"
-              ></Button>
-            </Tooltip>,
-          ]}
-        >
-          <Form
-            style={{ maxWidth: 450 }}
-            autoComplete="off"
-            form={form}
-            labelCol={{ span: 4 }}
-            //wrapperCol={{ span: 9 }}
+          <div className="mb-4" />
+          <Spin
+            spinning={spinning}
+            indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
           >
-            {editedDataCarTag && (
-              <>
-                <Form.Item label="ID" name="id" className="mb-4" hidden>
-                  <p>{editedDataCarTag?.id}</p>
-                </Form.Item>
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+              <Card bordered={true} key="unique-key" className="drop-shadow-md">
+                <Cartagmodal />
+                <Table
+                  dataSource={CarTag}
+                  columns={[
+                    {
+                      title: "ID",
+                      dataIndex: "id",
+                      key: "id",
+                      sorter: (id1: { id: number }, id2: { id: number }) =>
+                        id1.id - id2.id,
+                      defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                      responsive: ["lg"],
+                    },
+                    {
+                      title: "Name",
+                      dataIndex: "c_name",
+                      key: "c_name",
+                    },
+                    {
+                      title: "Tag",
+                      dataIndex: "c_tag",
+                      key: "c_tag",
+                    },
+                    {
+                      title: "Price",
+                      dataIndex: "c_price",
+                      key: "c_price",
+                      render: (c_price: number) => (
+                        <span>
+                          {new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: "THB",
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }).format(c_price)}
+                        </span>
+                      ),
+                    },
+                    {
+                      title: "StarDate",
+                      dataIndex: "c_startdate",
+                      key: "c_startdate",
+                      render: (c_stardate) => {
+                        const fomatsd = dayjs(c_stardate).format("DD/MM/YYYY");
+                        return <Tag color="#87d068">{fomatsd}</Tag>;
+                      },
+                    },
+                    {
+                      title: "EndDate",
+                      dataIndex: "c_enddate",
+                      key: "c_enddate",
+                      render: (c_enddate) => {
+                        const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
+                        return <Tag color="#f50">{fomated}</Tag>;
+                      },
+                    },
+                    {
+                      title: "Status",
+                      key: "status",
+                      render: ({ c_enddate }) => {
+                        const nowdate = dayjs().format("YYYY-MM-DD");
 
-                <div className="mb-4"></div>
-                <Form.Item label="Car" name="c_name">
-                  <Select
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    options={Carname}
-                  />
-                </Form.Item>
+                        return (
+                          <span>
+                            {dayjs(c_enddate).isBefore(nowdate) ||
+                            dayjs(c_enddate).isSame(nowdate) ? (
+                              <Badge status="error" text="หมดแล้ว" />
+                            ) : (
+                              <>
+                                {dayjs(c_enddate).diff(nowdate, "day") <= 7 ? (
+                                  <Badge status="warning" text="ใกล้แล้ว" />
+                                ) : (
+                                  <Badge status="success" text="ยังไม่หมด" />
+                                )}
+                              </>
+                            )}
+                          </span>
+                        );
+                      },
+                    },
 
-                <Form.Item label="CarTag" name="c_tag" className="mb-4">
-                  <Select
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    options={Scta}
-                  />
-                </Form.Item>
+                    {
+                      title: "",
+                      key: "action",
+                      render: (_, record) => (
+                        <Space size="middle">
+                          {contextHolder}
+                          <Tooltip title="Edit">
+                            <Button
+                              shape="circle"
+                              icon={<EditFilled />}
+                              size={"small"}
+                              onClick={() => showModal(record)}
+                            />
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <Button
+                              danger
+                              shape="circle"
+                              icon={<DeleteFilled />}
+                              size={"small"}
+                              onClick={() => handleDel(record)}
+                            />
+                          </Tooltip>
+                        </Space>
+                      ),
+                    },
+                  ]}
+                  scroll={{ x: "max-content", y: "max-content" }}
+                />
+              </Card>
+            </div>
+            <Modal
+              title={
+                <div className="flex items-center space-x-1">
+                  <EditFilled className="mr-2 text-teal-600" />
+                  Edit CarTag
+                </div>
+              }
+              open={isModalOpen}
+              onCancel={handleCancel}
+              footer={[
+                <Button
+                  shape="round"
+                  icon={<CheckOutlined />}
+                  onClick={handleOk}
+                >
+                  Save
+                </Button>,
+                <Tooltip title="Cancle">
+                  <Button
+                    type="primary"
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={handleCancel}
+                    shape="circle"
+                  ></Button>
+                </Tooltip>,
+              ]}
+            >
+              <Form
+                style={{ maxWidth: 450 }}
+                autoComplete="off"
+                form={form}
+                labelCol={{ span: 4 }}
+                //wrapperCol={{ span: 9 }}
+              >
+                {editedDataCarTag && (
+                  <>
+                    <Form.Item label="ID" name="id" className="mb-4" hidden>
+                      <p>{editedDataCarTag?.id}</p>
+                    </Form.Item>
 
-                <Form.Item label="Price" name="c_price" className="mb-4">
-                  <InputNumber
-                    prefix="THB"
-                    className="w-full"
-                    name="c_price"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
-                <Form.Item label="Date" name="c_startdate" className="mb-4">
-                  <DatePicker
-                    onChange={onStartDate}
-                    style={{ width: "100%" }}
-                    name="c_startdate"
-                  />
-                </Form.Item>
+                    <div className="mb-4"></div>
+                    <Form.Item label="Car" name="c_name">
+                      <Select
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        options={Carname}
+                      />
+                    </Form.Item>
 
-                <Form.Item label="DateEnd" name="c_enddate" className="mb-4">
-                  <DatePicker
-                    onChange={ondateend}
-                    style={{ width: "100%" }}
-                    name="c_enddate"
-                  />
-                </Form.Item>
-              </>
-            )}
-          </Form>
-        </Modal>
-      </Spin>
+                    <Form.Item label="CarTag" name="c_tag" className="mb-4">
+                      <Select
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        options={Scta}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="Price" name="c_price" className="mb-4">
+                      <InputNumber
+                        prefix="THB"
+                        className="w-full"
+                        name="c_price"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
+                    <Form.Item label="Date" name="c_startdate" className="mb-4">
+                      <DatePicker
+                        onChange={onStartDate}
+                        style={{ width: "100%" }}
+                        name="c_startdate"
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="DateEnd"
+                      name="c_enddate"
+                      className="mb-4"
+                    >
+                      <DatePicker
+                        onChange={ondateend}
+                        style={{ width: "100%" }}
+                        name="c_enddate"
+                      />
+                    </Form.Item>
+                  </>
+                )}
+              </Form>
+            </Modal>
+          </Spin>
+        </div>
+      )}
     </div>
   );
 }
@@ -1205,9 +1293,11 @@ export function CarMiles() {
   const [spinning, setSpinning] = useState<boolean>(false);
   const [editedDataMiles, setEditedDataMiles] = useState<any>(null);
   const [Carname, setcarname] = useState<any>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const Carmilesfe = async () => {
     try {
+      setLoading(true);
       let { data: car, error } = await supabase
         .from("car")
         .select("*")
@@ -1219,29 +1309,40 @@ export function CarMiles() {
       if (!car || error) {
         console.log("CarTag:", error);
       }
+      console.log("Ok Date Carmilesfe", car);
     } catch (error) {
-      console.error("Error CarTag:", error);
+      console.error("Error Carmilesfe:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const carname = async () => {
-    let { data: selectcar, error } = await supabase
-      .from("selection")
-      .select("car")
-      .not("car", "is", null);
+    try {
+      setLoading(true);
+      let { data: selectcar, error } = await supabase
+        .from("selection")
+        .select("car")
+        .not("car", "is", null);
 
-    if (selectcar) {
-      setcarname(selectcar);
-      const carmam = selectcar.map(({ car }) => ({
-        value: car,
-        label: car,
-      }));
-      setcarname(carmam);
-      console.log(carmam);
-    }
+      if (selectcar) {
+        setcarname(selectcar);
+        const carmam = selectcar.map(({ car }) => ({
+          value: car,
+          label: car,
+        }));
+        setcarname(carmam);
+        console.log(carmam);
+      }
 
-    if (!selectcar || error) {
-      console.log("car :", error);
+      if (!selectcar || error) {
+        console.log("car :", error);
+      }
+      console.log("Ok Data carname", selectcar);
+    } catch (error) {
+      console.error("Error carname:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1550,407 +1651,431 @@ export function CarMiles() {
   };
 
   return (
-    <>
-      <Row gutter={16}>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Card bordered={true} className="drop-shadow-md">
-            <Statistic
-              title="Cost"
-              value={totalCarmiles}
-              precision={2}
-              valueStyle={{ color: "#000" }}
-              prefix="THB"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Card bordered={true} className="drop-shadow-md">
-            <Statistic
-              title="Miles"
-              value={totalmiles}
-              precision={2}
-              valueStyle={{ color: "#000" }}
-              suffix="Km"
-            />
-          </Card>
-        </Col>
-      </Row>
+    <div>
+      {loading ? (
+        <Skeleton active /> // Render loading state while data is being fetched
+      ) : (
+        <div>
+          <Row gutter={16}>
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="Cost"
+                  value={totalCarmiles}
+                  precision={2}
+                  valueStyle={{ color: "#000" }}
+                  prefix="THB"
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Card bordered={true} className="drop-shadow-md">
+                <Statistic
+                  title="Miles"
+                  value={totalmiles}
+                  precision={2}
+                  valueStyle={{ color: "#000" }}
+                  suffix="Km"
+                />
+              </Card>
+            </Col>
+          </Row>
 
-      <div className="mb-4" />
-      <Spin
-        spinning={spinning}
-        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card bordered={true} key="unique-key" className="drop-shadow-md">
-            <div className="flex justify-end mr-2">
-              <Button className="mr-2" danger onClick={showDeleteConfirmation}>
-                Delete All
-              </Button>
-              <Button
-                className="mr-2 buttonExport"
-                icon={<DownloadOutlined />}
-                onClick={handlemilesExport}
-              >
-                Dowlode Excel
-              </Button>
-              <MilesAdd />
-            </div>
-
-            <div className="mb-2"></div>
-            <Table
-              dataSource={CarMiles}
-              columns={[
-                {
-                  title: "ID",
-                  dataIndex: "id",
-                  key: "id",
-                  sorter: (id1: { id: number }, id2: { id: number }) =>
-                    id1.id - id2.id,
-                  defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-                  responsive: ["lg"],
-                },
-                {
-                  title: "Car",
-                  dataIndex: "c_name",
-                  key: "c_name",
-                },
-
-                {
-                  title: "Price",
-                  dataIndex: "c_price",
-                  key: "c_price",
-                  render: (c_price: number) => (
-                    <span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "THB",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(c_price)}
-                    </span>
-                  ),
-                },
-                {
-                  title: "OilType",
-                  dataIndex: "c_oiltype",
-                  key: "c_oiltype",
-                },
-
-                {
-                  title: "Station",
-                  dataIndex: "c_oilstation",
-                  key: "c_oilstation",
-                },
-                {
-                  title: "OilPrice",
-                  dataIndex: "c_oilprice",
-                  key: "c_oilprice",
-                  render: (c_oilprice: number) => (
-                    <span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "THB",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(c_oilprice)}
-                    </span>
-                  ),
-                },
-                {
-                  title: "Litre",
-                  dataIndex: "c_liter",
-                  key: "c_liter",
-                  render: (c_liter: number) => (
-                    <Statistic
-                      value={c_liter}
-                      precision={2}
-                      valueStyle={{ color: "#000", fontSize: "14px" }}
-                      suffix="L"
-                    />
-                  ),
-                },
-                {
-                  title: "Miles",
-                  dataIndex: "c_miles",
-                  key: "c_miles",
-                  render: (c_miles: number) => (
-                    <Statistic
-                      value={c_miles}
-                      precision={2}
-                      valueStyle={{ color: "#000", fontSize: "14px" }}
-                      suffix="Km"
-                    />
-                  ),
-                },
-                {
-                  title: "StarDate",
-                  dataIndex: "c_startdate",
-                  key: "c_startdate",
-                  render: (c_stardate) => {
-                    const fomatsd = dayjs(c_stardate).format("DD/MM/YYYY");
-                    return <Tag color="#87d068">{fomatsd}</Tag>;
-                  },
-                },
-                {
-                  title: "EndDate",
-                  dataIndex: "c_enddate",
-                  key: "c_enddate",
-                  render: (c_enddate) => {
-                    if (c_enddate) {
-                      const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
-                      return <Tag color="#f50">{fomated}</Tag>;
-                    } else {
-                      return <Tag color="#f50">Wait</Tag>;
-                    }
-                  },
-                },
-                {
-                  title: "Status",
-                  key: "status",
-                  render: ({ c_enddate }) => {
-                    const nowdate = dayjs().format("YYYY-MM-DD");
-
-                    return (
-                      <span>
-                        {dayjs(c_enddate).isSame(c_enddate) ? (
-                          <Badge status="error" text="ใช้หมดแล้ว" />
-                        ) : (
-                          <Badge status="success" text="กำลังใช้งาน" />
-                        )}
-                      </span>
-                    );
-                  },
-                },
-
-                {
-                  title: "",
-                  key: "action",
-                  render: (_, record) => (
-                    <Space size="middle">
-                      {contextHolder}
-                      <Tooltip title="Edit">
-                        <Button
-                          shape="circle"
-                          icon={<EditFilled />}
-                          size={"small"}
-                          onClick={() => showModal(record)}
-                        />
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <Button
-                          danger
-                          shape="circle"
-                          icon={<DeleteFilled />}
-                          size={"small"}
-                          onClick={() => handleDel(record)}
-                        />
-                      </Tooltip>
-                    </Space>
-                  ),
-                },
-              ]}
-              scroll={{ x: "max-content", y: "max-content" }}
-            />
-          </Card>
-        </div>
-
-        <Modal
-          title={
-            <div className="flex items-center space-x-1">
-              <EditFilled className="mr-2 text-teal-600" />
-              Edit Miles
-            </div>
-          }
-          open={isModalOpen}
-          onCancel={handleCancel}
-          footer={[
-            <Button shape="round" icon={<CheckOutlined />} onClick={handleOk}>
-              Save
-            </Button>,
-            <Tooltip title="Cancle">
-              <Button
-                type="primary"
-                danger
-                icon={<CloseOutlined />}
-                onClick={handleCancel}
-                shape="circle"
-              ></Button>
-            </Tooltip>,
-          ]}
-        >
-          <Form
-            style={{ maxWidth: 450 }}
-            autoComplete="off"
-            form={form}
-            labelCol={{ span: 4 }}
-            //wrapperCol={{ span: 9 }}
+          <div className="mb-4" />
+          <Spin
+            spinning={spinning}
+            indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
           >
-            {editedDataMiles && (
-              <>
-                <Form.Item label="ID" name="id" className="mb-4" hidden>
-                  <p>{editedDataMiles?.id}</p>
-                </Form.Item>
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+              <Card bordered={true} key="unique-key" className="drop-shadow-md">
+                <div className="flex justify-end mr-2">
+                  <Button
+                    className="mr-2"
+                    danger
+                    onClick={showDeleteConfirmation}
+                  >
+                    Delete All
+                  </Button>
+                  <Button
+                    className="mr-2 buttonExport"
+                    icon={<DownloadOutlined />}
+                    onClick={handlemilesExport}
+                  >
+                    Dowlode Excel
+                  </Button>
+                  <MilesAdd />
+                </div>
 
-                <div className="mb-4"></div>
-                <Form.Item label="Car" name="c_name" className="mb-4">
-                  <Select
-                    showSearch
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      typeof option?.label === "string" &&
-                      option.label.toLowerCase().includes(input.toLowerCase())
-                    }
-                    filterSort={(optionCrn1, optionCrn2) => {
-                      const labelcrn1 =
-                        typeof optionCrn1?.label === "string"
-                          ? optionCrn1.label
-                          : "";
-                      const labelcrn2 =
-                        typeof optionCrn2?.label === "string"
-                          ? optionCrn2.label
-                          : "";
+                <div className="mb-2"></div>
+                <Table
+                  dataSource={CarMiles}
+                  columns={[
+                    {
+                      title: "ID",
+                      dataIndex: "id",
+                      key: "id",
+                      sorter: (id1: { id: number }, id2: { id: number }) =>
+                        id1.id - id2.id,
+                      defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                      responsive: ["lg"],
+                    },
+                    {
+                      title: "Car",
+                      dataIndex: "c_name",
+                      key: "c_name",
+                    },
 
-                      return labelcrn1
-                        .toLowerCase()
-                        .localeCompare(labelcrn2.toLowerCase());
-                    }}
-                    options={Carname}
-                  />
-                </Form.Item>
+                    {
+                      title: "Price",
+                      dataIndex: "c_price",
+                      key: "c_price",
+                      render: (c_price: number) => (
+                        <span>
+                          {new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: "THB",
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }).format(c_price)}
+                        </span>
+                      ),
+                    },
+                    {
+                      title: "OilType",
+                      dataIndex: "c_oiltype",
+                      key: "c_oiltype",
+                    },
 
-                <Form.Item
-                  label="Price"
-                  name="c_price"
-                  className="mb-4"
-                  initialValue={0}
-                >
-                  <InputNumber
-                    prefix="THB"
-                    className="w-full"
-                    name="c_price"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label="OilStation"
-                  name="c_oilstation"
-                  className="mb-4"
-                >
-                  <Select
-                    showSearch
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      (option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    filterSort={(optionA, optionB) =>
-                      (optionA?.label ?? "")
-                        .toLowerCase()
-                        .localeCompare((optionB?.label ?? "").toLowerCase())
-                    }
-                    options={oilstation}
-                  />
-                </Form.Item>
-
-                <Form.Item label="OilType" name="c_oiltype" className="mb-4">
-                  <Select
-                    showSearch
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      (option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    filterSort={(optionA, optionB) =>
-                      (optionA?.label ?? "")
-                        .toLowerCase()
-                        .localeCompare((optionB?.label ?? "").toLowerCase())
-                    }
-                    options={[
-                      {
-                        label: "Gasohol",
-                        options: Gasohol,
+                    {
+                      title: "Station",
+                      dataIndex: "c_oilstation",
+                      key: "c_oilstation",
+                    },
+                    {
+                      title: "OilPrice",
+                      dataIndex: "c_oilprice",
+                      key: "c_oilprice",
+                      render: (c_oilprice: number) => (
+                        <span>
+                          {new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: "THB",
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }).format(c_oilprice)}
+                        </span>
+                      ),
+                    },
+                    {
+                      title: "Litre",
+                      dataIndex: "c_liter",
+                      key: "c_liter",
+                      render: (c_liter: number) => (
+                        <Statistic
+                          value={c_liter}
+                          precision={2}
+                          valueStyle={{ color: "#000", fontSize: "14px" }}
+                          suffix="L"
+                        />
+                      ),
+                    },
+                    {
+                      title: "Miles",
+                      dataIndex: "c_miles",
+                      key: "c_miles",
+                      render: (c_miles: number) => (
+                        <Statistic
+                          value={c_miles}
+                          precision={2}
+                          valueStyle={{ color: "#000", fontSize: "14px" }}
+                          suffix="Km"
+                        />
+                      ),
+                    },
+                    {
+                      title: "StarDate",
+                      dataIndex: "c_startdate",
+                      key: "c_startdate",
+                      render: (c_stardate) => {
+                        const fomatsd = dayjs(c_stardate).format("DD/MM/YYYY");
+                        return <Tag color="#87d068">{fomatsd}</Tag>;
                       },
-                      {
-                        label: "Diesel",
-                        options: Diesel,
+                    },
+                    {
+                      title: "EndDate",
+                      dataIndex: "c_enddate",
+                      key: "c_enddate",
+                      render: (c_enddate) => {
+                        if (c_enddate) {
+                          const fomated = dayjs(c_enddate).format("DD/MM/YYYY");
+                          return <Tag color="#f50">{fomated}</Tag>;
+                        } else {
+                          return <Tag color="#f50">Wait</Tag>;
+                        }
                       },
-                    ]}
-                  />
-                </Form.Item>
+                    },
+                    {
+                      title: "Status",
+                      key: "status",
+                      render: ({ c_enddate }) => {
+                        const nowdate = dayjs().format("YYYY-MM-DD");
 
-                <Form.Item
-                  label="OilPrice"
-                  name="c_oilprice"
-                  className="mb-4"
-                  initialValue={0}
+                        return (
+                          <span>
+                            {dayjs(c_enddate).isSame(c_enddate) ? (
+                              <Badge status="error" text="ใช้หมดแล้ว" />
+                            ) : (
+                              <Badge status="success" text="กำลังใช้งาน" />
+                            )}
+                          </span>
+                        );
+                      },
+                    },
+
+                    {
+                      title: "",
+                      key: "action",
+                      render: (_, record) => (
+                        <Space size="middle">
+                          {contextHolder}
+                          <Tooltip title="Edit">
+                            <Button
+                              shape="circle"
+                              icon={<EditFilled />}
+                              size={"small"}
+                              onClick={() => showModal(record)}
+                            />
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <Button
+                              danger
+                              shape="circle"
+                              icon={<DeleteFilled />}
+                              size={"small"}
+                              onClick={() => handleDel(record)}
+                            />
+                          </Tooltip>
+                        </Space>
+                      ),
+                    },
+                  ]}
+                  scroll={{ x: "max-content", y: "max-content" }}
+                />
+              </Card>
+            </div>
+
+            <Modal
+              title={
+                <div className="flex items-center space-x-1">
+                  <EditFilled className="mr-2 text-teal-600" />
+                  Edit Miles
+                </div>
+              }
+              open={isModalOpen}
+              onCancel={handleCancel}
+              footer={[
+                <Button
+                  shape="round"
+                  icon={<CheckOutlined />}
+                  onClick={handleOk}
                 >
-                  <InputNumber
-                    prefix="THB"
-                    className="w-full"
-                    name="c_oilprice"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
+                  Save
+                </Button>,
+                <Tooltip title="Cancle">
+                  <Button
+                    type="primary"
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={handleCancel}
+                    shape="circle"
+                  ></Button>
+                </Tooltip>,
+              ]}
+            >
+              <Form
+                style={{ maxWidth: 450 }}
+                autoComplete="off"
+                form={form}
+                labelCol={{ span: 4 }}
+                //wrapperCol={{ span: 9 }}
+              >
+                {editedDataMiles && (
+                  <>
+                    <Form.Item label="ID" name="id" className="mb-4" hidden>
+                      <p>{editedDataMiles?.id}</p>
+                    </Form.Item>
 
-                <Form.Item
-                  label="OilLitre"
-                  name="c_liter"
-                  className="mb-4"
-                  initialValue={0}
-                >
-                  <InputNumber
-                    prefix="L"
-                    className="w-full"
-                    name="c_liter"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
+                    <div className="mb-4"></div>
+                    <Form.Item label="Car" name="c_name" className="mb-4">
+                      <Select
+                        showSearch
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          typeof option?.label === "string" &&
+                          option.label
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionCrn1, optionCrn2) => {
+                          const labelcrn1 =
+                            typeof optionCrn1?.label === "string"
+                              ? optionCrn1.label
+                              : "";
+                          const labelcrn2 =
+                            typeof optionCrn2?.label === "string"
+                              ? optionCrn2.label
+                              : "";
 
-                <Form.Item
-                  label="Miles"
-                  name="c_miles"
-                  className="mb-4"
-                  initialValue={0}
-                >
-                  <InputNumber
-                    prefix="Km"
-                    className="w-full"
-                    name="c_miles"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
+                          return labelcrn1
+                            .toLowerCase()
+                            .localeCompare(labelcrn2.toLowerCase());
+                        }}
+                        options={Carname}
+                      />
+                    </Form.Item>
 
-                <Form.Item label="Date" name="c_startdate" className="mb-4">
-                  <DatePicker
-                    onChange={onDate}
-                    style={{ width: "100%" }}
-                    name="c_startdate"
-                  />
-                </Form.Item>
+                    <Form.Item
+                      label="Price"
+                      name="c_price"
+                      className="mb-4"
+                      initialValue={0}
+                    >
+                      <InputNumber
+                        prefix="THB"
+                        className="w-full"
+                        name="c_price"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
 
-                <Form.Item label="DateEnd" name="c_enddate" className="mb-4">
-                  <DatePicker
-                    onChange={onDate}
-                    style={{ width: "100%" }}
-                    name="c_enddate"
-                  />
-                </Form.Item>
-              </>
-            )}
-          </Form>
-        </Modal>
-      </Spin>
-    </>
+                    <Form.Item
+                      label="OilStation"
+                      name="c_oilstation"
+                      className="mb-4"
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          (option?.label ?? "")
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          (optionA?.label ?? "")
+                            .toLowerCase()
+                            .localeCompare((optionB?.label ?? "").toLowerCase())
+                        }
+                        options={oilstation}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="OilType"
+                      name="c_oiltype"
+                      className="mb-4"
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          (option?.label ?? "")
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          (optionA?.label ?? "")
+                            .toLowerCase()
+                            .localeCompare((optionB?.label ?? "").toLowerCase())
+                        }
+                        options={[
+                          {
+                            label: "Gasohol",
+                            options: Gasohol,
+                          },
+                          {
+                            label: "Diesel",
+                            options: Diesel,
+                          },
+                        ]}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="OilPrice"
+                      name="c_oilprice"
+                      className="mb-4"
+                      initialValue={0}
+                    >
+                      <InputNumber
+                        prefix="THB"
+                        className="w-full"
+                        name="c_oilprice"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="OilLitre"
+                      name="c_liter"
+                      className="mb-4"
+                      initialValue={0}
+                    >
+                      <InputNumber
+                        prefix="L"
+                        className="w-full"
+                        name="c_liter"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Miles"
+                      name="c_miles"
+                      className="mb-4"
+                      initialValue={0}
+                    >
+                      <InputNumber
+                        prefix="Km"
+                        className="w-full"
+                        name="c_miles"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="Date" name="c_startdate" className="mb-4">
+                      <DatePicker
+                        onChange={onDate}
+                        style={{ width: "100%" }}
+                        name="c_startdate"
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="DateEnd"
+                      name="c_enddate"
+                      className="mb-4"
+                    >
+                      <DatePicker
+                        onChange={onDate}
+                        style={{ width: "100%" }}
+                        name="c_enddate"
+                      />
+                    </Form.Item>
+                  </>
+                )}
+              </Form>
+            </Modal>
+          </Spin>
+        </div>
+      )}
+    </div>
   );
 }
