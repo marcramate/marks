@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Tabs } from "antd";
+import { Tabs, Skeleton } from "antd";
 import type { TabsProps } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import CreditCard from "./CreditCardTable";
@@ -13,9 +13,11 @@ export default function CCTabs() {
   const [activeKey, setActiveKey] = useState<string>("1");
   const [creditcard, setCreditcard] = useState<string>(""); // เพิ่มตัวแปร company
   const [isTab1, setIsTab1] = useState<boolean>(true); // เพิ่มตัวแปร isTab1
+  const [loading, setLoading] = useState<boolean>(true);
 
   const tabsCredit = async () => {
     try {
+      setLoading(true);
       let { data: selection, error } = await supabase
         .from("selection")
         .select("creditcard")
@@ -44,6 +46,8 @@ export default function CCTabs() {
       setTabItems(CreditTabs);
     } catch (error) {
       console.error("Error CreditSelect:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,18 +64,22 @@ export default function CCTabs() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-      <Tabs
-        activeKey={activeKey}
-        onChange={onChange}
-        tabBarExtraContent={<AddCreditCost />}
-        //className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4"
-      >
-        {tabItems?.map((item) => (
-          <Tabs.TabPane key={item.key} tab={item.label}>
-            {item.children}
-          </Tabs.TabPane>
-        ))}
-      </Tabs>
+      {loading ? (
+        <Skeleton active /> // Render loading state while data is being fetched
+      ) : (
+        <Tabs
+          activeKey={activeKey}
+          onChange={onChange}
+          tabBarExtraContent={<AddCreditCost />}
+          //className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4"
+        >
+          {tabItems?.map((item) => (
+            <Tabs.TabPane key={item.key} tab={item.label}>
+              {item.children}
+            </Tabs.TabPane>
+          ))}
+        </Tabs>
+      )}
     </div>
   );
 }

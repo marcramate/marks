@@ -1,8 +1,12 @@
 "use client";
-import React from "react";
+import React, { ReactNode } from "react";
 import { Layout, theme } from "antd";
 
-export default function Maindash({ children }) {
+interface MaindashProps {
+  children: ReactNode;
+}
+
+export default function Maindash({ children }: MaindashProps) {
   const { Content } = Layout;
   const {
     token: { colorBgContainer, borderRadiusLG },

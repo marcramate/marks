@@ -49,15 +49,6 @@ import {
 import { Gmmodal, Cartagmodal, MilesAdd } from "./CostModal";
 import * as XLSX from "xlsx";
 
-interface DataType {
-  key: React.Key;
-  id: number;
-  text: string;
-  company: string;
-  cost: number;
-  status: boolean;
-}
-
 interface CarMiles {
   id: number;
   c_name: string;
@@ -82,7 +73,7 @@ export default function Monthlyexpenses({
   const supabase = createClient();
   const [Monye, setMoye] = useState<any>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   
 
   const fetchPM = async () => {
@@ -135,7 +126,7 @@ export default function Monthlyexpenses({
 
   const [messageApi, contextHolder] = message.useMessage();
   const [editedDataPm, setEditedDataPm] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -485,7 +476,7 @@ export function Gmcost() {
   const supabase = createClient();
   const [Gmexp, setGmxp] = useState<any>([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [form] = Form.useForm();
   const [spinning, setSpinning] = useState<boolean>(false);
   const [editedDataGm, setEditedDataGm] = useState<any>(null);
@@ -823,7 +814,7 @@ export function CarTag() {
   const supabase = createClient();
   const [CarTag, setCarTag] = useState<any>([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [form] = Form.useForm();
   const [spinning, setSpinning] = useState<boolean>(false);
   const [editedDataCarTag, setEditedDataCarTag] = useState<any>(null);
@@ -1288,7 +1279,7 @@ export function CarMiles() {
   const supabase = createClient();
   const [CarMiles, setCarMiles] = useState<any>([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [form] = Form.useForm();
   const [spinning, setSpinning] = useState<boolean>(false);
   const [editedDataMiles, setEditedDataMiles] = useState<any>(null);

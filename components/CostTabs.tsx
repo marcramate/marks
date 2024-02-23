@@ -13,7 +13,7 @@ export default function TBCost() {
   const [activeKey, setActiveKey] = useState<string>("1");
   const [company, setCompany] = useState<string>(""); // เพิ่มตัวแปร company
   const [isTab1, setIsTab1] = useState<boolean>(true); // เพิ่มตัวแปร isTab1
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function fetchData() {

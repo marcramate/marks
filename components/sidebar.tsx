@@ -39,7 +39,7 @@ const items = [
 ];
 
 const Sidebar: React.FC = () => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const loadsim = async () => {
     const delay = setTimeout(() => {

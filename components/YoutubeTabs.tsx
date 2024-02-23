@@ -9,7 +9,7 @@ import { createClient } from "@/utils/supabase/client";
 export default function TabsYoutube({ dele }: { dele: number }) {
   const supabase = createClient();
   const [tabItems, setTabItems] = useState<TabsProps["items"]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function fetchData() {

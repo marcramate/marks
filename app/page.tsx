@@ -1,4 +1,3 @@
-// Content.tsx
 "use client";
 import React, { useEffect, useState } from "react";
 import { Row, Col, Card as Carddash, Statistic, Badge, Skeleton } from "antd";
@@ -9,7 +8,7 @@ export default function Main() {
   const supabase = createClient();
   const [ExPm, setExPm] = useState<any>([]);
   const [ExS, setExS] = useState<any>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const PMGF = async () => {
     try {

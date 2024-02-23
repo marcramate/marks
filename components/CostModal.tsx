@@ -34,7 +34,7 @@ export default function MDexpesescost({
   company,
   isTab1,
 }: MonthlyexpensesProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [Comselec, setComselec] = useState<any>([]);
   const [SelcCom, setSelccom] = useState<any>([]);
   const [messageApi, contextHolder] = message.useMessage();
@@ -44,22 +44,26 @@ export default function MDexpesescost({
   const [spinning, setSpinning] = useState<boolean>(false);
 
   const fetchSelcom = async () => {
-    let { data: selection, error } = await supabase
-      .from("selection")
-      .select("company")
-      .like("company ", `%${company}%`);
+    try {
+      let { data: selection, error } = await supabase
+        .from("selection")
+        .select("company")
+        .like("company ", `%${company}%`);
 
-    if (selection) {
-      setComselec(selection);
-      const seleccom = selection.map(({ company }) => ({
-        value: company,
-        label: company,
-      }));
-      setSelccom(seleccom);
-      console.log(seleccom);
-    }
+      if (selection) {
+        setComselec(selection);
+        const seleccom = selection.map(({ company }) => ({
+          value: company,
+          label: company,
+        }));
+        setSelccom(seleccom);
+        console.log(seleccom);
+      }
 
-    if (!selection || error) {
+      if (!selection || error) {
+        console.log("SELCompany :", error);
+      }
+    } catch (error) {
       console.log("SELCompany :", error);
     }
   };
@@ -240,7 +244,7 @@ export default function MDexpesescost({
 }
 
 export function Gmmodal() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm(); // เพิ่ม form instance
 
@@ -386,7 +390,7 @@ export function Gmmodal() {
 }
 
 export function Cartagmodal() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [Scta, setScta] = useState<any>([]);
   const [Carname, setcarname] = useState<any>([]);
@@ -618,7 +622,7 @@ export function Cartagmodal() {
 }
 
 export function MilesAdd() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [Scta, setScta] = useState<any>([]);
   const [Carname, setcarname] = useState<any>([]);

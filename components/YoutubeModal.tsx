@@ -26,10 +26,10 @@ import type { DatePickerProps } from "antd";
 import { YTPM } from "../app/actions";
 
 export default function MDYoutubePremium() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [form] = Form.useForm(); // เพิ่ม form instance
   const [messageApi, contextHolder] = message.useMessage();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [spinning, setSpinning] = useState<boolean>(false);
 
   const showModal = () => {

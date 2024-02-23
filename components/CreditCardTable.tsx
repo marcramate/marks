@@ -20,7 +20,7 @@ import {
   Spin,
   Tag,
   DatePicker,
-  TableProps,
+  Skeleton,
   Progress,
   Descriptions,
 } from "antd";
@@ -109,20 +109,28 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
   const [cardAdd, setcardAdd] = useState<any>([]);
   const [Salycr, setSalycr] = useState<any>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const creditcardselect = async () => {
-    let { data: CreditCard, error } = await supabase
-      .from("CreditCard")
-      .select("*")
-      .like("card", `%${creditcard}%`);
+    try {
+      setLoading(true);
+      let { data: CreditCard, error } = await supabase
+        .from("CreditCard")
+        .select("*")
+        .like("card", `%${creditcard}%`);
 
-    if (CreditCard) {
-      console.log("DATA Credit Sel", creditcard);
-      setCredisel(CreditCard);
-    }
+      if (CreditCard) {
+        console.log("DATA Credit Sel", creditcard);
+        setCredisel(CreditCard);
+      }
 
-    if (!CreditCard || error) {
+      if (!CreditCard || error) {
+        console.log("ERRORCreditCard :", error);
+      }
+    } catch (error) {
       console.log("ERRORCreditCard :", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -501,571 +509,595 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
 
   return (
     <div>
-      <div>
-        <Descriptions>
-          <Descriptions.Item label="Credit limit">
-            {Salycr.map((item: any) => (
-              <span
-                key={item.creditcard}
-                className="font-normal text-green-600"
+      {loading ? (
+        <Skeleton active /> // Render loading state while data is being fetched
+      ) : (
+        <div>
+          <div>
+            <Descriptions>
+              <Descriptions.Item label="Credit limit">
+                {Salycr.map((item: any) => (
+                  <span
+                    key={item.creditcard}
+                    className="font-normal text-green-600"
+                  >
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(item.SalaryCredit)}
+                  </span>
+                ))}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Credit Use">
+                <span className="font-normal text-red-500">
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "THB",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(Credituse)}
+                </span>
+              </Descriptions.Item>
+            </Descriptions>
+          </div>
+          <Row gutter={16}>
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Card bordered={true} className="drop-shadow-lg" title="Cash">
+                <div>
+                  <span className="text-base font-medium ">
+                    Total{" - "}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(Number(TotalCredit))}
+                  </span>
+                  {Salycr.map((item: any) => (
+                    <Progress
+                      key={item.creditcard}
+                      percent={
+                        item.SalaryCredit
+                          ? (TotalCredit / item.SalaryCredit) * 100
+                          : 0
+                      }
+                      showInfo={false}
+                      status="active"
+                    />
+                  ))}
+                </div>
+
+                <div>
+                  <span className="text-base font-medium ">
+                    Pay{" - "}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(Number(PayCost))}
+                  </span>
+                  {Salycr.map((item: any) => (
+                    <Progress
+                      key={item.creditcard}
+                      percent={
+                        item.SalaryCredit
+                          ? (PayCost / item.SalaryCredit) * 100
+                          : 0
+                      }
+                      showInfo={false}
+                      strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
+                    />
+                  ))}
+                </div>
+
+                <div>
+                  <span className="text-base font-medium ">
+                    Wait{" - "}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(Number(WaitCost))}
+                  </span>
+                  {Salycr.map((item: any) => (
+                    <Progress
+                      key={item.creditcard}
+                      percent={
+                        item.SalaryCredit
+                          ? (WaitCost / item.SalaryCredit) * 100
+                          : 0
+                      }
+                      showInfo={false}
+                      strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
+                    />
+                  ))}
+                </div>
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Card
+                bordered={true}
+                className="drop-shadow-lg"
+                title="Installments"
               >
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "THB",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(item.SalaryCredit)}
-              </span>
-            ))}
-          </Descriptions.Item>
+                <div>
+                  <span className="text-base font-medium ">
+                    Total{" - "}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(Number(TotalinCredit))}
+                  </span>
+                  {Salycr.map((item: any) => (
+                    <Progress
+                      key={item.creditcard}
+                      percent={
+                        item.SalaryCredit
+                          ? (TotalinCredit / item.SalaryCredit) * 100
+                          : 0
+                      }
+                      showInfo={false}
+                      status="active"
+                    />
+                  ))}
+                </div>
 
-          <Descriptions.Item label="Credit Use">
-            <span className="font-normal text-red-500">
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "THB",
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }).format(Credituse)}
-            </span>
-          </Descriptions.Item>
-        </Descriptions>
-      </div>
-      <Row gutter={16}>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Card bordered={true} className="drop-shadow-lg" title="Cash">
-            <div>
-              <span className="text-base font-medium ">
-                Total{" - "}
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "THB",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(Number(TotalCredit))}
-              </span>
-              {Salycr.map((item: any) => (
-                <Progress
-                  key={item.creditcard}
-                  percent={
-                    item.SalaryCredit
-                      ? (TotalCredit / item.SalaryCredit) * 100
-                      : 0
-                  }
-                  showInfo={false}
-                  status="active"
-                />
-              ))}
-            </div>
+                <div>
+                  <span className="text-base font-medium ">
+                    Pay{" - "}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(Number(PayinCredit))}
+                  </span>
+                  {Salycr.map((item: any) => (
+                    <Progress
+                      key={item.creditcard}
+                      percent={
+                        TotalinCredit ? (PayinCredit / TotalinCredit) * 100 : 0
+                      }
+                      showInfo={false}
+                      strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
+                    />
+                  ))}
+                </div>
 
-            <div>
-              <span className="text-base font-medium ">
-                Pay{" - "}
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "THB",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(Number(PayCost))}
-              </span>
-              {Salycr.map((item: any) => (
-                <Progress
-                  key={item.creditcard}
-                  percent={
-                    item.SalaryCredit ? (PayCost / item.SalaryCredit) * 100 : 0
-                  }
-                  showInfo={false}
-                  strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
-                />
-              ))}
-            </div>
+                <div>
+                  <span className="text-base font-medium ">
+                    Wait{" - "}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(Number(WaitinCredit))}
+                  </span>
+                  {Salycr.map((item: any) => (
+                    <Progress
+                      key={item.creditcard}
+                      percent={
+                        TotalinCredit ? (WaitinCredit / TotalinCredit) * 100 : 0
+                      }
+                      showInfo={false}
+                      strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
+                    />
+                  ))}
+                </div>
+              </Card>
+            </Col>
+          </Row>
+          <div className="mb-4"></div>
 
-            <div>
-              <span className="text-base font-medium ">
-                Wait{" - "}
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "THB",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(Number(WaitCost))}
-              </span>
-              {Salycr.map((item: any) => (
-                <Progress
-                  key={item.creditcard}
-                  percent={
-                    item.SalaryCredit ? (WaitCost / item.SalaryCredit) * 100 : 0
-                  }
-                  showInfo={false}
-                  strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
-                />
-              ))}
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-          <Card bordered={true} className="drop-shadow-lg" title="Installments">
-            <div>
-              <span className="text-base font-medium ">
-                Total{" - "}
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "THB",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(Number(TotalinCredit))}
-              </span>
-              {Salycr.map((item: any) => (
-                <Progress
-                  key={item.creditcard}
-                  percent={
-                    item.SalaryCredit
-                      ? (TotalinCredit / item.SalaryCredit) * 100
-                      : 0
-                  }
-                  showInfo={false}
-                  status="active"
-                />
-              ))}
-            </div>
-
-            <div>
-              <span className="text-base font-medium ">
-                Pay{" - "}
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "THB",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(Number(PayinCredit))}
-              </span>
-              {Salycr.map((item: any) => (
-                <Progress
-                  key={item.creditcard}
-                  percent={
-                    TotalinCredit ? (PayinCredit / TotalinCredit) * 100 : 0
-                  }
-                  showInfo={false}
-                  strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
-                />
-              ))}
-            </div>
-
-            <div>
-              <span className="text-base font-medium ">
-                Wait{" - "}
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "THB",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(Number(WaitinCredit))}
-              </span>
-              {Salycr.map((item: any) => (
-                <Progress
-                  key={item.creditcard}
-                  percent={
-                    TotalinCredit ? (WaitinCredit / TotalinCredit) * 100 : 0
-                  }
-                  showInfo={false}
-                  strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
-                />
-              ))}
-            </div>
-          </Card>
-        </Col>
-      </Row>
-      <div className="mb-4"></div>
-
-      <Spin
-        spinning={spinning}
-        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Card bordered={true} className="drop-shadow-lg">
-            <div className="flex justify-end mb-2">
-              <Button
-                className="mr-2"
-                danger
-                onClick={showDeleteConfirmation}
-                icon={<DeleteFilled />}
-              >
-                Delete Select
-              </Button>
-              <Button
-                className="mr-2 buttonExport"
-                icon={<DownloadOutlined />}
-                onClick={handleCreditcardExport}
-              >
-                Dowlode Excel
-              </Button>
-            </div>
-            <div className="table-container" style={{ overflowX: "auto" }}>
-              <Table
-                rowKey={(record) => record.id}
-                dataSource={Credisel}
-                rowSelection={rowSelection}
-                columns={[
-                  {
-                    title: "ID",
-                    dataIndex: "id",
-                    key: "id",
-                    sorter: (id1: { id: number }, id2: { id: number }) =>
-                      id1.id - id2.id,
-                    defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
-                    responsive: ["lg"],
-                  },
-                  {
-                    title: "Date",
-                    dataIndex: "date",
-                    key: "date",
-                    render: (date) => {
-                      const fomatsd = dayjs(date).format("DD/MM/YYYY");
-                      return <span>{fomatsd}</span>;
-                    },
-                  },
-                  {
-                    title: "List",
-                    dataIndex: "list",
-                    key: "list",
-                  },
-                  {
-                    title: "Card",
-                    dataIndex: "card",
-                    key: "card",
-                  },
-                  {
-                    title: "Price",
-                    dataIndex: "price",
-                    key: "price",
-                    render: (price: number) => (
-                      <span>
-                        {new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: "THB",
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }).format(price)}
-                      </span>
-                    ),
-                  },
-                  {
-                    title: "Pay_Type",
-                    dataIndex: "purchase_type",
-                    key: "purchase_type",
-                  },
-                  {
-                    title: "Installment",
-                    dataIndex: "oncredit_month",
-                    key: "oncredit_month",
-                    render: (oncredit_month: number) => (
-                      <Statistic
-                        value={oncredit_month}
-                        precision={0}
-                        valueStyle={{ color: "#000", fontSize: "14px" }}
-                        suffix="month"
-                      />
-                    ),
-                  },
-                  {
-                    title: "Pay_month",
-                    dataIndex: "paycredit_month",
-                    key: "paycredit_month",
-                    render: (paycredit_month: number) => (
-                      <Statistic
-                        value={paycredit_month}
-                        precision={0}
-                        valueStyle={{ color: "#000", fontSize: "14px" }}
-                        suffix="month"
-                      />
-                    ),
-                  },
-                  {
-                    title: "Price_month",
-                    dataIndex: "price_oncredit",
-                    key: "price_oncredit",
-                    render: (price_oncredit: number) => (
-                      <span>
-                        {new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: "THB",
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }).format(price_oncredit)}
-                      </span>
-                    ),
-                  },
-                  {
-                    title: "Type",
-                    dataIndex: "type",
-                    key: "type",
-                  },
-                  {
-                    title: "Status",
-                    dataIndex: "status",
-                    key: "status",
-                    render: (status: any) => (
-                      <Badge
-                        status={status ? "success" : "error"}
-                        text={status ? "จ่ายแล้ว" : "ยังไม่จ่าย"}
-                      />
-                    ),
-                  },
-                  {
-                    title: "All Update",
-                    key: "action2",
-                    render: (_, record) => (
-                      <Space size="middle">
-                        {contextHolder}
-                        <Tooltip title="UpdateStatus">
-                          <Button
-                            className="buttonUpStatus"
-                            shape="round"
-                            icon={<CheckOutlined className="text-green-700" />}
-                            size={"small"}
-                            onClick={() => handleStatus(record)}
-                          >
-                            Status
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="UpdateMonthPay">
-                          <Button
-                            className="buttonUpStatus"
-                            shape="round"
-                            icon={<PlusOutlined className="text-green-700" />}
-                            size={"small"}
-                            onClick={() => handleUpPayMonth(record)}
-                          >
-                            MonthPay
-                          </Button>
-                        </Tooltip>
-                      </Space>
-                    ),
-                  },
-                  {
-                    title: "",
-                    key: "action",
-                    render: (_, record) => (
-                      <Space size="middle">
-                        {contextHolder}
-                        <Tooltip title="Edit">
-                          <Button
-                            shape="circle"
-                            icon={<EditFilled />}
-                            size={"small"}
-                            onClick={() => showModal(record)}
-                          />
-                        </Tooltip>
-                        <Tooltip title="Delete">
-                          <Button
-                            danger
-                            shape="circle"
-                            icon={<DeleteFilled />}
-                            size={"small"}
-                            onClick={() => handleDel(record)}
-                            hidden
-                          />
-                        </Tooltip>
-                      </Space>
-                    ),
-                  },
-                ]}
-                scroll={{ x: "max-content", y: "max-content" }}
-              />
-            </div>
-          </Card>
-        </div>
-        <Modal
-          open={isModalOpen}
-          title={
-            <div className="flex items-center space-x-1">
-              <PlusCircleFilled className="mr-2 text-teal-600" />
-              Edit Credit Cost
-            </div>
-          }
-          onCancel={handleCancel}
-          footer={(_, { OkBtn, CancelBtn }) => (
-            <>
-              {contextHolder}
-              <Button
-                shape="round"
-                icon={<CheckOutlined />}
-                onClick={handleUpdate}
-                className="ml-2"
-              >
-                Save
-              </Button>
-              <Tooltip title="Cancle">
-                <Button
-                  type="primary"
-                  danger
-                  icon={<CloseOutlined />}
-                  onClick={handleCancel}
-                  shape="circle"
-                  className="ml-2"
-                ></Button>
-              </Tooltip>
-            </>
-          )}
-          style={{ maxWidth: "90vw", width: "100%" }}
-        >
-          <Form
-            form={form}
-            style={{ maxWidth: "100%" }}
-            initialValues={{ status: false }}
-            autoComplete="off"
-            labelCol={{ span: 4 }}
+          <Spin
+            spinning={spinning}
+            indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
           >
-            {editedDataCredit && (
-              <>
-                <Form.Item label="ID" name="id" className="mb-4" hidden>
-                  <p>{editedDataCredit?.id}</p>
-                </Form.Item>
-                <Form.Item label="List" name="list" className="mb-4">
-                  <Input name="list" className="w-full" />
-                </Form.Item>
-
-                <Form.Item
-                  label="Price"
-                  name="price"
-                  className="mb-4"
-                  initialValue={0}
-                >
-                  <InputNumber
-                    prefix="THB"
-                    className="w-full"
-                    name="price"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+              <Card bordered={true} className="drop-shadow-lg">
+                <div className="flex justify-end mb-2">
+                  <Button
+                    className="mr-2"
+                    danger
+                    onClick={showDeleteConfirmation}
+                    icon={<DeleteFilled />}
+                  >
+                    Delete Select
+                  </Button>
+                  <Button
+                    className="mr-2 buttonExport"
+                    icon={<DownloadOutlined />}
+                    onClick={handleCreditcardExport}
+                  >
+                    Dowlode Excel
+                  </Button>
+                </div>
+                <div className="table-container" style={{ overflowX: "auto" }}>
+                  <Table
+                    rowKey={(record) => record.id}
+                    dataSource={Credisel}
+                    rowSelection={rowSelection}
+                    columns={[
+                      {
+                        title: "ID",
+                        dataIndex: "id",
+                        key: "id",
+                        sorter: (id1: { id: number }, id2: { id: number }) =>
+                          id1.id - id2.id,
+                        defaultSortOrder: "ascend", // เรียงลำดับจากน้อยไปมาก
+                        responsive: ["lg"],
+                      },
+                      {
+                        title: "Date",
+                        dataIndex: "date",
+                        key: "date",
+                        render: (date) => {
+                          const fomatsd = dayjs(date).format("DD/MM/YYYY");
+                          return <span>{fomatsd}</span>;
+                        },
+                      },
+                      {
+                        title: "List",
+                        dataIndex: "list",
+                        key: "list",
+                      },
+                      {
+                        title: "Card",
+                        dataIndex: "card",
+                        key: "card",
+                      },
+                      {
+                        title: "Price",
+                        dataIndex: "price",
+                        key: "price",
+                        render: (price: number) => (
+                          <span>
+                            {new Intl.NumberFormat("en-US", {
+                              style: "currency",
+                              currency: "THB",
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }).format(price)}
+                          </span>
+                        ),
+                      },
+                      {
+                        title: "Pay_Type",
+                        dataIndex: "purchase_type",
+                        key: "purchase_type",
+                      },
+                      {
+                        title: "Installment",
+                        dataIndex: "oncredit_month",
+                        key: "oncredit_month",
+                        render: (oncredit_month: number) => (
+                          <Statistic
+                            value={oncredit_month}
+                            precision={0}
+                            valueStyle={{ color: "#000", fontSize: "14px" }}
+                            suffix="month"
+                          />
+                        ),
+                      },
+                      {
+                        title: "Pay_month",
+                        dataIndex: "paycredit_month",
+                        key: "paycredit_month",
+                        render: (paycredit_month: number) => (
+                          <Statistic
+                            value={paycredit_month}
+                            precision={0}
+                            valueStyle={{ color: "#000", fontSize: "14px" }}
+                            suffix="month"
+                          />
+                        ),
+                      },
+                      {
+                        title: "Price_month",
+                        dataIndex: "price_oncredit",
+                        key: "price_oncredit",
+                        render: (price_oncredit: number) => (
+                          <span>
+                            {new Intl.NumberFormat("en-US", {
+                              style: "currency",
+                              currency: "THB",
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }).format(price_oncredit)}
+                          </span>
+                        ),
+                      },
+                      {
+                        title: "Type",
+                        dataIndex: "type",
+                        key: "type",
+                      },
+                      {
+                        title: "Status",
+                        dataIndex: "status",
+                        key: "status",
+                        render: (status: any) => (
+                          <Badge
+                            status={status ? "success" : "error"}
+                            text={status ? "จ่ายแล้ว" : "ยังไม่จ่าย"}
+                          />
+                        ),
+                      },
+                      {
+                        title: "All Update",
+                        key: "action2",
+                        render: (_, record) => (
+                          <Space size="middle">
+                            {contextHolder}
+                            <Tooltip title="UpdateStatus">
+                              <Button
+                                className="buttonUpStatus"
+                                shape="round"
+                                icon={
+                                  <CheckOutlined className="text-green-700" />
+                                }
+                                size={"small"}
+                                onClick={() => handleStatus(record)}
+                              >
+                                Status
+                              </Button>
+                            </Tooltip>
+                            <Tooltip title="UpdateMonthPay">
+                              <Button
+                                className="buttonUpStatus"
+                                shape="round"
+                                icon={
+                                  <PlusOutlined className="text-green-700" />
+                                }
+                                size={"small"}
+                                onClick={() => handleUpPayMonth(record)}
+                              >
+                                MonthPay
+                              </Button>
+                            </Tooltip>
+                          </Space>
+                        ),
+                      },
+                      {
+                        title: "",
+                        key: "action",
+                        render: (_, record) => (
+                          <Space size="middle">
+                            {contextHolder}
+                            <Tooltip title="Edit">
+                              <Button
+                                shape="circle"
+                                icon={<EditFilled />}
+                                size={"small"}
+                                onClick={() => showModal(record)}
+                              />
+                            </Tooltip>
+                            <Tooltip title="Delete">
+                              <Button
+                                danger
+                                shape="circle"
+                                icon={<DeleteFilled />}
+                                size={"small"}
+                                onClick={() => handleDel(record)}
+                                hidden
+                              />
+                            </Tooltip>
+                          </Space>
+                        ),
+                      },
+                    ]}
+                    scroll={{ x: "max-content", y: "max-content" }}
                   />
-                </Form.Item>
+                </div>
+              </Card>
+            </div>
+            <Modal
+              open={isModalOpen}
+              title={
+                <div className="flex items-center space-x-1">
+                  <PlusCircleFilled className="mr-2 text-teal-600" />
+                  Edit Credit Cost
+                </div>
+              }
+              onCancel={handleCancel}
+              footer={(_, { OkBtn, CancelBtn }) => (
+                <>
+                  {contextHolder}
+                  <Button
+                    shape="round"
+                    icon={<CheckOutlined />}
+                    onClick={handleUpdate}
+                    className="ml-2"
+                  >
+                    Save
+                  </Button>
+                  <Tooltip title="Cancle">
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<CloseOutlined />}
+                      onClick={handleCancel}
+                      shape="circle"
+                      className="ml-2"
+                    ></Button>
+                  </Tooltip>
+                </>
+              )}
+              style={{ maxWidth: "90vw", width: "100%" }}
+            >
+              <Form
+                form={form}
+                style={{ maxWidth: "100%" }}
+                initialValues={{ status: false }}
+                autoComplete="off"
+                labelCol={{ span: 4 }}
+              >
+                {editedDataCredit && (
+                  <>
+                    <Form.Item label="ID" name="id" className="mb-4" hidden>
+                      <p>{editedDataCredit?.id}</p>
+                    </Form.Item>
+                    <Form.Item label="List" name="list" className="mb-4">
+                      <Input name="list" className="w-full" />
+                    </Form.Item>
 
-                <Form.Item label="Card" name="card" className="mb-4">
-                  <Select
-                    showSearch
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      typeof option?.label === "string" &&
-                      option.label.toLowerCase().includes(input.toLowerCase())
-                    }
-                    filterSort={(optionCrn1, optionCrn2) => {
-                      const labelcrn1 =
-                        typeof optionCrn1?.label === "string"
-                          ? optionCrn1.label
-                          : "";
-                      const labelcrn2 =
-                        typeof optionCrn2?.label === "string"
-                          ? optionCrn2.label
-                          : "";
+                    <Form.Item
+                      label="Price"
+                      name="price"
+                      className="mb-4"
+                      initialValue={0}
+                    >
+                      <InputNumber
+                        prefix="THB"
+                        className="w-full"
+                        name="price"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
 
-                      return labelcrn1
-                        .toLowerCase()
-                        .localeCompare(labelcrn2.toLowerCase());
-                    }}
-                    options={cardAdd}
-                  />
-                </Form.Item>
+                    <Form.Item label="Card" name="card" className="mb-4">
+                      <Select
+                        showSearch
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          typeof option?.label === "string" &&
+                          option.label
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionCrn1, optionCrn2) => {
+                          const labelcrn1 =
+                            typeof optionCrn1?.label === "string"
+                              ? optionCrn1.label
+                              : "";
+                          const labelcrn2 =
+                            typeof optionCrn2?.label === "string"
+                              ? optionCrn2.label
+                              : "";
 
-                <Form.Item label="Date" name="date" className="mb-4">
-                  <DatePicker
-                    //onChange={onChange}
-                    style={{ width: "100%" }}
-                    name="date"
-                  />
-                </Form.Item>
+                          return labelcrn1
+                            .toLowerCase()
+                            .localeCompare(labelcrn2.toLowerCase());
+                        }}
+                        options={cardAdd}
+                      />
+                    </Form.Item>
 
-                <Form.Item
-                  label="TPurchase"
-                  name="purchase_type"
-                  className="mb-4"
-                >
-                  <Select
-                    showSearch
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      (option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    filterSort={(optionA, optionB) =>
-                      (optionA?.label ?? "")
-                        .toLowerCase()
-                        .localeCompare((optionB?.label ?? "").toLowerCase())
-                    }
-                    options={purc_type}
-                  />
-                </Form.Item>
+                    <Form.Item label="Date" name="date" className="mb-4">
+                      <DatePicker
+                        //onChange={onChange}
+                        style={{ width: "100%" }}
+                        name="date"
+                      />
+                    </Form.Item>
 
-                <Form.Item label="OCDM" name="oncredit_month" className="mb-4">
-                  <InputNumber
-                    name="oncredit_month"
-                    className="w-full"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
+                    <Form.Item
+                      label="TPurchase"
+                      name="purchase_type"
+                      className="mb-4"
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          (option?.label ?? "")
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          (optionA?.label ?? "")
+                            .toLowerCase()
+                            .localeCompare((optionB?.label ?? "").toLowerCase())
+                        }
+                        options={purc_type}
+                      />
+                    </Form.Item>
 
-                <Form.Item
-                  label="PreCm"
-                  name="paycredit_month"
-                  className="mb-4"
-                >
-                  <InputNumber
-                    name="paycredit_month"
-                    className="w-full"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
+                    <Form.Item
+                      label="OCDM"
+                      name="oncredit_month"
+                      className="mb-4"
+                    >
+                      <InputNumber
+                        name="oncredit_month"
+                        className="w-full"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
 
-                <Form.Item
-                  label="Price credit"
-                  name="price_oncredit"
-                  className="mb-4"
-                  initialValue={0}
-                >
-                  <InputNumber
-                    prefix="THB"
-                    className="w-full"
-                    name="price_oncredit"
-                    formatter={(value) => (value ? `${value}` : "0")}
-                    parser={(value) => (value ? parseFloat(value) : 0)}
-                  />
-                </Form.Item>
+                    <Form.Item
+                      label="PreCm"
+                      name="paycredit_month"
+                      className="mb-4"
+                    >
+                      <InputNumber
+                        name="paycredit_month"
+                        className="w-full"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
 
-                <Form.Item label="Type" name="type" className="mb-4">
-                  <Select
-                    showSearch
-                    placeholder="Search to Select"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      (option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    filterSort={(optionA, optionB) =>
-                      (optionA?.label ?? "")
-                        .toLowerCase()
-                        .localeCompare((optionB?.label ?? "").toLowerCase())
-                    }
-                    options={type}
-                  />
-                </Form.Item>
+                    <Form.Item
+                      label="Price credit"
+                      name="price_oncredit"
+                      className="mb-4"
+                      initialValue={0}
+                    >
+                      <InputNumber
+                        prefix="THB"
+                        className="w-full"
+                        name="price_oncredit"
+                        formatter={(value) => (value ? `${value}` : "0")}
+                        parser={(value) => (value ? parseFloat(value) : 0)}
+                      />
+                    </Form.Item>
 
-                <Form.Item label="Status" name="status">
-                  <Switch
-                    checkedChildren={<CheckOutlined />}
-                    unCheckedChildren={<CloseOutlined />}
-                    className="bg-red-500"
-                  />
-                </Form.Item>
-              </>
-            )}
-          </Form>
-        </Modal>
-      </Spin>
+                    <Form.Item label="Type" name="type" className="mb-4">
+                      <Select
+                        showSearch
+                        placeholder="Search to Select"
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          (option?.label ?? "")
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          (optionA?.label ?? "")
+                            .toLowerCase()
+                            .localeCompare((optionB?.label ?? "").toLowerCase())
+                        }
+                        options={type}
+                      />
+                    </Form.Item>
+
+                    <Form.Item label="Status" name="status">
+                      <Switch
+                        checkedChildren={<CheckOutlined />}
+                        unCheckedChildren={<CloseOutlined />}
+                        className="bg-red-500"
+                      />
+                    </Form.Item>
+                  </>
+                )}
+              </Form>
+            </Modal>
+          </Spin>
+        </div>
+      )}
     </div>
   );
 }
