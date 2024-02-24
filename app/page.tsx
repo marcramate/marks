@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card as Carddash, Statistic, Badge, Skeleton } from "antd";
-import { Card } from "@tremor/react";
+import { Row, Col, Card, Statistic, Badge, Skeleton } from "antd";
+
 import { createClient } from "@/utils/supabase/client";
 
 export default function Main() {
@@ -9,6 +9,7 @@ export default function Main() {
   const [ExPm, setExPm] = useState<any>([]);
   const [ExS, setExS] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [CarMiles, setCarMiles] = useState<any>([]);
 
   const PMGF = async () => {
     try {
@@ -39,13 +40,37 @@ export default function Main() {
     }
   };
 
+  const Carmilesfe = async () => {
+    try {
+      setLoading(true);
+      let { data: car, error } = await supabase
+        .from("car")
+        .select("*")
+        .not("c_miles", "is", null);
+
+      if (car) {
+        setCarMiles(car);
+      }
+      if (!car || error) {
+        console.log("CarTag:", error);
+      }
+      console.log("Ok Date Carmilesfe", car);
+    } catch (error) {
+      console.error("Error Carmilesfe:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     PMGF();
+    Carmilesfe();
   }, []);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       PMGF();
+      Carmilesfe();
       console.log("useEffect with setInterval executed");
     }, 36000); // 60000 มิลลิวินาทีหรือ 1 นาที
 
@@ -88,126 +113,186 @@ export default function Main() {
     return collectsu + Expexsu.cost;
   }, 0);
 
+  const totalV = CarMiles.filter(
+    (car_v: { c_name: string }) => car_v.c_name === "Vios"
+  ).reduce((accumulator: any, car_v: { c_price: any }) => {
+    return accumulator + car_v.c_price;
+  }, 0);
+
+  const totalVM = CarMiles.filter(
+    (car_v: { c_name: string }) => car_v.c_name === "Vios"
+  ).reduce((accumulator: any, car_v: { c_miles: any }) => {
+    return accumulator + car_v.c_miles;
+  }, 0);
+
+  const totalJ = CarMiles.filter(
+    (car_v: { c_name: string }) => car_v.c_name === "Jupiter"
+  ).reduce((accumulator: any, car_v: { c_price: any }) => {
+    return accumulator + car_v.c_price;
+  }, 0);
+
+  const totalJM = CarMiles.filter(
+    (car_v: { c_name: string }) => car_v.c_name === "Jupiter"
+  ).reduce((accumulator: any, car_v: { c_miles: any }) => {
+    return accumulator + car_v.c_miles;
+  }, 0);
+
   return (
-    <div className="flex flex-wrap">
-      {loading ? (
-        <Skeleton active /> // Render loading state while data is being fetched
-      ) : (
-        <Row gutter={16}>
-          {/* Left Section */}
-          <Col xs={24} sm={24} md={12} lg={12} xl={12} className="mb-2">
-            <Card decoration="top" decorationColor="indigo">
-              <Col span={24}>
-                <div className="mb-2">
-                  <Badge.Ribbon text="Premier Gold" color="magenta">
-                    <Carddash bordered={true}>
-                      <div className="grid grid-flow-col justify-stretch">
-                        <Statistic
-                          title="All Expenses"
-                          value={AllPm}
-                          precision={2}
-                          suffix="THB"
-                        />
-                      </div>
-                    </Carddash>
-                  </Badge.Ribbon>
-                </div>
-              </Col>
-
-              <Col span={24}>
-                <div className="mb-2">
-                  <Badge.Ribbon text="Premier Gold" color="magenta">
-                    <Carddash bordered={true}>
-                      <div className="grid grid-flow-col justify-stretch">
-                        <Statistic
-                          title="Paid"
-                          value={PaidPm}
-                          precision={2}
-                          valueStyle={{ color: "#3f8600" }}
-                          suffix="THB"
-                        />
-                      </div>
-                    </Carddash>
-                  </Badge.Ribbon>
-                </div>
-              </Col>
-
-              <Col span={24}>
-                <Badge.Ribbon text="Premier Gold" color="magenta">
-                  <Carddash bordered={true}>
-                    <div className="grid grid-flow-col justify-stretch">
-                      <Statistic
-                        title="Remain"
-                        value={UnPaidPm}
-                        precision={2}
-                        valueStyle={{ color: "#cf1322" }}
-                        suffix="THB"
-                      />
-                    </div>
-                  </Carddash>
-                </Badge.Ribbon>
-              </Col>
-            </Card>
-          </Col>
-
-          {/* Right Section */}
-          <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-            <Card decoration="top" decorationColor="indigo">
-              <Col span={24}>
-                <div className="mb-2">
-                  <Badge.Ribbon text="S11" color="green">
-                    <Carddash bordered={true}>
-                      <div className="grid grid-flow-col justify-stretch">
-                        <Statistic
-                          title="All Expenses"
-                          value={AllS}
-                          precision={2}
-                          valueStyle={{ color: "#cf1322" }}
-                          suffix="THB"
-                        />
-                      </div>
-                    </Carddash>
-                  </Badge.Ribbon>
-                </div>
-              </Col>
-
-              <Col span={24}>
-                <div className="mb-2">
-                  <Badge.Ribbon text="S11" color="green">
-                    <Carddash bordered={true}>
-                      <div className="grid grid-flow-col justify-stretch">
-                        <Statistic
-                          title="All Expenses"
-                          value={PaidS}
-                          precision={2}
-                          valueStyle={{ color: "#cf1322" }}
-                          suffix="THB"
-                        />
-                      </div>
-                    </Carddash>
-                  </Badge.Ribbon>
-                </div>
-              </Col>
-
-              <Col span={24}>
-                <Badge.Ribbon text="S11" color="green">
-                  <Carddash bordered={true}>
-                    <div className="grid grid-flow-col justify-stretch">
-                      <Statistic
-                        title="All Expenses"
-                        value={UnPaidS}
-                        precision={2}
-                        valueStyle={{ color: "#cf1322" }}
-                        suffix="THB"
-                      />
-                    </div>
-                  </Carddash>
-                </Badge.Ribbon>
-              </Col>
-            </Card>
-          </Col>
-        </Row>
-      )}
+    <div>
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+        <Card bordered={true} className="drop-shadow-lg">
+          <Badge
+            color="#f50"
+            text="ค่าใช้จ่าย"
+            className="mb-2 font-semibold"
+          />
+          <Row gutter={16}>
+            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+              <Badge.Ribbon text="Premier Gold" color="#0866c6">
+                <Card bordered={true}>
+                  <Statistic
+                    title="All"
+                    value={AllPm}
+                    precision={2}
+                    suffix="THB"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+              <Badge.Ribbon text="Premier Gold" color="#0866c6">
+                <Card bordered={true}>
+                  <Statistic
+                    title="Paid"
+                    value={PaidPm}
+                    precision={2}
+                    valueStyle={{ color: "#3f8600" }}
+                    suffix="THB"
+                    className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+              <Badge.Ribbon text="Premier Gold" color="#0866c6">
+                <Card bordered={true}>
+                  <Statistic
+                    title="Remain"
+                    value={UnPaidPm}
+                    precision={2}
+                    valueStyle={{ color: "#cf1322" }}
+                    suffix="THB"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+            {/* S11 */}
+            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+              <Badge.Ribbon text="S11" color="#086935">
+                <Card bordered={true}>
+                  <Statistic
+                    title="All"
+                    value={AllS}
+                    precision={2}
+                    suffix="THB"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+              <Badge.Ribbon text="S11" color="#086935">
+                <Card bordered={true}>
+                  <Statistic
+                    title="Paid"
+                    value={PaidS}
+                    precision={2}
+                    valueStyle={{ color: "#3f8600" }}
+                    suffix="THB"
+                    className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+              <Badge.Ribbon text="S11" color="#086935">
+                <Card bordered={true}>
+                  <Statistic
+                    title="Remain"
+                    value={UnPaidS}
+                    precision={2}
+                    valueStyle={{ color: "#cf1322" }}
+                    suffix="THB"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+          </Row>
+        </Card>
+      </div>
+      {/* Car Vios*/}
+      <div className="mb-2"></div>
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+        <Card bordered={true} className="drop-shadow-lg">
+          <Badge color="#f50" text="Car" className="mb-2 font-semibold" />
+          <Row gutter={16}>
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Badge.Ribbon text="Vios" color="#0866c6">
+                <Card bordered={true}>
+                  <Statistic
+                    title="Cost"
+                    value={totalV}
+                    valueStyle={{ color: "#3f8600" }}
+                    precision={2}
+                    suffix="THB"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Badge.Ribbon text="Vios" color="#0866c6">
+                <Card bordered={true}>
+                  <Statistic
+                    title="Miles"
+                    value={totalVM}
+                    precision={2}
+                    valueStyle={{ color: "#3f8600" }}
+                    suffix="THB"
+                    className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+            {/*Car Jupiter*/}
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Badge.Ribbon text="Jupiter" color="#0866c6">
+                <Card bordered={true}>
+                  <Statistic
+                    title="Cost"
+                    value={totalJ}
+                    valueStyle={{ color: "#3f8600" }}
+                    precision={2}
+                    suffix="THB"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+              <Badge.Ribbon text="Jupiter" color="#0866c6">
+                <Card bordered={true}>
+                  <Statistic
+                    title="Miles"
+                    value={totalJM}
+                    precision={2}
+                    valueStyle={{ color: "#3f8600" }}
+                    suffix="THB"
+                    className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
+                  />
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+          </Row>
+        </Card>
+      </div>
     </div>
   );
 }

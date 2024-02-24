@@ -7,7 +7,7 @@ interface MaindashProps {
 }
 
 export default function Maindash({ children }: MaindashProps) {
-  const { Content } = Layout;
+  const { Content, Footer } = Layout;
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -18,10 +18,10 @@ export default function Maindash({ children }: MaindashProps) {
         <div
           style={{
             padding: 24,
-            minHeight: 887,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
           }}
+          className="min-h-screen sm:min-h-[1000px] md:min-h-[1100px] lg:min-h-[1100px] xl:min-h-[1100px]"
         >
           {children}
         </div>
