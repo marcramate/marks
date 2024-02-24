@@ -473,22 +473,25 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
           <ul>
             <li className="mb-2">
               <h1 className="font-medium">
-                <Space>
-                  <Badge status="success" text="Today :" />
-                  {dayjs().format("YYYY-MM-DD")}
-                </Space>
+                <Space>Date: {dayjs().format("YYYY-MM-DD")}</Space>
               </h1>
             </li>
             {selectedRowKeys.map((key, index) => {
               const DataCredit = Credisel.find((item: any) => item.id === key);
 
               return (
-                <li className="text-red-500" key={index}>
-                  <Tag color="error" className="mb-1">
-                    ID: {key}, Card: {DataCredit?.card}, Price:
-                    {DataCredit?.price}, Type:{DataCredit?.purchase_type}
-                  </Tag>
-                </li>
+                <div className="font-medium" key={index}>
+                  <Space>
+                    <Badge status="warning" text="ID :" />
+                    {key}
+                  </Space>
+                  <li className="text-red-500" key={index}>
+                    <Tag color="error" className="mb-1">
+                      Card: {DataCredit?.card}, Price:
+                      {DataCredit?.price}, Type:{DataCredit?.purchase_type}
+                    </Tag>
+                  </li>
+                </div>
               );
             })}
           </ul>
@@ -703,7 +706,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
           >
             <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
               <Card bordered={true} className="drop-shadow-lg">
-                <div className="flex justify-end mb-2">
+                <div className="mb-2 grid grid-cols-1 sm:grid sm:grid-cols-1 md:flex md:justify-end lg:justify-end xl:justify-end gap-4">
                   <Button
                     className="mr-2"
                     danger
@@ -720,6 +723,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                     Dowlode Excel
                   </Button>
                 </div>
+
                 <div className="table-container" style={{ overflowX: "auto" }}>
                   <Table
                     rowKey={(record) => record.id}
@@ -1109,6 +1113,7 @@ export function AddCreditCost() {
   const [cardAdd, setcardAdd] = useState<any>([]);
   const [showFields, setShowFields] = useState(false);
   const [spinning, setSpinning] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const supabase = createClient();
 
@@ -1161,15 +1166,17 @@ export function AddCreditCost() {
 
   const handleOk = async () => {
     try {
+      setLoading(true);
       const DataADC = form.getFieldsValue();
       const DataADCJSON = JSON.stringify(DataADC);
 
       console.log(DataADCJSON);
       setSpinning(true);
+
       await CreditCostAdd(DataADCJSON);
 
       handleCancel();
-
+      setLoading(false);
       messageApi.success("Success Insert Credit Cost!!");
 
       setTimeout(() => {
@@ -1204,7 +1211,6 @@ export function AddCreditCost() {
             Add Credit Cost
           </div>
         }
-        //onOk={handleOk}
         onCancel={handleCancel}
         footer={(_, { OkBtn, CancelBtn }) => (
           <>
@@ -1231,176 +1237,184 @@ export function AddCreditCost() {
         )}
         style={{ maxWidth: "90vw", width: "100%" }}
       >
-        <Form
-          form={form}
-          style={{ maxWidth: "100%" }}
-          initialValues={{ status: false }}
-          autoComplete="off"
-          labelCol={{ span: 4 }}
-        >
-          <Form.Item
-            label="List"
-            name="list"
-            rules={[{ required: true, message: "Please input your List!" }]}
-            className="mb-4"
+        {loading ? (
+          <Skeleton active /> // Render loading state while data is being fetched
+        ) : (
+          <Form
+            form={form}
+            style={{ maxWidth: "100%" }}
+            initialValues={{ status: false }}
+            autoComplete="off"
+            labelCol={{ span: 4 }}
           >
-            <Input name="list" className="w-full" />
-          </Form.Item>
+            <Form.Item
+              label="List"
+              name="list"
+              rules={[{ required: true, message: "Please input your List!" }]}
+              className="mb-4"
+            >
+              <Input name="list" className="w-full" />
+            </Form.Item>
 
-          <Form.Item
-            label="Price"
-            name="price"
-            className="mb-4"
-            initialValue={0}
-          >
-            <InputNumber
-              prefix="THB"
-              className="w-full"
+            <Form.Item
+              label="Price"
               name="price"
-              formatter={(value) => (value ? `${value}` : "0")}
-              parser={(value) => (value ? parseFloat(value) : 0)}
-            />
-          </Form.Item>
+              className="mb-4"
+              initialValue={0}
+            >
+              <InputNumber
+                prefix="THB"
+                className="w-full"
+                name="price"
+                formatter={(value) => (value ? `${value}` : "0")}
+                parser={(value) => (value ? parseFloat(value) : 0)}
+              />
+            </Form.Item>
 
-          <Form.Item
-            label="Card"
-            name="card"
-            rules={[{ required: true, message: "Please input your Card!" }]}
-            className="mb-4"
-          >
-            <Select
-              showSearch
-              placeholder="Search to Select"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                typeof option?.label === "string" &&
-                option.label.toLowerCase().includes(input.toLowerCase())
-              }
-              filterSort={(optionCrn1, optionCrn2) => {
-                const labelcrn1 =
-                  typeof optionCrn1?.label === "string" ? optionCrn1.label : "";
-                const labelcrn2 =
-                  typeof optionCrn2?.label === "string" ? optionCrn2.label : "";
+            <Form.Item
+              label="Card"
+              name="card"
+              rules={[{ required: true, message: "Please input your Card!" }]}
+              className="mb-4"
+            >
+              <Select
+                showSearch
+                placeholder="Search to Select"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  typeof option?.label === "string" &&
+                  option.label.toLowerCase().includes(input.toLowerCase())
+                }
+                filterSort={(optionCrn1, optionCrn2) => {
+                  const labelcrn1 =
+                    typeof optionCrn1?.label === "string"
+                      ? optionCrn1.label
+                      : "";
+                  const labelcrn2 =
+                    typeof optionCrn2?.label === "string"
+                      ? optionCrn2.label
+                      : "";
 
-                return labelcrn1
-                  .toLowerCase()
-                  .localeCompare(labelcrn2.toLowerCase());
-              }}
-              options={cardAdd}
-            />
-          </Form.Item>
+                  return labelcrn1
+                    .toLowerCase()
+                    .localeCompare(labelcrn2.toLowerCase());
+                }}
+                options={cardAdd}
+              />
+            </Form.Item>
 
-          <Form.Item
-            label="Date"
-            name="date"
-            rules={[{ required: true, message: "Please input Date!" }]}
-            className="mb-4"
-          >
-            <DatePicker
-              //onChange={onChange}
-              style={{ width: "100%" }}
+            <Form.Item
+              label="Date"
               name="date"
-            />
-          </Form.Item>
+              rules={[{ required: true, message: "Please input Date!" }]}
+              className="mb-4"
+            >
+              <DatePicker
+                //onChange={onChange}
+                style={{ width: "100%" }}
+                name="date"
+              />
+            </Form.Item>
 
-          <Form.Item
-            label="TPurchase"
-            name="purchase_type"
-            className="mb-4"
-            rules={[
-              { required: true, message: "Please input your purchase_Type!" },
-            ]}
-          >
-            <Select
-              showSearch
-              placeholder="Search to Select"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.label ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
-              options={purc_type}
-              onChange={handlePurchaseType}
-            />
-          </Form.Item>
+            <Form.Item
+              label="TPurchase"
+              name="purchase_type"
+              className="mb-4"
+              rules={[
+                { required: true, message: "Please input your purchase_Type!" },
+              ]}
+            >
+              <Select
+                showSearch
+                placeholder="Search to Select"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                filterSort={(optionA, optionB) =>
+                  (optionA?.label ?? "")
+                    .toLowerCase()
+                    .localeCompare((optionB?.label ?? "").toLowerCase())
+                }
+                options={purc_type}
+                onChange={handlePurchaseType}
+              />
+            </Form.Item>
 
-          <Form.Item
-            label="OCDM"
-            name="oncredit_month"
-            className="mb-4"
-            style={{ display: showFields ? "block" : "none" }}
-          >
-            <Input name="oncredit_month" className="w-full" />
-          </Form.Item>
+            <Form.Item
+              label="OCDM"
+              name="oncredit_month"
+              className="mb-4"
+              style={{ display: showFields ? "block" : "none" }}
+            >
+              <Input name="oncredit_month" className="w-full" />
+            </Form.Item>
 
-          <Form.Item
-            label="PerCm"
-            name="paycredit_month"
-            className="mb-4"
-            style={{ display: showFields ? "block" : "none" }}
-          >
-            <InputNumber
+            <Form.Item
+              label="PerCm"
               name="paycredit_month"
-              className="w-full"
-              formatter={(value) => (value ? `${value}` : "0")}
-              parser={(value) => (value ? parseFloat(value) : 0)}
-            />
-          </Form.Item>
+              className="mb-4"
+              style={{ display: showFields ? "block" : "none" }}
+            >
+              <InputNumber
+                name="paycredit_month"
+                className="w-full"
+                formatter={(value) => (value ? `${value}` : "0")}
+                parser={(value) => (value ? parseFloat(value) : 0)}
+              />
+            </Form.Item>
 
-          <Form.Item
-            label="Price credit"
-            name="price_oncredit"
-            className="mb-4"
-            initialValue={0}
-            style={{ display: showFields ? "block" : "none" }}
-          >
-            <InputNumber
-              prefix="THB"
-              className="w-full"
+            <Form.Item
+              label="Price credit"
               name="price_oncredit"
-              formatter={(value) => (value ? `${value}` : "0")}
-              parser={(value) => (value ? parseFloat(value) : 0)}
-            />
-          </Form.Item>
+              className="mb-4"
+              initialValue={0}
+              style={{ display: showFields ? "block" : "none" }}
+            >
+              <InputNumber
+                prefix="THB"
+                className="w-full"
+                name="price_oncredit"
+                formatter={(value) => (value ? `${value}` : "0")}
+                parser={(value) => (value ? parseFloat(value) : 0)}
+              />
+            </Form.Item>
 
-          <Form.Item
-            label="Type"
-            name="type"
-            className="mb-4"
-            rules={[{ required: true, message: "Please input your Type!" }]}
-          >
-            <Select
-              showSearch
-              placeholder="Search to Select"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.label ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
-              options={type}
-            />
-          </Form.Item>
+            <Form.Item
+              label="Type"
+              name="type"
+              className="mb-4"
+              rules={[{ required: true, message: "Please input your Type!" }]}
+            >
+              <Select
+                showSearch
+                placeholder="Search to Select"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                filterSort={(optionA, optionB) =>
+                  (optionA?.label ?? "")
+                    .toLowerCase()
+                    .localeCompare((optionB?.label ?? "").toLowerCase())
+                }
+                options={type}
+              />
+            </Form.Item>
 
-          <Form.Item label="Status" name="status">
-            <Switch
-              checkedChildren={<CheckOutlined />}
-              unCheckedChildren={<CloseOutlined />}
-              className="bg-red-500"
-            />
-          </Form.Item>
-        </Form>
+            <Form.Item label="Status" name="status">
+              <Switch
+                checkedChildren={<CheckOutlined />}
+                unCheckedChildren={<CloseOutlined />}
+                className="bg-red-500"
+              />
+            </Form.Item>
+          </Form>
+        )}
       </Modal>
     </div>
   );
