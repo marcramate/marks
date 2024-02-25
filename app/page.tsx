@@ -1,7 +1,19 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Statistic, Badge, Skeleton } from "antd";
-
+import {
+  Row,
+  Col,
+  Card,
+  Statistic,
+  Badge,
+  Skeleton,
+  Divider,
+  Typography,
+  Descriptions,
+  Tabs,
+} from "antd";
+const { Title, Text } = Typography;
+import type { TabsProps } from "antd";
 import { createClient } from "@/utils/supabase/client";
 
 export default function Main() {
@@ -62,11 +74,73 @@ export default function Main() {
     }
   };
 
+  const [tabItems, setTabItems] = useState<TabsProps["items"]>([]);
+  const tabsCredit = async () => {
+    try {
+      setLoading(true);
+      let { data: selection, error } = await supabase
+        .from("selection")
+        .select("creditcard,SalaryCredit")
+        .not("creditcard", "is", null);
+
+      console.log("CCTab", selection);
+
+      if (error) {
+        throw new Error(`Error fetching data from Supabase: ${error.message}`);
+      }
+
+      // ใช้ Array.map เพื่อแปลงข้อมูล
+      const CreditTabs: TabsProps["items"] =
+        selection?.map((item, index) => {
+          return {
+            key: (index + 1).toString(),
+            label: item.creditcard,
+            children: (
+              <div>
+                <Card bordered={true} className="drop-shadow-lg">
+                  <Text className="mb-2 font-semibold">
+                    {item.creditcard} Limit :{" "}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "THB",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(item.SalaryCredit)}
+                  </Text>
+
+                  <Row gutter={16}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={24}
+                      xl={24}
+                      className="mb-2"
+                    >
+                      <Card bordered={true}></Card>
+                    </Col>
+                  </Row>
+                </Card>
+              </div>
+            ), // เพิ่มข้อมูลเนื้อหาของแท็บตามต้องการ
+          };
+        }) || [];
+
+      setTabItems(CreditTabs);
+    } catch (error) {
+      console.error("Error CreditSelect:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     PMGF();
     Carmilesfe();
+    tabsCredit();
   }, []);
 
+  /*
   useEffect(() => {
     const intervalId = setInterval(() => {
       PMGF();
@@ -76,7 +150,7 @@ export default function Main() {
 
     return () => clearInterval(intervalId);
   }, [ExPm]);
-
+*/
   //All
   const AllPm = ExPm.reduce((collectPma: any, ExpexPma: { cost: any }) => {
     return collectPma + ExpexPma.cost;
@@ -137,162 +211,205 @@ export default function Main() {
     return accumulator + car_v.c_miles;
   }, 0);
 
+  const tabs: TabsProps["items"] = [
+    {
+      key: "1",
+      label: (
+        <Badge color="#3f8600" text="Credit" className="mb-2 font-normal" />
+      ),
+      children: (
+        <div>
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4">
+            {tabItems?.map((item) => (
+              <div key={item.key}>{item.children}</div>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "2",
+      label: (
+        <Badge color="#cf1322" text="Youtube" className="mb-2 font-normal" />
+      ),
+      children: "Content of Tab Pane 2",
+    },
+    {
+      key: "3",
+      label: <Badge color="#f50" text="Spend" className="mb-2 font-normal" />,
+      children: (
+        <div>
+          {loading ? (
+            <Skeleton active /> // Render loading state while data is being fetched
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+              <Card bordered={true} className="drop-shadow-lg">
+                <Badge
+                  color="#f50"
+                  text="ค่าใช้จ่าย"
+                  className="mb-2 font-semibold"
+                />
+                <Row gutter={16}>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+                    <Badge.Ribbon text="Premier Gold" color="#0866c6">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="All"
+                          value={AllPm}
+                          precision={2}
+                          suffix="THB"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+                    <Badge.Ribbon text="Premier Gold" color="#0866c6">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="Paid"
+                          value={PaidPm}
+                          precision={2}
+                          valueStyle={{ color: "#3f8600" }}
+                          suffix="THB"
+                          className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+                    <Badge.Ribbon text="Premier Gold" color="#0866c6">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="Remain"
+                          value={UnPaidPm}
+                          precision={2}
+                          valueStyle={{ color: "#cf1322" }}
+                          suffix="THB"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                  {/* S11 */}
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+                    <Badge.Ribbon text="S11" color="#086935">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="All"
+                          value={AllS}
+                          precision={2}
+                          suffix="THB"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+                    <Badge.Ribbon text="S11" color="#086935">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="Paid"
+                          value={PaidS}
+                          precision={2}
+                          valueStyle={{ color: "#3f8600" }}
+                          suffix="THB"
+                          className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
+                    <Badge.Ribbon text="S11" color="#086935">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="Remain"
+                          value={UnPaidS}
+                          precision={2}
+                          valueStyle={{ color: "#cf1322" }}
+                          suffix="THB"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                </Row>
+              </Card>
+
+              {/* Car Vios*/}
+              <Card bordered={true} className="drop-shadow-lg">
+                <Badge color="#f50" text="Car" className="mb-2 font-semibold" />
+                <Row gutter={16}>
+                  <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+                    <Badge.Ribbon text="Vios" color="#0866c6">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="Cost"
+                          value={totalV}
+                          valueStyle={{ color: "#3f8600" }}
+                          precision={2}
+                          suffix="THB"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                  <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+                    <Badge.Ribbon text="Vios" color="#0866c6">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="Miles"
+                          value={totalVM}
+                          precision={2}
+                          valueStyle={{ color: "#3f8600" }}
+                          suffix="THB"
+                          className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                  {/*Car Jupiter*/}
+                  <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+                    <Badge.Ribbon text="Jupiter" color="#0866c6">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="Cost"
+                          value={totalJ}
+                          valueStyle={{ color: "#3f8600" }}
+                          precision={2}
+                          suffix="THB"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                  <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
+                    <Badge.Ribbon text="Jupiter" color="#0866c6">
+                      <Card bordered={true}>
+                        <Statistic
+                          title="Miles"
+                          value={totalJM}
+                          precision={2}
+                          valueStyle={{ color: "#3f8600" }}
+                          suffix="THB"
+                          className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
+                        />
+                      </Card>
+                    </Badge.Ribbon>
+                  </Col>
+                </Row>
+              </Card>
+            </div>
+          )}
+          <Divider />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-4">
-        <Card bordered={true} className="drop-shadow-lg">
-          <Badge
-            color="#f50"
-            text="ค่าใช้จ่าย"
-            className="mb-2 font-semibold"
-          />
-          <Row gutter={16}>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
-              <Badge.Ribbon text="Premier Gold" color="#0866c6">
-                <Card bordered={true}>
-                  <Statistic
-                    title="All"
-                    value={AllPm}
-                    precision={2}
-                    suffix="THB"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
-              <Badge.Ribbon text="Premier Gold" color="#0866c6">
-                <Card bordered={true}>
-                  <Statistic
-                    title="Paid"
-                    value={PaidPm}
-                    precision={2}
-                    valueStyle={{ color: "#3f8600" }}
-                    suffix="THB"
-                    className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
-              <Badge.Ribbon text="Premier Gold" color="#0866c6">
-                <Card bordered={true}>
-                  <Statistic
-                    title="Remain"
-                    value={UnPaidPm}
-                    precision={2}
-                    valueStyle={{ color: "#cf1322" }}
-                    suffix="THB"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-            {/* S11 */}
-            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
-              <Badge.Ribbon text="S11" color="#086935">
-                <Card bordered={true}>
-                  <Statistic
-                    title="All"
-                    value={AllS}
-                    precision={2}
-                    suffix="THB"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
-              <Badge.Ribbon text="S11" color="#086935">
-                <Card bordered={true}>
-                  <Statistic
-                    title="Paid"
-                    value={PaidS}
-                    precision={2}
-                    valueStyle={{ color: "#3f8600" }}
-                    suffix="THB"
-                    className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8} className="mb-2">
-              <Badge.Ribbon text="S11" color="#086935">
-                <Card bordered={true}>
-                  <Statistic
-                    title="Remain"
-                    value={UnPaidS}
-                    precision={2}
-                    valueStyle={{ color: "#cf1322" }}
-                    suffix="THB"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-          </Row>
-        </Card>
-      </div>
-      {/* Car Vios*/}
-      <div className="mb-2"></div>
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-4">
-        <Card bordered={true} className="drop-shadow-lg">
-          <Badge color="#f50" text="Car" className="mb-2 font-semibold" />
-          <Row gutter={16}>
-            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-              <Badge.Ribbon text="Vios" color="#0866c6">
-                <Card bordered={true}>
-                  <Statistic
-                    title="Cost"
-                    value={totalV}
-                    valueStyle={{ color: "#3f8600" }}
-                    precision={2}
-                    suffix="THB"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-              <Badge.Ribbon text="Vios" color="#0866c6">
-                <Card bordered={true}>
-                  <Statistic
-                    title="Miles"
-                    value={totalVM}
-                    precision={2}
-                    valueStyle={{ color: "#3f8600" }}
-                    suffix="THB"
-                    className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-            {/*Car Jupiter*/}
-            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-              <Badge.Ribbon text="Jupiter" color="#0866c6">
-                <Card bordered={true}>
-                  <Statistic
-                    title="Cost"
-                    value={totalJ}
-                    valueStyle={{ color: "#3f8600" }}
-                    precision={2}
-                    suffix="THB"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-            <Col xs={24} sm={12} md={12} lg={12} xl={12} className="mb-2">
-              <Badge.Ribbon text="Jupiter" color="#0866c6">
-                <Card bordered={true}>
-                  <Statistic
-                    title="Miles"
-                    value={totalJM}
-                    precision={2}
-                    valueStyle={{ color: "#3f8600" }}
-                    suffix="THB"
-                    className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1"
-                  />
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-          </Row>
-        </Card>
-      </div>
+      {loading ? (
+        <Skeleton active /> // Render loading state while data is being fetched
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
+          <Tabs defaultActiveKey="1" items={tabs} />
+        </div>
+      )}
     </div>
   );
 }
