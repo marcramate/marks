@@ -9,7 +9,7 @@ import {
   Skeleton,
   Divider,
   Typography,
-  Descriptions,
+  Progress,
   Tabs,
 } from "antd";
 const { Title, Text } = Typography;
@@ -117,7 +117,10 @@ export default function Main() {
                       xl={24}
                       className="mb-2"
                     >
-                      {renderCreditCardDetails(item.creditcard)}
+                      {renderCreditCardDetails(
+                        item.creditcard,
+                        item.SalaryCredit
+                      )}
                     </Col>
                   </Row>
                 </Card>
@@ -141,7 +144,10 @@ export default function Main() {
   }, []);
 
   // สร้างฟังก์ชันเพื่อ render รายละเอียดของแต่ละ credit card
-  const renderCreditCardDetails = async (creditcard: string) => {
+  const renderCreditCardDetails = async (
+    creditcard: string,
+    salaryCredit: number
+  ) => {
     try {
       setLoading(true);
       let { data: CreditCardDetails, error } = await supabase
@@ -150,15 +156,56 @@ export default function Main() {
         .like("card", `%${creditcard}%`);
 
       if (CreditCardDetails) {
-        // สร้าง JSX แสดงรายละเอียด credit card จาก CreditCardDetails
+        // คำนวณรวมของ price ใน CreditCardDetails
+        const totalPrice = CreditCardDetails.reduce(
+          (accumulator, currentCard) => accumulator + currentCard.price,
+          0
+        );
+
+        const PayCost = CreditCardDetails.filter(
+          (CreditCard: { status: boolean }) => CreditCard.status
+        ).reduce(
+          (accumulator: number, currentPayCost: { price: number }) =>
+            accumulator + currentPayCost.price,
+          0
+        );
         return (
-          // แสดงรายละเอียด credit card ตามต้องการ
-          // เช่น CreditCardDetails.map((cardDetail) => (<div key={cardDetail.id}>{cardDetail.someInfo}</div>))
           <Card bordered={true}>
-            {/* ตัวอย่าง: */}
-            {CreditCardDetails.map((cardDetail) => (
-              <div key={cardDetail.id}>{cardDetail.someInfo}</div>
-            ))}
+            <div>
+              <span className="text-base font-medium ">
+                Total{" - "}
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Number(totalPrice))}
+              </span>
+
+              <Progress
+                key={creditcard}
+                percent={salaryCredit ? (totalPrice / salaryCredit) * 100 : 0}
+                showInfo={false}
+                status="active"
+              />
+            </div>
+            <div>
+              <span className="text-base font-medium ">
+                Pay{" - "}
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Number(PayCost))}
+              </span>
+              <Progress
+                key={creditcard}
+                percent={salaryCredit ? (PayCost / salaryCredit) * 100 : 0}
+                showInfo={false}
+                strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
+              />
+            </div>
           </Card>
         );
       }
@@ -172,11 +219,6 @@ export default function Main() {
       setLoading(false);
     }
   };
-
-  // ให้ทำการ fetch ข้อมูลเมื่อ component ถูกโหลด
-  useEffect(() => {
-    tabsCredit();
-  }, []);
 
   /*
   useEffect(() => {
