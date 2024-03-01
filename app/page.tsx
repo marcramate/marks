@@ -117,7 +117,7 @@ export default function Main() {
                       xl={24}
                       className="mb-2"
                     >
-                      <Card bordered={true}></Card>
+                      {renderCreditCardDetails(item.creditcard)}
                     </Col>
                   </Row>
                 </Card>
@@ -137,6 +137,44 @@ export default function Main() {
   useEffect(() => {
     PMGF();
     Carmilesfe();
+    tabsCredit();
+  }, []);
+
+  // สร้างฟังก์ชันเพื่อ render รายละเอียดของแต่ละ credit card
+  const renderCreditCardDetails = async (creditcard: string) => {
+    try {
+      setLoading(true);
+      let { data: CreditCardDetails, error } = await supabase
+        .from("CreditCard")
+        .select("*")
+        .like("card", `%${creditcard}%`);
+
+      if (CreditCardDetails) {
+        // สร้าง JSX แสดงรายละเอียด credit card จาก CreditCardDetails
+        return (
+          // แสดงรายละเอียด credit card ตามต้องการ
+          // เช่น CreditCardDetails.map((cardDetail) => (<div key={cardDetail.id}>{cardDetail.someInfo}</div>))
+          <Card bordered={true}>
+            {/* ตัวอย่าง: */}
+            {CreditCardDetails.map((cardDetail) => (
+              <div key={cardDetail.id}>{cardDetail.someInfo}</div>
+            ))}
+          </Card>
+        );
+      }
+
+      if (!CreditCardDetails || error) {
+        console.log("ERRORCreditCardDetails :", error);
+      }
+    } catch (error) {
+      console.log("ERRORCreditCardDetails :", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ให้ทำการ fetch ข้อมูลเมื่อ component ถูกโหลด
+  useEffect(() => {
     tabsCredit();
   }, []);
 
