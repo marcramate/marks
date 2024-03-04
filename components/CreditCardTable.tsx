@@ -939,6 +939,7 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
             >
               <Form
                 form={form}
+                layout="vertical"
                 style={{ maxWidth: "100%" }}
                 initialValues={{ status: false }}
                 autoComplete="off"
@@ -1033,12 +1034,14 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                       name="oncredit_month"
                       className="mb-4"
                     >
-                      <InputNumber
-                        name="oncredit_month"
-                        className="w-full"
-                        formatter={(value) => (value ? `${value}` : "0")}
-                        parser={(value) => (value ? parseFloat(value) : 0)}
-                      />
+                      <Tooltip title="ผ่อนทั้งหมด">
+                        <InputNumber
+                          name="oncredit_month"
+                          className="w-full"
+                          formatter={(value) => (value ? `${value}` : "0")}
+                          parser={(value) => (value ? parseFloat(value) : 0)}
+                        />
+                      </Tooltip>
                     </Form.Item>
 
                     <Form.Item
@@ -1046,27 +1049,31 @@ export default function CreditCard({ creditcard, isTab1 }: CreditCardProps) {
                       name="paycredit_month"
                       className="mb-4"
                     >
-                      <InputNumber
-                        name="paycredit_month"
-                        className="w-full"
-                        formatter={(value) => (value ? `${value}` : "0")}
-                        parser={(value) => (value ? parseFloat(value) : 0)}
-                      />
+                      <Tooltip title="ผ่อนมาแล้ว">
+                        <InputNumber
+                          name="paycredit_month"
+                          className="w-full"
+                          formatter={(value) => (value ? `${value}` : "0")}
+                          parser={(value) => (value ? parseFloat(value) : 0)}
+                        />
+                      </Tooltip>
                     </Form.Item>
 
                     <Form.Item
-                      label="Price credit"
+                      label="Price_Per_M"
                       name="price_oncredit"
                       className="mb-4"
                       initialValue={0}
                     >
-                      <InputNumber
-                        prefix="THB"
-                        className="w-full"
-                        name="price_oncredit"
-                        formatter={(value) => (value ? `${value}` : "0")}
-                        parser={(value) => (value ? parseFloat(value) : 0)}
-                      />
+                      <Tooltip title="เดือนละ">
+                        <InputNumber
+                          prefix="THB"
+                          className="w-full"
+                          name="price_oncredit"
+                          formatter={(value) => (value ? `${value}` : "0")}
+                          parser={(value) => (value ? parseFloat(value) : 0)}
+                        />
+                      </Tooltip>
                     </Form.Item>
 
                     <Form.Item label="Type" name="type" className="mb-4">
@@ -1242,6 +1249,7 @@ export function AddCreditCost() {
         ) : (
           <Form
             form={form}
+            layout="vertical"
             style={{ maxWidth: "100%" }}
             initialValues={{ status: false }}
             autoComplete="off"
@@ -1349,7 +1357,9 @@ export function AddCreditCost() {
               className="mb-4"
               style={{ display: showFields ? "block" : "none" }}
             >
-              <Input name="oncredit_month" className="w-full" />
+              <Tooltip title="ผ่อนทั้งหมด">
+                <Input name="oncredit_month" className="w-full" />
+              </Tooltip>
             </Form.Item>
 
             <Form.Item
@@ -1358,28 +1368,32 @@ export function AddCreditCost() {
               className="mb-4"
               style={{ display: showFields ? "block" : "none" }}
             >
-              <InputNumber
-                name="paycredit_month"
-                className="w-full"
-                formatter={(value) => (value ? `${value}` : "0")}
-                parser={(value) => (value ? parseFloat(value) : 0)}
-              />
+              <Tooltip title="ผ่อนมาแล้ว">
+                <InputNumber
+                  name="paycredit_month"
+                  className="w-full"
+                  formatter={(value) => (value ? `${value}` : "0")}
+                  parser={(value) => (value ? parseFloat(value) : 0)}
+                />
+              </Tooltip>
             </Form.Item>
 
             <Form.Item
-              label="Price credit"
+              label="Price_Per_M"
               name="price_oncredit"
               className="mb-4"
               initialValue={0}
               style={{ display: showFields ? "block" : "none" }}
             >
-              <InputNumber
-                prefix="THB"
-                className="w-full"
-                name="price_oncredit"
-                formatter={(value) => (value ? `${value}` : "0")}
-                parser={(value) => (value ? parseFloat(value) : 0)}
-              />
+              <Tooltip title="เดือนละ">
+                <InputNumber
+                  prefix="THB"
+                  className="w-full"
+                  name="price_oncredit"
+                  formatter={(value) => (value ? `${value}` : "0")}
+                  parser={(value) => (value ? parseFloat(value) : 0)}
+                />
+              </Tooltip>
             </Form.Item>
 
             <Form.Item

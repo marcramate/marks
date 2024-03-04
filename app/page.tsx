@@ -143,7 +143,6 @@ export default function Main() {
     tabsCredit();
   }, []);
 
-  // สร้างฟังก์ชันเพื่อ render รายละเอียดของแต่ละ credit card
   const renderCreditCardDetails = async (
     creditcard: string,
     salaryCredit: number
@@ -156,7 +155,6 @@ export default function Main() {
         .like("card", `%${creditcard}%`);
 
       if (CreditCardDetails) {
-        // คำนวณรวมของ price ใน CreditCardDetails
         const totalPrice = CreditCardDetails.reduce(
           (accumulator, currentCard) => accumulator + currentCard.price,
           0
@@ -164,6 +162,14 @@ export default function Main() {
 
         const PayCost = CreditCardDetails.filter(
           (CreditCard: { status: boolean }) => CreditCard.status
+        ).reduce(
+          (accumulator: number, currentPayCost: { price: number }) =>
+            accumulator + currentPayCost.price,
+          0
+        );
+
+        const WaitCost = CreditCardDetails.filter(
+          (CreditCard: { status: boolean }) => !CreditCard.status
         ).reduce(
           (accumulator: number, currentPayCost: { price: number }) =>
             accumulator + currentPayCost.price,
@@ -204,6 +210,23 @@ export default function Main() {
                 percent={salaryCredit ? (PayCost / salaryCredit) * 100 : 0}
                 showInfo={false}
                 strokeColor={{ "0%": "#09C728", "100%": "#09C728" }}
+              />
+            </div>
+            <div>
+              <span className="text-base font-medium ">
+                Wait{" - "}
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "THB",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(Number(WaitCost))}
+              </span>
+              <Progress
+                key={creditcard}
+                percent={salaryCredit ? (WaitCost / salaryCredit) * 100 : 0}
+                showInfo={false}
+                strokeColor={{ "0%": "#FF0000", "100%": "#FF0000" }}
               />
             </div>
           </Card>

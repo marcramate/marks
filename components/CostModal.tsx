@@ -932,7 +932,7 @@ export function MilesAdd() {
           </Form.Item>
 
           <Form.Item
-            label="OilLitre"
+            label="PerLitre"
             name="c_liter"
             className="mb-4"
             initialValue={0}
