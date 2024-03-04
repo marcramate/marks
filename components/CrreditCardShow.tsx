@@ -1,31 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import {
-  Row,
-  Col,
-  Card,
-  Statistic,
-  Badge,
-  Skeleton,
-  Divider,
-  Typography,
-  Progress,
-  Tabs,
-} from "antd";
-const { Title, Text } = Typography;
+import { Row, Col, Card, Typography, Progress, Skeleton } from "antd";
+const { Text } = Typography;
 import type { TabsProps } from "antd";
 import { createClient } from "@/utils/supabase/client";
-import YoutubeshowTabs from "@/components/YoutubeShow";
-import SpendShow from "@/components/CostSpend";
-import CreditCardShow from "@/components/CrreditCardShow";
-
-export default function Main() {
+export default function CreditCardShow() {
   const supabase = createClient();
-  const [ExPm, setExPm] = useState<any>([]);
-  const [ExS, setExS] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [CarMiles, setCarMiles] = useState<any>([]);
-
   const [tabItems, setTabItems] = useState<TabsProps["items"]>([]);
   const tabsCredit = async () => {
     try {
@@ -77,7 +58,7 @@ export default function Main() {
                   </Row>
                 </Card>
               </div>
-            ), // เพิ่มข้อมูลเนื้อหาของแท็บตามต้องการ
+            ),
           };
         }) || [];
 
@@ -193,66 +174,17 @@ export default function Main() {
     }
   };
 
-  /*
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      PMGF();
-      Carmilesfe();
-      console.log("useEffect with setInterval executed");
-    }, 36000); // 60000 มิลลิวินาทีหรือ 1 นาที
-
-    return () => clearInterval(intervalId);
-  }, [ExPm]);
-*/
-
-  const tabs: TabsProps["items"] = [
-    {
-      key: "1",
-      label: (
-        <Badge color="#3f8600" text="Credit" className="mb-2 font-normal" />
-      ),
-      children: <div>{loading ? <Skeleton active /> : <CreditCardShow />}</div>,
-    },
-    {
-      key: "2",
-      label: (
-        <Badge color="#cf1322" text="Youtube" className="mb-2 font-normal" />
-      ),
-      children: (
-        <div>
-          {loading ? (
-            <Skeleton active />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-              <Card bordered={true} className="drop-shadow-lg">
-                <YoutubeshowTabs dele={0} />
-              </Card>
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "3",
-      label: <Badge color="#f50" text="Spend" className="mb-2 font-normal" />,
-      children: (
-        <div>
-          {loading ? <Skeleton active /> : <SpendShow />}
-          <Divider />
-        </div>
-      ),
-    },
-  ];
-
   return (
-    <div>
+    <>
       {loading ? (
         <Skeleton active />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-          <Tabs defaultActiveKey="1" items={tabs} />
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4">
+          {tabItems?.map((item) => (
+            <div key={item.key}>{item.children}</div>
+          ))}
         </div>
       )}
-    </div>
+    </>
   );
 }
